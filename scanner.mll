@@ -1,8 +1,12 @@
-{ open Parser }
+{ 
+	open Parser 
+	exception LexError of string
+}
 
 rule token = parse
   [' ' '\t' '\r' '\n'] { token lexbuf } (* Whitespace *)
-| "/*"     { comment lexbuf }           (* Comments *)
+| "/*"     { block_comment lexbuf }           (* Comments *)
+| "//"	   { line_comment lexbuf }
 | '('      { LPAREN }
 | ')'      { RPAREN }
 | '{'      { LBRACE }
@@ -31,6 +35,11 @@ rule token = parse
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
-and comment = parse
+and block_comment = parse
   "*/" { token lexbuf }
-| _    { comment lexbuf }
+| eof  { raise (LexError("unterminated block_comment!")) }
+| _    { block_comment lexbuf }
+
+and line_comment = parse
+| ['\n' '\r'] { token lexbuf }
+| _			  { line_comment lexbuf }
