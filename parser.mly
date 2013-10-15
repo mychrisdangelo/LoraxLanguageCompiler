@@ -3,8 +3,9 @@
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN
 %token EQ NEQ LT LEQ GT GEQ
-%token RETURN IF ELSE FOR WHILE INT
-%token <int> LITERAL
+%token RETURN IF ELSE FOR WHILE INT DOUBLE
+%token <float> DOUBLE_LITERAL
+%token <int> INT_LITERAL
 %token <string> ID
 %token EOF
 
@@ -66,8 +67,12 @@ expr_opt:
     /* nothing */ { Noexpr }
   | expr          { $1 }
 
+data:
+    : DOUBLE_LITERAL { Double_lit($1) }
+    | INT_LITERAL { Int_lit($1) }
+
 expr:
-    LITERAL          { Literal($1) }
+    data             { data($1) }
   | ID               { Id($1) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
