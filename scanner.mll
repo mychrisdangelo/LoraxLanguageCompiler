@@ -2,6 +2,7 @@ rule token = parse
 [' ' '\t' '\r' '\n'] { token lexbuf }
 | "/*"     { block_comment lexbuf }  (* Comments *)
 | "//"           { line_comment lexbuf }
+| ';' { SEMI }
 | ".==" { EQUAL }
 | ".!=" { NOTEQUAL }
 | "=="    { SAME }
