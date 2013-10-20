@@ -1,4 +1,0 @@
-PLT
-===
-
-PLT group project
