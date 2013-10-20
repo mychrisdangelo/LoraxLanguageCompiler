@@ -22,11 +22,13 @@ rule token = parse
 | '!'       { NOT }
 | "&&"    { AND }
 | "||"    { OR }
-| ".,"   { SEQUENCE }
-| ".="    { ASSIGN }
+| ","   { SEQUENCE }
+| "="    { ASSIGN }
 | '@'       { AT }
 | '%'       { CHILD }
-| ['[' '0'-'9' ']'] as child {int_of_string child.[1] }
-| ['(' '0'-'9' ')'] as element {int_of_string element.[1] }
+| (('0'-'9') '[' ('0'-'9')* ']')  {TREE}
+| ('<' ('0'-'9')+ (',' ('0'-'9')+)*  '>')  {TUPLE}
+| ('[' '0'-'9' ']') as child {int_of_string child.[1] }
+| ('(' '0'-'9' ')') as element {int_of_string element.[1] }
 | ['0'-'9']+ as lit { LITERAL(int_of_string lit) }
 | eof { EOF }
