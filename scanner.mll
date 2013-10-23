@@ -7,9 +7,9 @@ rule token = parse
 | '=' { ASSIGN }
 | '<' { LT }
 | '>' { GT }
-| '<=' { LTE }
-| '>=' { GTE }
-| '==' { EQUALS }
+| "<=" { LTE }
+| ">=" { GTE }
+| "==" { EQUALS }
 | '@' { CHILD }
 | '%' { DATA }
 | ['0'-'9']+ as lit { INT(int_of_string lit) }
