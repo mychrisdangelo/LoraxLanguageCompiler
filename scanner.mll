@@ -43,7 +43,7 @@ rule token = parse
 | ['0'-'9']+ as lit { INT(int_of_string lit) }
 | ['0'-'9']+'.'['0'-'9']+ as lit { FLOAT(float_of_string lit) }
 | '"'(['_']* as lit )'"' { STRING(lit) }
-| '''(['_']* as lit ) ''' { CHAR(lit) }
+| '''(['_'] as lit ) ''' { CHAR(lit) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
