@@ -1,8 +1,9 @@
 %{ open Ast %}
 
-%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA LBRACKET RBRACKET
+%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA 
 %token PLUS MINUS TIMES DIVIDE ASSIGN
 %token EQ NEQ LT LEQ GT GEQ
+%token LBRACKET RBRACKET
 /*
  * TODO: Keywords not implemented in the parser or anywhere else but the scanner
  * DOUBLE STRING BREAK CONTINUE ROOT CHILDREN PRINT
@@ -92,6 +93,11 @@ expr:
   | LPAREN expr RPAREN { $2 }
   | tree { $1 }
 
+node_expr:
+	LITERAL { Literal($1) }
+	| ID	{ Id($1) }
+	| LPAREN expr RPAREN { $2 }
+
 actuals_opt:
     /* nothing */ { [] }
   | actuals_list  { List.rev $1 }
@@ -100,14 +106,14 @@ actuals_list:
     expr                    { [$1] }
   | actuals_list COMMA expr { $3 :: $1 }
 
+
 tree:
-	 node LBRACKET nodes RBRACKET SEMI { Tree( $1, $3 ) }
+	 node_expr LBRACKET nodes RBRACKET SEMI { Tree( $1, $3 ) }
 	
 node:
-	/* nothing */ { Noexpr }
-	| expr { $1 }
+	 expr { $1 }
 
 nodes:
 	 node COMMA nodes   { $3::$1 }
 	| node { [$1] }
-
+	| /* nothing */ { Noexpr }
