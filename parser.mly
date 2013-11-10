@@ -10,12 +10,13 @@
  * TRUE FALSE CHAR
  *
  */
-%token DOUBLE STRING BREAK CONTINUE ROOT CHILDREN PRINT
-%token TRUE FALSE CHAR
+%token DOUBLE STRING BREAK CONTINUE BOOL
+%token TRUE FALSE CHAR 
 %token RETURN IF ELSE FOR WHILE INT DOUBLE
 %token <int> LITERAL
 %token <string> ID
 %token EOF
+
 
 %nonassoc NOELSE
 %nonassoc ELSE
@@ -56,6 +57,11 @@ vdecl_list:
 
 vdecl:
    INT ID SEMI { $2 }
+   | CHAR ID SEMI { $2 }
+   | STRING ID SEMI { $2 }
+   | DOUBLE ID SEMI { $2 }
+   | BOOL ID SEMI { $2 }
+
 
 stmt_list:
     /* nothing */  { [] }
@@ -70,6 +76,8 @@ stmt:
   | FOR LPAREN expr_opt SEMI expr_opt SEMI expr_opt RPAREN stmt
      { For($3, $5, $7, $9) }
   | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
+  | BREAK { Noexpr }
+  | CONTINUE { Noexpr }
 
 expr_opt:
     /* nothing */ { Noexpr }
