@@ -70,4 +70,4 @@ and block_comment = parse
 
 and line_comment = parse
 | ['\n' '\r'] { token lexbuf }
-| _			  { line_comment lexbuf }
+| _                          { line_comment lexbuf }
