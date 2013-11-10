@@ -1,7 +1,7 @@
 %{ open Ast %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA 
-%token PLUS MINUS TIMES DIVIDE ASSIGN
+%token PLUS MINUS TIMES DIVIDE ASSIGN MOD
 %token EQ NEQ LT LEQ GT GEQ
 %token LBRACKET RBRACKET
 /*
@@ -12,7 +12,7 @@
  */
 %token DOUBLE STRING BREAK CONTINUE BOOL
 %token TRUE FALSE CHAR 
-%token RETURN IF ELSE FOR WHILE INT DOUBLE
+%token RETURN IF ELSE FOR WHILE INT FLOAT
 %token <int> LITERAL
 %token <string> ID
 %token EOF
@@ -24,7 +24,7 @@
 %left EQ NEQ
 %left LT GT LEQ GEQ
 %left PLUS MINUS
-%left TIMES DIVIDE
+%left TIMES DIVIDE MOD
 
 %start program
 %type <Ast.program> program
@@ -96,6 +96,7 @@ expr:
   | expr LEQ    expr { Binop($1, Leq,   $3) }
   | expr GT     expr { Binop($1, Greater,  $3) }
   | expr GEQ    expr { Binop($1, Geq,   $3) }
+  | expr MOD    expr { Binop($1, Mod, $3) }
   | ID ASSIGN expr   { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
