@@ -91,6 +91,7 @@ expr:
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
   | tree { $1 }
+
 actuals_opt:
     /* nothing */ { [] }
   | actuals_list  { List.rev $1 }
@@ -100,10 +101,13 @@ actuals_list:
   | actuals_list COMMA expr { $3 :: $1 }
 
 tree:
-	expr LBRACKET RBRACKET SEMI { $1 }
-	| expr LBRACKET nodes RBRACKET SEMI { Tree( $1, $3 ) }
+	 node LBRACKET nodes RBRACKET SEMI { Tree( $1, $3 ) }
 	
+node:
+	/* nothing */ { Noexpr }
+	| expr { $1 }
+
 nodes:
-	expr COMMA nodes   { $3::$1 }
-	| expr { [$1] }
+	 node COMMA nodes   { $3::$1 }
+	| node { [$1] }
 
