@@ -21,7 +21,7 @@ let run (vars, funcs) =
 
     (* Evaluate an expression and return (value, updated environment) *)
     let rec eval env = function
-	Literal(i) -> i, env
+	Int_Literal(i) -> i, env
       | Noexpr -> 1, env (* must be non-zero for the for loop predicate *)
       | Id(var) ->
 	  let locals, globals = env in

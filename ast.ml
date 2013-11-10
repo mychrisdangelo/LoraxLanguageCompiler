@@ -1,7 +1,7 @@
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq
 
 type expr =
-    Literal of int
+    Int_Literal of int
   | Id of string
   | Binop of expr * op * expr
   | Assign of string * expr
@@ -26,7 +26,7 @@ type func_decl = {
 type program = string list * func_decl list
 
 let rec string_of_expr = function
-    Literal(l) -> string_of_int l
+    Int_Literal(l) -> string_of_int l
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^

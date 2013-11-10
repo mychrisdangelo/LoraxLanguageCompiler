@@ -1,7 +1,8 @@
 %{ open Ast %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
-%token PLUS MINUS TIMES DIVIDE ASSIGN
+%token PLUS MINUS TIMES DIVIDE MOD ASSIGN NOT
+%token AND OR NOT
 %token EQ NEQ LT LEQ GT GEQ
 /*
  * TODO: Keywords not implemented in the parser or anywhere else but the scanner
@@ -9,10 +10,14 @@
  * TRUE FALSE CHAR
  *
  */
-%token DOUBLE STRING BREAK CONTINUE ROOT CHILDREN PRINT
-%token TRUE FALSE CHAR
-%token RETURN IF ELSE FOR WHILE INT DOUBLE
-%token <int> LITERAL
+%token CHAR BOOL INT FLOAT STRING TREE
+%token BREAK CONTINUE ROOT AT CHILD PRINT
+%token TRUE FALSE NULL
+%token RETURN IF ELSE FOR WHILE
+%token <int> INT_LITERAL
+%token <float> FLOAT_LITERAL
+%token <string> STRING_LITERAL
+%token <char> CHAR_LITERAL
 %token <string> ID
 %token EOF
 
@@ -75,7 +80,7 @@ expr_opt:
   | expr          { $1 }
 
 expr:
-    LITERAL          { Literal($1) }
+    INT_LITERAL          { Int_Literal($1) }
   | ID               { Id($1) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }

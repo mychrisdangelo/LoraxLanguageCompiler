@@ -43,7 +43,7 @@ let translate (globals, functions) =
 		  StringMap.empty (local_offsets @ formal_offsets) } in
 
     let rec expr = function
-	Literal i -> [Lit i]
+	Int_Literal i -> [Lit i]
       | Id s ->
 	  (try [Lfp (StringMap.find s env.local_index)]
           with Not_found -> try [Lod (StringMap.find s env.global_index)]
