@@ -45,7 +45,6 @@ rule token = parse
 | "break"    { BREAK }
 | "continue" { CONTINUE }
 | "root"     { ROOT }
-| "print"	 { PRINT }
 | "true"	 { TRUE }
 | "false"	 { FALSE }
 | "null"     { NULL } 
