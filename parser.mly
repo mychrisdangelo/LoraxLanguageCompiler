@@ -108,6 +108,11 @@ expr:
 
 literal:
     INT_LITERAL { Int_Literal($1) }
+  | FLOAT_LITERAL { Float_Literal($1) }
+  | STRING_LITERAL { String_Literal($1) }
+  | CHAR_LITERAL { Char_Literal($1) }
+  | BOOL_LITERAL { Bool_Literal($1) }
+
   /* TODO: Fill in other literals*/
 
 node_expr:

@@ -43,35 +43,42 @@ let translate (globals, functions) =
 		  StringMap.empty (local_offsets @ formal_offsets) } in
 
     let rec expr = function
-	Int_Literal i -> [Lit i]
+	      Int_Literal i -> [Lit i]
+      | Float_Literal i -> raise (Failure "float not implemented")
+      | String_Literal i -> raise (Failure "string not implemented")
+      | Char_Literal i -> raise (Failure "char not implemented")
+      | Bool_Literal i -> raise (Failure "bool not implemented")
+      | Tree (r, cl) -> raise (Failure "tree not implemented")
       | Id s ->
-	  (try [Lfp (StringMap.find s env.local_index)]
-          with Not_found -> try [Lod (StringMap.find s env.global_index)]
-          with Not_found -> raise (Failure ("undeclared variable " ^ s)))
+	      (try [Lfp (StringMap.find s env.local_index)]
+        with Not_found -> try [Lod (StringMap.find s env.global_index)]
+        with Not_found -> raise (Failure ("undeclared variable " ^ s)))
       | Binop (e1, op, e2) -> expr e1 @ expr e2 @ [Bin op]
       | Assign (s, e) -> expr e @
-	  (try [Sfp (StringMap.find s env.local_index)]
-  	  with Not_found -> try [Str (StringMap.find s env.global_index)]
-	  with Not_found -> raise (Failure ("undeclared variable " ^ s)))
+	      (try [Sfp (StringMap.find s env.local_index)]
+  	    with Not_found -> try [Str (StringMap.find s env.global_index)]
+	      with Not_found -> raise (Failure ("undeclared variable " ^ s)))
       | Call (fname, actuals) -> (try
-	  (List.concat (List.map expr (List.rev actuals))) @
-	  [Jsr (StringMap.find fname env.function_index) ]   
+	      (List.concat (List.map expr (List.rev actuals))) @
+	      [Jsr (StringMap.find fname env.function_index) ]   
         with Not_found -> raise (Failure ("undefined function " ^ fname)))
       | Noexpr -> []
 
     in let rec stmt = function
-	Block sl     ->  List.concat (List.map stmt sl)
+	      Block sl     ->  List.concat (List.map stmt sl)
       | Expr e       -> expr e @ [Drp]
       | Return e     -> expr e @ [Rts num_formals]
       | If (p, t, f) -> let t' = stmt t and f' = stmt f in
-	expr p @ [Beq(2 + List.length t')] @
-	t' @ [Bra(1 + List.length f')] @ f'
+	      expr p @ [Beq(2 + List.length t')] @
+	      t' @ [Bra(1 + List.length f')] @ f'
       | For (e1, e2, e3, b) ->
-	  stmt (Block([Expr(e1); While(e2, Block([b; Expr(e3)]))]))
+	      stmt (Block([Expr(e1); While(e2, Block([b; Expr(e3)]))]))
       | While (e, b) ->
-	  let b' = stmt b and e' = expr e in
-	  [Bra (1+ List.length b')] @ b' @ e' @
-	  [Bne (-(List.length b' + List.length e'))]
+	      let b' = stmt b and e' = expr e in
+	      [Bra (1+ List.length b')] @ b' @ e' @
+	      [Bne (-(List.length b' + List.length e'))]
+      | Continue -> raise (Failure "continue not implemented")
+      | Break -> raise (Failure "break not implemented")
 
     in [Ent num_locals] @      (* Entry: allocate space for locals *)
     stmt (Block fdecl.body) @  (* Body *)

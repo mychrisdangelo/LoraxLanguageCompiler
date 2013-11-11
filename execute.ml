@@ -27,6 +27,7 @@ let execute_prog prog =
       | Sub     -> op1 - op2
       | Mult    -> op1 * op2
       | Div     -> op1 / op2
+      | Mod     -> raise (Failure "mod not implemented")
       | Equal   -> boolean (op1 =  op2)
       | Neq     -> boolean (op1 != op2)
       | Less    -> boolean (op1 <  op2)

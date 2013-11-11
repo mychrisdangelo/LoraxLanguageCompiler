@@ -7,6 +7,10 @@ type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Ge
 
 type expr =
     Int_Literal of int
+  | Float_Literal of float
+  | String_Literal of string
+  | Char_Literal of char
+  | Bool_Literal of bool
   | Id of string
   | Binop of expr * op * expr
   | Tree of expr * expr list
@@ -35,6 +39,10 @@ type program = string list * func_decl list
 
 let rec string_of_expr = function
     Int_Literal(l) -> string_of_int l
+  | Float_Literal(l) -> string_of_float l
+  | String_Literal(l) -> l
+  | Char_Literal(l) -> (String.make 1) l
+  | Bool_Literal(l) -> string_of_bool l
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^

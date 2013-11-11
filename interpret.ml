@@ -22,6 +22,10 @@ let run (vars, funcs) =
     (* Evaluate an expression and return (value, updated environment) *)
     let rec eval env = function
 		Int_Literal(i) -> i, env
+	  | Float_Literal(l) -> raise (Failure "float not implemented")
+	  | String_Literal(l) -> raise (Failure "string not implemented")
+	  | Char_Literal(l) -> raise (Failure "char not implemented")
+	  | Bool_Literal(l) -> raise (Failure "bool not implemented")
       | Noexpr -> 1, env (* must be non-zero for the for loop predicate *)
       | Id(var) ->
 	  let locals, globals = env in
