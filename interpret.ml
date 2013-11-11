@@ -37,7 +37,8 @@ let run (vars, funcs) =
 	  | Unop(e, o) -> 
 	  		(match o with
 	  			Neg -> raise (Failure "neg not implemented")
-	  	      | Not -> raise (Failure "not not implemented"))
+	  	      | Not -> raise (Failure "not not implemented")
+	  	      | At -> raise (Failure "at not implemented"))
       | Binop(e1, op, e2) ->
 	  let v1, env = eval env e1 in
           let v2, env = eval env e2 in

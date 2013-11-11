@@ -24,8 +24,10 @@
 %token EOF
 
 %nonassoc NOELSE
-%nonassoc ELSE
-%right ASSIGN CHILD
+%nonassoc ELSE AT
+%right ASSIGN CHILD 
+%left OR
+%left AND
 %left EQ NEQ
 %left LT GT LEQ GEQ
 %left PLUS MINUS
@@ -108,6 +110,7 @@ expr:
   | MINUS expr %prec NEG { Unop($2, Neg) }
   | NOT expr             { Unop($2, Not) }
   | expr CHILD  expr     { Binop($1, Child, $3) }
+  | expr AT              { Unop($1, At) }
   | ID ASSIGN expr       { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
