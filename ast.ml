@@ -16,6 +16,8 @@ type op =
     | Greater 
     | Geq
     | Child
+    | And
+    | Or
 
 type expr =
     Int_Literal of int
@@ -65,8 +67,14 @@ let rec string_of_expr = function
       | Div -> "/" 
       | Mod -> "mod"
       | Child -> "%"
-      | Equal -> "==" | Neq -> "!="
-      | Less -> "<" | Leq -> "<=" | Greater -> ">" | Geq -> ">=") ^ " " ^
+      | Equal -> "==" 
+      | Neq -> "!="
+      | Less -> "<" 
+      | Leq -> "<=" 
+      | Greater -> ">" 
+      | Geq -> ">="
+      | And -> "&&"
+      | Or -> "||") ^ " " ^
       string_of_expr e2
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->

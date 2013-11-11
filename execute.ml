@@ -34,7 +34,9 @@ let execute_prog prog =
       | Less    -> boolean (op1 <  op2)
       | Leq     -> boolean (op1 <= op2)
       | Greater -> boolean (op1 >  op2)
-      | Geq     -> boolean (op1 >= op2)) ;
+      | Geq     -> boolean (op1 >= op2)
+      | And     -> raise (Failure "and not implemented")
+      | Or      -> raise (Failure "or not implemented")) ;
       exec fp (sp-1) (pc+1)
   | Lod i   -> stack.(sp)   <- globals.(i)  ; exec fp (sp+1) (pc+1)
   | Str i   -> globals.(i)  <- stack.(sp-1) ; exec fp sp     (pc+1)
