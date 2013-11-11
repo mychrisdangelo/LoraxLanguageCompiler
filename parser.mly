@@ -30,7 +30,7 @@
 %left LT GT LEQ GEQ
 %left PLUS MINUS
 %left TIMES DIVIDE MOD
-%left NEG
+%left NEG NOT
 
 %start program
 %type <Ast.program> program
@@ -105,7 +105,8 @@ expr:
   | expr GEQ    expr     { Binop($1, Geq, $3) }
   | expr AND    expr     { Binop($1, Or, $3) }
   | expr OR     expr     { Binop($1, And, $3) }
-  | MINUS expr %prec NEG { Unop($2, Neg)}
+  | MINUS expr %prec NEG { Unop($2, Neg) }
+  | NOT expr             { Unop($2, Not) }
   | expr CHILD  expr     { Binop($1, Child, $3) }
   | ID ASSIGN expr       { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }

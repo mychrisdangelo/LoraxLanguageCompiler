@@ -21,6 +21,7 @@ type op =
 
 type uop =
       Neg
+    | Not
 
 type expr =
     Int_Literal of int
@@ -83,7 +84,9 @@ let rec string_of_expr = function
       string_of_binop o ^ " " ^
       string_of_expr e2
   | Unop(e, o) -> 
-      (match o with Neg -> "-") ^ " " ^ string_of_expr e
+      (match o with 
+          Neg -> "-"
+        | Not -> "!") ^ string_of_expr e
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"

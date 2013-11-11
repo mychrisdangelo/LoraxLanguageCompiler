@@ -37,7 +37,8 @@ let string_of_stmt = function
   | Bin(Ast.Geq) -> "Geq"
   | Bin(Ast.And) -> raise (Failure "and not implemented")
   | Bin(Ast.Or) -> raise (Failure "or not implemented")
-  | Uop(Ast.Neg) -> raise (Failure "neg not implemnted")
+  | Uop(Ast.Neg) -> raise (Failure "neg not implemented")
+  | Uop(Ast.Not) -> raise (Failure "not not implemented")
   | Lod(i) -> "Lod " ^ string_of_int i
   | Str(i) -> "Str " ^ string_of_int i
   | Lfp(i) -> "Lfp " ^ string_of_int i

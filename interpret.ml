@@ -36,7 +36,8 @@ let run (vars, funcs) =
 	  		else raise (Failure ("undeclared identifier " ^ var))
 	  | Unop(e, o) -> 
 	  		(match o with
-	  			Neg -> raise (Failure "neg not implemented"))
+	  			Neg -> raise (Failure "neg not implemented")
+	  	      | Not -> raise (Failure "not not implemented"))
       | Binop(e1, op, e2) ->
 	  let v1, env = eval env e1 in
           let v2, env = eval env e2 in
