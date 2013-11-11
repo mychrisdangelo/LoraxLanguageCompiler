@@ -1,6 +1,6 @@
 #!/bin/sh
 
-MICROC="./microc"
+lorax="./lorax"
 
 # Set time limit for all operations
 ulimit -t 30
@@ -63,11 +63,11 @@ Check() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.i.out" &&
-    Run "$MICROC" "-i" "<" $1 ">" ${basename}.i.out &&
+    Run "$lorax" "-i" "<" $1 ">" ${basename}.i.out &&
     Compare ${basename}.i.out ${reffile}.out ${basename}.i.diff
 
     generatedfiles="$generatedfiles ${basename}.c.out" &&
-    Run "$MICROC" "-c" "<" $1 ">" ${basename}.c.out &&
+    Run "$lorax" "-c" "<" $1 ">" ${basename}.c.out &&
     Compare ${basename}.c.out ${reffile}.out ${basename}.c.diff
 
     # Report the status and clean up the generated files

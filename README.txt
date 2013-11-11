@@ -12,8 +12,19 @@ Getting Started:
 
 $ make
 $ echo "main() { print("hello, world\n"); }" > hello.lrx
-$ lorax -c < hello.lrx
+$ ./lorax -c < hello.lrx
 $ g++ hello.cpp
 $ ./a.out
 $ hello, world
 $
+
+Running Tests:
+
+$ make
+$ ./testall.sh
+$
+
+Examples:
+
+If you're interested in some real world examples check out the ./examples
+directory.
