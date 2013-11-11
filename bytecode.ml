@@ -27,6 +27,7 @@ let string_of_stmt = function
   | Bin(Ast.Mult) -> "Mul"
   | Bin(Ast.Div) -> "Div"
   | Bin(Ast.Mod) -> raise (Failure "mod not implemented")
+  | Bin(Ast.Child) -> raise (Failure "child not implemented")
   | Bin(Ast.Equal) -> "Eql"
   | Bin(Ast.Neq) -> "Neq"
   | Bin(Ast.Less) -> "Lt"

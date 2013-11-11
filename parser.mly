@@ -25,7 +25,7 @@
 
 %nonassoc NOELSE
 %nonassoc ELSE
-%right ASSIGN
+%right ASSIGN CHILD
 %left EQ NEQ
 %left LT GT LEQ GEQ
 %left PLUS MINUS
@@ -89,6 +89,7 @@ expr_opt:
 
 expr:
     literal          { $1 }
+  | tree             { $1 }
   | ID               { Id($1) }
   | expr PLUS   expr { Binop($1, Add, $3) }
   | expr MINUS  expr { Binop($1, Sub, $3) }
@@ -101,10 +102,10 @@ expr:
   | expr GT     expr { Binop($1, Greater, $3) }
   | expr GEQ    expr { Binop($1, Geq, $3) }
   | expr MOD    expr { Binop($1, Mod, $3) }
+  | expr CHILD  expr { Binop($1, Child, $3) }
   | ID ASSIGN expr   { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
-  | tree { $1 }
 
 literal:
     INT_LITERAL { Int_Literal($1) }
@@ -112,8 +113,6 @@ literal:
   | STRING_LITERAL { String_Literal($1) }
   | CHAR_LITERAL { Char_Literal($1) }
   | BOOL_LITERAL { Bool_Literal($1) }
-
-  /* TODO: Fill in other literals*/
 
 node_expr:
 	  literal            { $1 }

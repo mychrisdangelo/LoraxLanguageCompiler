@@ -43,6 +43,7 @@ let run (vars, funcs) =
 	  | Sub -> v1 - v2
 	  | Mult -> v1 * v2
 	  | Mod -> raise (Failure "mod not implemented")
+	  | Child -> raise (Failure "child not implemented")
 	  | Div -> v1 / v2
 	  | Equal -> boolean (v1 = v2)
 	  | Neq -> boolean (v1 != v2)
