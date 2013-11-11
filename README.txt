@@ -1,17 +1,5 @@
 Lorax Programming Language
 
-<<<<<<< HEAD
-PLT group project
-
-CFG
-=========
-
-tree -> expr[]; | expr[nodes];
-
-nodes -> expr, nodes | expr
-
-expr -> tree | ...
-=======
 Authors:
 
 Doug Beinstock (dmb2168)
@@ -29,4 +17,3 @@ $ g++ hello.cpp
 $ ./a.out
 $ hello, world
 $
->>>>>>> master
