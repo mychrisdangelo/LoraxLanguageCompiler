@@ -21,7 +21,7 @@ let run (vars, funcs) =
 
     (* Evaluate an expression and return (value, updated environment) *)
     let rec eval env = function
-	Int_Literal(i) -> i, env
+		Int_Literal(i) -> i, env
       | Noexpr -> 1, env (* must be non-zero for the for loop predicate *)
       | Id(var) ->
 	  let locals, globals = env in
@@ -38,6 +38,7 @@ let run (vars, funcs) =
 	    Add -> v1 + v2
 	  | Sub -> v1 - v2
 	  | Mult -> v1 * v2
+	  | Mod -> raise (Failure "mod not implemented")
 	  | Div -> v1 / v2
 	  | Equal -> boolean (v1 = v2)
 	  | Neq -> boolean (v1 != v2)
@@ -52,6 +53,7 @@ let run (vars, funcs) =
 	  else if NameMap.mem var globals then
 	    v, (locals, NameMap.add var v globals)
 	  else raise (Failure ("undeclared identifier " ^ var))
+	  | Tree(r, cl) -> raise (Failure "tree not implemented")
       | Call("print", [e]) ->
 	  let v, env = eval env e in
 	  print_endline (string_of_int v);
@@ -75,8 +77,10 @@ let run (vars, funcs) =
 
     (* Execute a statement and return an updated environment *)
     let rec exec env = function
-	Block(stmts) -> List.fold_left exec env stmts
+		Block(stmts) -> List.fold_left exec env stmts
       | Expr(e) -> let _, env = eval env e in env
+      | Continue -> raise (Failure ("continue not implemented"))
+      | Break -> raise (Failure ("break not implemented"))
       | If(e, s1, s2) ->
 	  let v, env = eval env e in
 	  exec env (if v != 0 then s1 else s2)

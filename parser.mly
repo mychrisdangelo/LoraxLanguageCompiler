@@ -12,10 +12,11 @@
 %token EQ NEQ LT LEQ GT GEQ
 %token LBRACKET RBRACKET
 %token CHAR BOOL INT FLOAT STRING TREE
-%token BREAK CONTINUE ROOT AT CHILD PRINT
+%token BREAK CONTINUE ROOT AT CHILD
 %token TRUE FALSE NULL
 %token RETURN IF ELSE FOR WHILE
 %token <int> INT_LITERAL
+%token <bool> BOOL_LITERAL
 %token <float> FLOAT_LITERAL
 %token <string> STRING_LITERAL
 %token <char> CHAR_LITERAL
@@ -129,5 +130,3 @@ nodes:
     /* nothing */    { [] }
   | expr             { [$1] }
   | expr COMMA nodes { $1 :: $3 } /* note that nodes are kept in order! */ 
-
-

@@ -52,8 +52,6 @@ rule token = parse
 | "break"    { BREAK }
 | "continue" { CONTINUE }
 | "root"     { ROOT }
-| "true"	 { TRUE }
-| "false"	 { FALSE }
 | "null"     { NULL } 
 | "char"	 { CHAR }
 | "!"		 { NOT } 
@@ -65,6 +63,7 @@ rule token = parse
 | decimal as lxm 				{ FLOAT_LITERAL(float_of_string lxm) }
 | '"'(['_']* as lxm )'"' 		{ STRING_LITERAL(lxm) }
 | '''(['_'] as lxm ) ''' 		{ CHAR_LITERAL(lxm) }
+| ("true" | "false") as lxm		{ BOOL_LITERAL(bool_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
