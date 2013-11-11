@@ -54,6 +54,7 @@ let translate (globals, functions) =
         with Not_found -> try [Lod (StringMap.find s env.global_index)]
         with Not_found -> raise (Failure ("undeclared variable " ^ s)))
       | Binop (e1, op, e2) -> expr e1 @ expr e2 @ [Bin op]
+      | Unop (e, o) -> expr e @ [Uop o]
       | Assign (s, e) -> expr e @
 	      (try [Sfp (StringMap.find s env.local_index)]
   	    with Not_found -> try [Str (StringMap.find s env.global_index)]

@@ -28,12 +28,15 @@ let run (vars, funcs) =
 	  | Bool_Literal(l) -> raise (Failure "bool not implemented")
       | Noexpr -> 1, env (* must be non-zero for the for loop predicate *)
       | Id(var) ->
-	  let locals, globals = env in
-	  if NameMap.mem var locals then
-	    (NameMap.find var locals), env
-	  else if NameMap.mem var globals then
-	    (NameMap.find var globals), env
-	  else raise (Failure ("undeclared identifier " ^ var))
+	  		let locals, globals = env in
+	  		if NameMap.mem var locals then
+	    	(NameMap.find var locals), env
+	  		else if NameMap.mem var globals then
+	    	(NameMap.find var globals), env
+	  		else raise (Failure ("undeclared identifier " ^ var))
+	  | Unop(e, o) -> 
+	  		(match o with
+	  			Neg -> raise (Failure "neg not implemented"))
       | Binop(e1, op, e2) ->
 	  let v1, env = eval env e1 in
           let v2, env = eval env e2 in

@@ -20,6 +20,9 @@ let execute_prog prog =
   let rec exec fp sp pc = match prog.text.(pc) with
     Lit i  -> stack.(sp) <- i ; exec fp (sp+1) (pc+1)
   | Drp    -> exec fp (sp-1) (pc+1)
+  | Uop op -> 
+      (match op with
+        Neg     -> raise (Failure "neg not implemented"))
   | Bin op -> let op1 = stack.(sp-2) and op2 = stack.(sp-1) in     
       stack.(sp-2) <- (let boolean i = if i then 1 else 0 in
       match op with
