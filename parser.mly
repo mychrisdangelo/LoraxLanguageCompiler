@@ -1,3 +1,9 @@
+/*
+ * Authors:
+ * Doug Beinstock 
+ * Chris D'Angelo
+ */
+
 %{ open Ast %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
@@ -5,12 +11,6 @@
 %token AND OR NOT
 %token EQ NEQ LT LEQ GT GEQ
 %token LBRACKET RBRACKET
-/*
- * TODO: Keywords not implemented in the parser or anywhere else but the scanner
- * DOUBLE STRING BREAK CONTINUE ROOT CHILDREN PRINT
- * TRUE FALSE CHAR
- *
- */
 %token CHAR BOOL INT FLOAT STRING TREE
 %token BREAK CONTINUE ROOT AT CHILD PRINT
 %token TRUE FALSE NULL
@@ -63,7 +63,7 @@ vdecl:
    INT ID SEMI { $2 }
    | CHAR ID SEMI { $2 }
    | STRING ID SEMI { $2 }
-   | DOUBLE ID SEMI { $2 }
+   | FLOAT ID SEMI { $2 }
    | BOOL ID SEMI { $2 }
 
 stmt_list:
@@ -79,35 +79,39 @@ stmt:
   | FOR LPAREN expr_opt SEMI expr_opt SEMI expr_opt RPAREN stmt
      { For($3, $5, $7, $9) }
   | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
-  | BREAK { Noexpr }
-  | CONTINUE { Noexpr }
+  | BREAK SEMI { Break }
+  | CONTINUE SEMI { Continue }
 
 expr_opt:
     /* nothing */ { Noexpr }
   | expr          { $1 }
 
 expr:
-    INT_LITERAL          { Int_Literal($1) }
+    literal          { $1 }
   | ID               { Id($1) }
-  | expr PLUS   expr { Binop($1, Add,   $3) }
-  | expr MINUS  expr { Binop($1, Sub,   $3) }
-  | expr TIMES  expr { Binop($1, Mult,  $3) }
-  | expr DIVIDE expr { Binop($1, Div,   $3) }
+  | expr PLUS   expr { Binop($1, Add, $3) }
+  | expr MINUS  expr { Binop($1, Sub, $3) }
+  | expr TIMES  expr { Binop($1, Mult, $3) }
+  | expr DIVIDE expr { Binop($1, Div, $3) }
   | expr EQ     expr { Binop($1, Equal, $3) }
-  | expr NEQ    expr { Binop($1, Neq,   $3) }
-  | expr LT     expr { Binop($1, Less,  $3) }
-  | expr LEQ    expr { Binop($1, Leq,   $3) }
-  | expr GT     expr { Binop($1, Greater,  $3) }
-  | expr GEQ    expr { Binop($1, Geq,   $3) }
+  | expr NEQ    expr { Binop($1, Neq, $3) }
+  | expr LT     expr { Binop($1, Less, $3) }
+  | expr LEQ    expr { Binop($1, Leq, $3) }
+  | expr GT     expr { Binop($1, Greater, $3) }
+  | expr GEQ    expr { Binop($1, Geq, $3) }
   | expr MOD    expr { Binop($1, Mod, $3) }
   | ID ASSIGN expr   { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
   | tree { $1 }
 
+literal:
+    INT_LITERAL { Int_Literal($1) }
+  /* TODO: Fill in other literals*/
+
 node_expr:
-	LITERAL { Literal($1) }
-	| ID	{ Id($1) }
+	  literal            { $1 }
+	| ID	               { Id($1) }
 	| LPAREN expr RPAREN { $2 }
 
 actuals_opt:
@@ -118,14 +122,12 @@ actuals_list:
     expr                    { [$1] }
   | actuals_list COMMA expr { $3 :: $1 }
 
-
 tree:
-	 node_expr LBRACKET nodes RBRACKET SEMI { Tree( $1, $3 ) }
-	
-node:
-	 expr { $1 }
+    node_expr LBRACKET nodes RBRACKET { Tree($1, $3) }
 
 nodes:
-	 node COMMA nodes   { $3::$1 }
-	| node { [$1] }
-	| /* nothing */ { Noexpr }
+    /* nothing */    { [] }
+  | expr             { [$1] }
+  | expr COMMA nodes { $1 :: $3 } /* note that nodes are kept in order! */ 
+
+

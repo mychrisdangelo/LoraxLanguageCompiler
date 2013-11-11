@@ -1,3 +1,10 @@
+(* 
+ * Authors:
+ * Doug Beinstock 
+ * Chris D'Angelo
+ * Zhaarn Maheswaran 
+ *)
+
 { 
 	open Parser 
 	exception LexError of string

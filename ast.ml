@@ -1,9 +1,15 @@
-type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq
+(* 
+ * Authors:
+ * Chris D'Angelo
+ *)
+
+type op = Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq
 
 type expr =
     Int_Literal of int
   | Id of string
   | Binop of expr * op * expr
+  | Tree of expr * expr list
   | Assign of string * expr
   | Call of string * expr list
   | Noexpr
@@ -15,6 +21,8 @@ type stmt =
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
   | While of expr * stmt
+  | Continue
+  | Break
 
 type func_decl = {
     fname : string;
@@ -31,13 +39,14 @@ let rec string_of_expr = function
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^
       (match o with
-	Add -> "+" | Sub -> "-" | Mult -> "*" | Div -> "/"
+	Add -> "+" | Sub -> "-" | Mult -> "*" | Div -> "/" | Mod-> "mod"
       | Equal -> "==" | Neq -> "!="
       | Less -> "<" | Leq -> "<=" | Greater -> ">" | Geq -> ">=") ^ " " ^
       string_of_expr e2
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | Tree(r, cl) -> string_of_expr r ^ "[" ^ String.concat ", " (List.map string_of_expr cl) ^ "]"
   | Noexpr -> ""
 
 let rec string_of_stmt = function
@@ -52,6 +61,8 @@ let rec string_of_stmt = function
       "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
+  | Break -> "break;"
+  | Continue -> "continue;"
 
 let string_of_vdecl id = "int " ^ id ^ ";\n"
 
