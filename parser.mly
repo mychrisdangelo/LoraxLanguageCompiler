@@ -12,7 +12,7 @@
 %token EQ NEQ LT LEQ GT GEQ
 %token LBRACKET RBRACKET
 %token CHAR BOOL INT FLOAT STRING TREE
-%token BREAK CONTINUE ROOT AT CHILD
+%token BREAK CONTINUE AT CHILD
 %token TRUE FALSE NULL
 %token RETURN IF ELSE FOR WHILE
 %token <int> INT_LITERAL
@@ -64,11 +64,12 @@ vdecl_list:
   | vdecl_list vdecl { $2 :: $1 }
 
 vdecl:
-   INT ID SEMI { $2 }
-   | CHAR ID SEMI { $2 }
+     INT ID SEMI    { $2 }
+   | CHAR ID SEMI   { $2 }
    | STRING ID SEMI { $2 }
-   | FLOAT ID SEMI { $2 }
-   | BOOL ID SEMI { $2 }
+   | FLOAT ID SEMI  { $2 }
+   | BOOL ID SEMI   { $2 }
+   | TREE ID SEMI   { $2 }
 
 stmt_list:
     /* nothing */  { [] }

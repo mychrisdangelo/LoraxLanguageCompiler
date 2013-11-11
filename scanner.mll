@@ -51,7 +51,6 @@ rule token = parse
 | "tree"     { TREE } 
 | "break"    { BREAK }
 | "continue" { CONTINUE }
-| "root"     { ROOT }
 | "null"     { NULL } 
 | "char"	 { CHAR }
 | "!"		 { NOT } 
@@ -61,8 +60,8 @@ rule token = parse
 | '%'		 { CHILD }	
 | digit+ as lxm 				{ INT_LITERAL(int_of_string lxm) }
 | decimal as lxm 				{ FLOAT_LITERAL(float_of_string lxm) }
-| '"'(['_']* as lxm )'"' 		{ STRING_LITERAL(lxm) }
-| '''(['_'] as lxm ) ''' 		{ CHAR_LITERAL(lxm) }
+| '\"' (_* as lxm ) '\"' 		{ STRING_LITERAL(lxm) }
+| '\'' (_ as lxm ) '\'' 		{ CHAR_LITERAL(lxm) }
 | ("true" | "false") as lxm		{ BOOL_LITERAL(bool_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | eof { EOF }

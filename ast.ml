@@ -55,6 +55,12 @@ type func_decl = {
     body : stmt list;
   }
 
+type tree_decl = {
+    name : string;
+    typename : string;
+    degree : int;
+}
+
 type program = string list * func_decl list
 
 let string_of_binop = function
@@ -76,8 +82,8 @@ let string_of_binop = function
 let rec string_of_expr = function
     Int_Literal(l) -> string_of_int l
   | Float_Literal(l) -> string_of_float l
-  | String_Literal(l) -> l
-  | Char_Literal(l) -> (String.make 1) l
+  | String_Literal(l) -> "\"" ^ l ^ "\""
+  | Char_Literal(l) -> "\'" ^ (String.make 1) l ^"\'"
   | Bool_Literal(l) -> string_of_bool l
   | Id(s) -> s
   | Binop(e1, o, e2) ->
