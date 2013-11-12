@@ -1,3 +1,9 @@
+func_test(int a, char b, tree<bool>t(3), bool c)
+{
+	tree <int>t(2);
+	print(a);
+}
+
 main() {
 	string s;	
 	tree <char>t(1);

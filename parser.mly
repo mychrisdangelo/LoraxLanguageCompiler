@@ -57,20 +57,20 @@ formals_opt:
   | formal_list   { List.rev $1 }
 
 formal_list:
-    ID                   { [$1] }
-  | formal_list COMMA ID { $3 :: $1 }
+    vdecl                   { [$1] }
+  | formal_list COMMA vdecl { $3 :: $1 }
 
 vdecl_list:
     /* nothing */    { [] }
-  | vdecl_list vdecl { $2 :: $1 }
+  | vdecl_list vdecl SEMI { $2 :: $1 }
 
 vdecl:
-    var_type ID SEMI { ($2, $1) }
-  | TREE LT INT GT ID LPAREN expr RPAREN SEMI { ($5, Lrx_Tree({datatype = Lrx_Int; degree = $7})) }
-  | TREE LT CHAR GT ID LPAREN expr RPAREN SEMI { ($5, Lrx_Tree({datatype = Lrx_Char; degree = $7})) }
-  | TREE LT BOOL GT ID LPAREN expr RPAREN SEMI { ($5, Lrx_Tree({datatype = Lrx_Bool; degree = $7})) }
-  | TREE LT FLOAT GT ID LPAREN expr RPAREN SEMI { ($5, Lrx_Tree({datatype = Lrx_Float; degree = $7})) }
-  | STRING ID SEMI { ($2, Lrx_Tree({datatype = Lrx_Char; degree = Int_Literal(1)})) }
+    var_type ID { ($2, $1) }
+  | TREE LT INT GT ID LPAREN expr RPAREN { ($5, Lrx_Tree({datatype = Lrx_Int; degree = $7})) }
+  | TREE LT CHAR GT ID LPAREN expr RPAREN { ($5, Lrx_Tree({datatype = Lrx_Char; degree = $7})) }
+  | TREE LT BOOL GT ID LPAREN expr RPAREN { ($5, Lrx_Tree({datatype = Lrx_Bool; degree = $7})) }
+  | TREE LT FLOAT GT ID LPAREN expr RPAREN { ($5, Lrx_Tree({datatype = Lrx_Float; degree = $7})) }
+  | STRING ID { ($2, Lrx_Tree({datatype = Lrx_Char; degree = Int_Literal(1)})) }
 
 var_type:
     INT    { Lrx_Atom(Lrx_Int) }
@@ -124,11 +124,12 @@ expr:
   | LPAREN expr RPAREN { $2 }
 
 literal:
-    INT_LITERAL { Int_Literal($1) }
-  | FLOAT_LITERAL { Float_Literal($1) }
+    INT_LITERAL    { Int_Literal($1) }
+  | FLOAT_LITERAL  { Float_Literal($1) }
   | STRING_LITERAL { String_Literal($1) }
-  | CHAR_LITERAL { Char_Literal($1) }
-  | BOOL_LITERAL { Bool_Literal($1) }
+  | CHAR_LITERAL   { Char_Literal($1) }
+  | BOOL_LITERAL   { Bool_Literal($1) }
+  | NULL           { Null_Literal }
 
 node_expr:
 	  literal            { $1 }

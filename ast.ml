@@ -31,6 +31,7 @@ type expr =
   | String_Literal of string
   | Char_Literal of char
   | Bool_Literal of bool
+  | Null_Literal
   | Id of string
   | Binop of expr * op * expr
   | Unop of expr * uop
@@ -68,7 +69,7 @@ type stmt =
 
 type func_decl = {
     fname : string;
-    formals : string list; (* TODO: needs to be a var list *)
+    formals : var list; (* TODO: needs to be a var list *)
     locals : var list;
     body : stmt list;
   }
@@ -97,6 +98,7 @@ let rec string_of_expr = function
   | String_Literal(l) -> "\"" ^ l ^ "\""
   | Char_Literal(l) -> "\'" ^ (String.make 1) l ^"\'"
   | Bool_Literal(l) -> string_of_bool l
+  | Null_Literal -> "null"
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^
@@ -128,8 +130,6 @@ let rec string_of_stmt = function
   | Break -> "break;"
   | Continue -> "continue;"
 
-(* let string_of_vdecl id = "int " ^ id ^ ";\n" *)
-
 let string_of_atom_type = function
     Lrx_Int -> "int"
   | Lrx_Float -> "float"
@@ -138,16 +138,16 @@ let string_of_atom_type = function
 
 let string_of_vdecl v =
     (match (snd v) with
-        Lrx_Atom(t) -> string_of_atom_type t ^ " " ^ fst v ^ ";\n"
-      | Lrx_Tree(t) -> "tree <" ^ string_of_atom_type t.datatype ^ ">" ^ fst v ^ "(" ^ string_of_expr t.degree ^ ");\n"
+        Lrx_Atom(t) -> string_of_atom_type t ^ " " ^ fst v
+      | Lrx_Tree(t) -> "tree <" ^ string_of_atom_type t.datatype ^ ">" ^ fst v ^ "(" ^ string_of_expr t.degree ^ ")"
     )
 
 let string_of_fdecl fdecl =
-  fdecl.fname ^ "(" ^ String.concat ", " fdecl.formals ^ ")\n{\n" ^
-  String.concat "" (List.map string_of_vdecl fdecl.locals) ^
+  fdecl.fname ^ "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")\n{\n" ^
+  String.concat ";\n" (List.map string_of_vdecl fdecl.locals) ^ (if (List.length fdecl.locals) > 0 then ";\n" else "") ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
 let string_of_program (vars, funcs) =
-  String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
+  String.concat ";\n" (List.map string_of_vdecl vars) ^ (if (List.length vars) > 0 then ";\n" else "") ^
   String.concat "\n" (List.map string_of_fdecl funcs)
