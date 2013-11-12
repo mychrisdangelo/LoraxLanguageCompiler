@@ -31,7 +31,7 @@ TARFILES = Makefile testall.sh scanner.mll parser.mly \
 	$(TESTS:%=tests/test-%.out)
 
 lorax : $(OBJS)
-	ocamlc -o lorax $(OBJS)
+	ocamlc -o lorax -g $(OBJS)
 
 .PHONY : test
 test : lorax testall.sh
@@ -44,10 +44,10 @@ parser.ml parser.mli : parser.mly
 	ocamlyacc parser.mly
 
 %.cmo : %.ml
-	ocamlc -c $<
+	ocamlc -c -g $<
 
 %.cmi : %.mli
-	ocamlc -c $<
+	ocamlc -c -g $<
 
 lorax.tar.gz : $(TARFILES)
 	cd .. && tar czf lorax/lorax.tar.gz $(TARFILES:%=lorax/%)

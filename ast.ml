@@ -46,7 +46,7 @@ type atom_type =
   | Lrx_Char
 
 type tree_decl = {
-    lrxtype : atom_type;
+    datatype : atom_type;
     degree : expr;
 }
 

@@ -132,7 +132,6 @@ literal:
 
 node_expr:
 	  literal            { $1 }
-	| ID	               { Id($1) }
 	| LPAREN expr RPAREN { $2 }
 
 actuals_opt:

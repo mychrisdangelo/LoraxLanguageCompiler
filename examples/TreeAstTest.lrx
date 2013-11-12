@@ -1,3 +1,5 @@
 main() {
-	tree <int>a(2);
+	string s;
+	s = "hello, world\n";
+	print(s);
 }
