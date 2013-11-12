@@ -1,5 +1,11 @@
 main() {
-	string s;
-	s = "hello, world\n";
+	string s;	
+	tree <char>t(1);
+	s = "hello, world";
+	t = ','[' '['w'['o'['r'['l'['d']]]]]];
+	s@;
+	t%3;
+	t%x;
+	t%(5 + 6);
 	print(s);
 }
