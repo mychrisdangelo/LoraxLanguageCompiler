@@ -1,10 +1,3 @@
-int main() {
-	string s;
-	tree <char>t(1);
-	t = ','[' '['w'['o'['r'['l'['d']]]]]];
-	print(s + t + "\n");
-}
-
 // resulting Abstract Syntax Tree
 //
 // program: Ast.program =
@@ -30,3 +23,10 @@ int main() {
 //         (Ast.Call ("print",
 //           [Ast.Binop (Ast.Binop (Ast.Id "s", Ast.Add, Ast.Id "t"), Ast.Add,
 //             Ast.String_Literal "\\n")]))]}])
+
+int main() {
+	string s;
+	tree <char>t(1);
+	t = ','[' '['w'['o'['r'['l'['d']]]]]];
+	print(s + t + "\n");
+}

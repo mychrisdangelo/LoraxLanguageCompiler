@@ -114,8 +114,8 @@ expr:
   | expr LEQ    expr     { Binop($1, Leq, $3) }
   | expr GT     expr     { Binop($1, Greater, $3) }
   | expr GEQ    expr     { Binop($1, Geq, $3) }
-  | expr AND    expr     { Binop($1, Or, $3) }
-  | expr OR     expr     { Binop($1, And, $3) }
+  | expr AND    expr     { Binop($1, And, $3) }
+  | expr OR     expr     { Binop($1, Or, $3) }
   | MINUS expr %prec NEG { Unop($2, Neg) }
   | NOT expr             { Unop($2, Not) }
   | expr CHILD  expr     { Binop($1, Child, $3) }
