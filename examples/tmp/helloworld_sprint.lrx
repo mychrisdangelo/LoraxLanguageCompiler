@@ -1,0 +1,5 @@
+main() {
+	char a;
+	a = "hello";
+	print(a);
+}

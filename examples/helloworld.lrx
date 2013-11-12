@@ -1,5 +1,6 @@
-main() {
-	char a;
-	a = "hello";
-	print(a);
+int main() {
+	// string s;
+	// // tree <char>t(1);
+	a = "asdf"
+	print(a + "asdf");
 }
