@@ -5,25 +5,25 @@
  *)
 
 type op = 
-      Add 
-    | Sub 
-    | Mult 
-    | Div 
-    | Mod 
-    | Equal 
-    | Neq 
-    | Less 
-    | Leq 
-    | Greater 
-    | Geq
-    | Child
-    | And
-    | Or
+    Add 
+  | Sub 
+  | Mult 
+  | Div 
+  | Mod 
+  | Equal 
+  | Neq 
+  | Less 
+  | Leq 
+  | Greater 
+  | Geq
+  | Child
+  | And
+  | Or
 
 type uop =
-      Neg
-    | Not
-    | At
+    Neg
+  | Not
+  | At
 
 type expr =
     Int_Literal of int
@@ -69,7 +69,8 @@ type stmt =
 
 type func_decl = {
     fname : string;
-    formals : var list; (* TODO: needs to be a var list *)
+    ret_type : var_type; 
+    formals : var list;
     locals : var list;
     body : stmt list;
   }
@@ -142,7 +143,12 @@ let string_of_vdecl v =
       | Lrx_Tree(t) -> "tree <" ^ string_of_atom_type t.datatype ^ ">" ^ fst v ^ "(" ^ string_of_expr t.degree ^ ")"
     )
 
+let string_of_var_type = function
+    Lrx_Atom(t) -> string_of_atom_type t
+  | Lrx_Tree(t) -> raise (Failure "tree is invalid function return type")
+
 let string_of_fdecl fdecl =
+  (string_of_var_type fdecl.ret_type) ^ " " ^ 
   fdecl.fname ^ "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")\n{\n" ^
   String.concat ";\n" (List.map string_of_vdecl fdecl.locals) ^ (if (List.length fdecl.locals) > 0 then ";\n" else "") ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
