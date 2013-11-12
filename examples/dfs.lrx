@@ -84,7 +84,7 @@ bool dfs(tree <int>t(2), int val) {
 
 int main() {
 	tree <int>t(2);
-	t = 1[2, 3[4, 5]];
+	t = 1[2, 3, 6[4, 5]];
 	if (dfs(t, 3)) {
 	 	print("found it\n");
 	} else {

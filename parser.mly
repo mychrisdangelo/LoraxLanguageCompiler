@@ -42,7 +42,7 @@
 
 program:
    /* nothing */ { [], [] }
- | program vdecl { ($2 :: fst $1), snd $1 }
+ | program global_vdecl { ($2 :: fst $1), snd $1 }
  | program fdecl { fst $1, ($2 :: snd $1) }
 
 fdecl:
@@ -64,6 +64,9 @@ formal_list:
 vdecl_list:
     /* nothing */    { [] }
   | vdecl_list vdecl SEMI { $2 :: $1 }
+
+global_vdecl:
+  vdecl SEMI { $1 }
 
 vdecl:
     var_type ID { ($2, $1) }

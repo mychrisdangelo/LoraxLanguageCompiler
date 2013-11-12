@@ -2,7 +2,13 @@
 //
 // program: Ast.program =
 //   ([],
-//    [{Ast.fname = "gcd"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int;
+//    [{Ast.fname = "main"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int; formals = [];
+//      locals = [];
+//      body =
+//       [Ast.Expr
+//         (Ast.Call ("print",
+//           [Ast.Call ("gcd", [Ast.Int_Literal 25; Ast.Int_Literal 15])]))]};
+//     {Ast.fname = "gcd"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int;
 //      formals =
 //       [("x", Ast.Lrx_Atom Ast.Lrx_Int); ("y", Ast.Lrx_Atom Ast.Lrx_Int)];
 //      locals = [("check", Ast.Lrx_Atom Ast.Lrx_Int)];
@@ -48,5 +54,9 @@ int gcd(int x, int y){
         }
     }
     return x;
+}
+
+int main() {
+    print(gcd(25, 15));
 }
 
