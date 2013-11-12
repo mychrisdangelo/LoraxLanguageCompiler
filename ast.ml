@@ -139,7 +139,7 @@ let string_of_atom_type = function
 let string_of_vdecl v =
     (match (snd v) with
         Lrx_Atom(t) -> string_of_atom_type t ^ " " ^ fst v ^ ";\n"
-      | Lrx_Tree(t) -> "<" ^ string_of_atom_type t.lrxtype ^ ">" ^ fst v ^ "(" ^ string_of_expr t.degree ^ ");\n"
+      | Lrx_Tree(t) -> "tree <" ^ string_of_atom_type t.lrxtype ^ ">" ^ fst v ^ "(" ^ string_of_expr t.degree ^ ");\n"
     )
 
 let string_of_fdecl fdecl =

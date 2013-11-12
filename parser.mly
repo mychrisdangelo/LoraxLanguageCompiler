@@ -66,10 +66,10 @@ vdecl_list:
 
 vdecl:
     var_type ID SEMI { ($2, $1) }
-  | TREE LT INT GT ID LPAREN expr RPAREN { ($5, Lrx_Tree({lrxtype = Lrx_Int; degree = $7})) }
-  | TREE LT CHAR GT ID LPAREN expr RPAREN { ($5, Lrx_Tree({lrxtype = Lrx_Char; degree = $7})) }
-  | TREE LT BOOL GT ID LPAREN expr RPAREN { ($5, Lrx_Tree({lrxtype = Lrx_Bool; degree = $7})) }
-  | TREE LT FLOAT GT ID LPAREN expr RPAREN { ($5, Lrx_Tree({lrxtype = Lrx_Float; degree = $7})) }
+  | TREE LT INT GT ID LPAREN expr RPAREN SEMI { ($5, Lrx_Tree({lrxtype = Lrx_Int; degree = $7})) }
+  | TREE LT CHAR GT ID LPAREN expr RPAREN SEMI { ($5, Lrx_Tree({lrxtype = Lrx_Char; degree = $7})) }
+  | TREE LT BOOL GT ID LPAREN expr RPAREN SEMI { ($5, Lrx_Tree({lrxtype = Lrx_Bool; degree = $7})) }
+  | TREE LT FLOAT GT ID LPAREN expr RPAREN SEMI { ($5, Lrx_Tree({lrxtype = Lrx_Float; degree = $7})) }
   | STRING ID SEMI { ($2, Lrx_Tree({lrxtype = Lrx_Char; degree = Int_Literal(1)})) }
 
 var_type:
