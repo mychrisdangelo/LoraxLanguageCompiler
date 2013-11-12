@@ -1,6 +1,7 @@
 (* 
  * Authors:
  * Chris D'Angelo
+ * Special thanks to Dara Hazeghi's strlang which provided background knowledge.
  *)
 
 type op = 
@@ -38,6 +39,23 @@ type expr =
   | Call of string * expr list
   | Noexpr
 
+type atom_type =
+    Lrx_Int
+  | Lrx_Float
+  | Lrx_Bool
+  | Lrx_Char
+
+type tree_decl = {
+    lrxtype : atom_type;
+    degree : expr;
+}
+
+type var_type =
+    Lrx_Tree of tree_decl
+  | Lrx_Atom of atom_type
+
+type var = string * var_type
+
 type stmt =
     Block of stmt list
   | Expr of expr
@@ -50,18 +68,12 @@ type stmt =
 
 type func_decl = {
     fname : string;
-    formals : string list;
-    locals : string list;
+    formals : string list; (* TODO: needs to be a var list *)
+    locals : var list;
     body : stmt list;
   }
 
-type tree_decl = {
-    name : string;
-    typename : string;
-    degree : int;
-}
-
-type program = string list * func_decl list
+type program = var list * func_decl list
 
 let string_of_binop = function
         Add -> "+" 
@@ -116,7 +128,19 @@ let rec string_of_stmt = function
   | Break -> "break;"
   | Continue -> "continue;"
 
-let string_of_vdecl id = "int " ^ id ^ ";\n"
+(* let string_of_vdecl id = "int " ^ id ^ ";\n" *)
+
+let string_of_atom_type = function
+    Lrx_Int -> "int"
+  | Lrx_Float -> "float"
+  | Lrx_Bool -> "bool"
+  | Lrx_Char -> "char"
+
+let string_of_vdecl v =
+    (match (snd v) with
+        Lrx_Atom(t) -> string_of_atom_type t ^ " " ^ fst v ^ ";\n"
+      | Lrx_Tree(t) -> "<" ^ string_of_atom_type t.lrxtype ^ ">" ^ fst v ^ "(" ^ string_of_expr t.degree ^ ");\n"
+    )
 
 let string_of_fdecl fdecl =
   fdecl.fname ^ "(" ^ String.concat ", " fdecl.formals ^ ")\n{\n" ^

@@ -1,4 +1,4 @@
-open Ast
+(* open Ast
 open Bytecode
 
 module StringMap = Map.Make(String)
@@ -109,4 +109,4 @@ let translate (globals, functions) =
     text = Array.of_list (List.map (function
 	Jsr i when i > 0 -> Jsr func_offset.(i)
       | _ as s -> s) (List.concat func_bodies))
-  }
+  } *)

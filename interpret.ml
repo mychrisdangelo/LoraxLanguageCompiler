@@ -1,4 +1,4 @@
-open Ast
+(* open Ast
 
 module NameMap = Map.Make(struct
   type t = string
@@ -136,4 +136,4 @@ let run (vars, funcs) =
       (fun globals vdecl -> NameMap.add vdecl 0 globals) NameMap.empty vars
   in try
     call (NameMap.find "main" func_decls) [] globals
-  with Not_found -> raise (Failure ("did not find the main() function"))
+  with Not_found -> raise (Failure ("did not find the main() function")) *)

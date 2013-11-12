@@ -25,7 +25,7 @@
 
 %nonassoc NOELSE
 %nonassoc ELSE AT
-%right ASSIGN CHILD 
+%right ASSIGN
 %left OR
 %left AND
 %left EQ NEQ
@@ -33,6 +33,7 @@
 %left PLUS MINUS
 %left TIMES DIVIDE MOD
 %left NEG NOT
+%left CHILD
 
 %start program
 %type <Ast.program> program
@@ -64,12 +65,18 @@ vdecl_list:
   | vdecl_list vdecl { $2 :: $1 }
 
 vdecl:
-     INT ID SEMI    { $2 }
-   | CHAR ID SEMI   { $2 }
-   | STRING ID SEMI { $2 }
-   | FLOAT ID SEMI  { $2 }
-   | BOOL ID SEMI   { $2 }
-   | TREE ID SEMI   { $2 }
+    var_type ID SEMI { ($2, $1) }
+  | TREE LT INT GT ID LPAREN expr RPAREN { ($5, Lrx_Tree({lrxtype = Lrx_Int; degree = $7})) }
+  | TREE LT CHAR GT ID LPAREN expr RPAREN { ($5, Lrx_Tree({lrxtype = Lrx_Char; degree = $7})) }
+  | TREE LT BOOL GT ID LPAREN expr RPAREN { ($5, Lrx_Tree({lrxtype = Lrx_Bool; degree = $7})) }
+  | TREE LT FLOAT GT ID LPAREN expr RPAREN { ($5, Lrx_Tree({lrxtype = Lrx_Float; degree = $7})) }
+  | STRING ID SEMI { ($2, Lrx_Tree({lrxtype = Lrx_Char; degree = Int_Literal(1)})) }
+
+var_type:
+    INT    { Lrx_Atom(Lrx_Int) }
+  | CHAR   { Lrx_Atom(Lrx_Char) }
+  | BOOL   { Lrx_Atom(Lrx_Bool) }
+  | FLOAT  { Lrx_Atom(Lrx_Float) }
 
 stmt_list:
     /* nothing */  { [] }
