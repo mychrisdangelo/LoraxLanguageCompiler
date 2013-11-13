@@ -1,0 +1,67 @@
+/*
+ * Lorax GCD
+ * Author: Chris D'Angelo
+ */
+
+// resulting Abstract Syntax Tree
+//
+// program: Ast.program =
+//   ([],
+//    [{Ast.fname = "main"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int; formals = [];
+//      locals = [];
+//      body =
+//       [Ast.Expr
+//         (Ast.Call ("print",
+//           [Ast.Call ("gcd", [Ast.Int_Literal 25; Ast.Int_Literal 15])]))]};
+//     {Ast.fname = "gcd"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int;
+//      formals =
+//       [("x", Ast.Lrx_Atom Ast.Lrx_Int); ("y", Ast.Lrx_Atom Ast.Lrx_Int)];
+//      locals = [("check", Ast.Lrx_Atom Ast.Lrx_Int)];
+//      body =
+//       [Ast.While (Ast.Binop (Ast.Id "x", Ast.Neq, Ast.Id "y"),
+//         Ast.Block
+//          [Ast.If (Ast.Binop (Ast.Id "x", Ast.Less, Ast.Id "y"),
+//            Ast.Block
+//             [Ast.Expr
+//               (Ast.Assign ("check",
+//                 Ast.Binop (Ast.Id "y", Ast.Sub, Ast.Id "x")));
+//              Ast.If (Ast.Binop (Ast.Id "check", Ast.Greater, Ast.Id "x"),
+//               Ast.Expr (Ast.Assign ("x", Ast.Id "check")),
+//               Ast.Expr (Ast.Assign ("y", Ast.Id "check")))],
+//            Ast.Block
+//             [Ast.Expr
+//               (Ast.Assign ("check",
+//                 Ast.Binop (Ast.Id "x", Ast.Sub, Ast.Id "y")));
+//              Ast.If (Ast.Binop (Ast.Id "check", Ast.Greater, Ast.Id "y"),
+//               Ast.Expr (Ast.Assign ("y", Ast.Id "check")),
+//               Ast.Expr (Ast.Assign ("x", Ast.Id "check")))])]);
+//        Ast.Return (Ast.Id "x")]}])
+
+/*
+ * As GCD does not involve trees, this 
+ * algorithm is almost identical to C. 
+ */
+int gcd(int x, int y){
+    int check;
+    while (x != y) {
+        if (x < y) {
+            check = y - x;
+            if (check > x)
+                x = check;
+            else
+                y = check;
+        } else {
+            check = x - y;
+            if (check > y)
+                y = check;
+            else
+                x = check;
+        }
+    }
+    return x;
+}
+
+int main() {
+    print(gcd(25, 15));
+}
+

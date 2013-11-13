@@ -31,6 +31,7 @@ rule token = parse
 | ','        { COMMA }
 | '+'        { PLUS }
 | '-'        { MINUS }
+| "--"       { POP }
 | '*'        { TIMES }
 | "mod"      { MOD } 
 | '/'        { DIVIDE }
@@ -59,10 +60,11 @@ rule token = parse
 | "&&"		 { AND }
 | "||"		 { OR }	
 | '@'	     { AT }
-| '%'		 { CHILD }	
+| '%'		 { CHILD }
 | digit+ as lxm 				{ INT_LITERAL(int_of_string lxm) }
 | decimal as lxm 				{ FLOAT_LITERAL(float_of_string lxm) }
-| '\"' (_* as lxm ) '\"' 		{ STRING_LITERAL(lxm) }
+| '\"' ([^'\"']* as lxm) '\"' { STRING_LITERAL(lxm) }
+(* | '\"' (_* as lxm ) '\"' 		{ STRING_LITERAL(lxm) } *)
 | '\'' (_ as lxm ) '\'' 		{ CHAR_LITERAL(lxm) }
 | ("true" | "false") as lxm		{ BOOL_LITERAL(bool_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }

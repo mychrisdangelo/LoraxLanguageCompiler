@@ -24,7 +24,8 @@ let execute_prog prog =
       (match op with
           Neg     -> raise (Failure "neg not implemented")
         | Not     -> raise (Failure "not not implemented")
-        | At      -> raise (Failure "at not implemented"))
+        | At      -> raise (Failure "at not implemented")
+        | Pop     -> raise (Failure "pop not implemented"))
   | Bin op -> let op1 = stack.(sp-2) and op2 = stack.(sp-1) in     
       stack.(sp-2) <- (let boolean i = if i then 1 else 0 in
       match op with

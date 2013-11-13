@@ -7,7 +7,7 @@
 %{ open Ast %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
-%token PLUS MINUS TIMES DIVIDE MOD ASSIGN
+%token PLUS MINUS TIMES DIVIDE MOD ASSIGN POP
 %token AND OR NOT
 %token EQ NEQ LT LEQ GT GEQ
 %token LBRACKET RBRACKET
@@ -30,10 +30,10 @@
 %left AND
 %left EQ NEQ
 %left LT GT LEQ GEQ
-%left PLUS MINUS
+%left PLUS MINUS 
 %left TIMES DIVIDE MOD
 %left NEG NOT
-%left CHILD
+%left CHILD POP
 
 %start program
 %type <Ast.program> program
@@ -42,7 +42,7 @@
 
 program:
    /* nothing */ { [], [] }
- | program vdecl { ($2 :: fst $1), snd $1 }
+ | program global_vdecl { ($2 :: fst $1), snd $1 }
  | program fdecl { fst $1, ($2 :: snd $1) }
 
 fdecl:
@@ -64,6 +64,9 @@ formal_list:
 vdecl_list:
     /* nothing */    { [] }
   | vdecl_list vdecl SEMI { $2 :: $1 }
+
+global_vdecl:
+  vdecl SEMI { $1 }
 
 vdecl:
     var_type ID { ($2, $1) }
@@ -100,27 +103,31 @@ expr_opt:
   | expr          { $1 }
 
 expr:
-    literal              { $1 }
-  | tree                 { $1 }
-  | ID                   { Id($1) }
-  | expr PLUS   expr     { Binop($1, Add, $3) }
-  | expr MINUS  expr     { Binop($1, Sub, $3) }
-  | expr TIMES  expr     { Binop($1, Mult, $3) }
-  | expr DIVIDE expr     { Binop($1, Div, $3) }
-  | expr MOD    expr     { Binop($1, Mod, $3) }
-  | expr EQ     expr     { Binop($1, Equal, $3) }
-  | expr NEQ    expr     { Binop($1, Neq, $3) }
-  | expr LT     expr     { Binop($1, Less, $3) }
-  | expr LEQ    expr     { Binop($1, Leq, $3) }
-  | expr GT     expr     { Binop($1, Greater, $3) }
-  | expr GEQ    expr     { Binop($1, Geq, $3) }
-  | expr AND    expr     { Binop($1, Or, $3) }
-  | expr OR     expr     { Binop($1, And, $3) }
-  | MINUS expr %prec NEG { Unop($2, Neg) }
-  | NOT expr             { Unop($2, Not) }
-  | expr CHILD  expr     { Binop($1, Child, $3) }
-  | expr AT              { Unop($1, At) }
-  | ID ASSIGN expr       { Assign($1, $3) }
+    literal                      { $1 }
+  | tree                         { $1 }
+  | ID                           { Id($1) }
+  | expr PLUS   expr             { Binop($1, Add, $3) }
+  | expr MINUS  expr             { Binop($1, Sub, $3) }
+  | expr TIMES  expr             { Binop($1, Mult, $3) }
+  | expr DIVIDE expr             { Binop($1, Div, $3) }
+  | expr MOD    expr             { Binop($1, Mod, $3) }
+  | expr EQ     expr             { Binop($1, Equal, $3) }
+  | expr NEQ    expr             { Binop($1, Neq, $3) }
+  | expr LT     expr             { Binop($1, Less, $3) }
+  | expr LEQ    expr             { Binop($1, Leq, $3) }
+  | expr GT     expr             { Binop($1, Greater, $3) }
+  | expr GEQ    expr             { Binop($1, Geq, $3) }
+  | expr AND    expr             { Binop($1, And, $3) }
+  | expr OR     expr             { Binop($1, Or, $3) }
+  | MINUS expr %prec NEG         { Unop($2, Neg) }
+  | NOT expr                     { Unop($2, Not) }
+  | expr CHILD expr              { Binop($1, Child, $3) }
+  | expr POP                     { Unop($1, Pop) }
+  | expr AT                      { Unop($1, At) }
+/* source of shift/reduce conflicts
+  | ID expr AT ASSIGN expr       { DeepAssign($1, $2, $5) } 
+  | ID CHILD expr ASSIGN expr    { ShallowAssign($1, $3, $5) }  */
+  | ID ASSIGN expr               { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
 
@@ -151,4 +158,4 @@ tree:
 nodes:
     /* nothing */    { [] }
   | expr             { [$1] }
-  | expr COMMA nodes { $1 :: $3 } /* note that nodes are kept in order! */ 
+  | expr COMMA nodes { $1 :: $3 } /* nodes are kept in order */ 

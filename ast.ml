@@ -24,6 +24,7 @@ type uop =
     Neg
   | Not
   | At
+  | Pop
 
 type expr =
     Int_Literal of int
@@ -37,6 +38,8 @@ type expr =
   | Unop of expr * uop
   | Tree of expr * expr list
   | Assign of string * expr
+  | DeepAssign of string * expr * expr
+  | ShallowAssign of string * expr * expr
   | Call of string * expr list
   | Noexpr
 
@@ -109,8 +112,11 @@ let rec string_of_expr = function
       (match o with 
           Neg -> "-" ^ string_of_expr e
         | Not -> "!" ^ string_of_expr e
-        | At -> string_of_expr e ^ "@")
+        | At -> string_of_expr e ^ "@"
+        | Pop -> string_of_expr e ^ "--")
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
+  | DeepAssign(t, e1, e2) -> t ^ string_of_expr e1 ^ "@ = " ^ string_of_expr e2
+  | ShallowAssign(t, e1, e2) -> t ^ "%" ^ string_of_expr e1 ^ " = " ^ string_of_expr e2
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Tree(r, cl) -> string_of_expr r ^ "[" ^ String.concat ", " (List.map string_of_expr cl) ^ "]"
