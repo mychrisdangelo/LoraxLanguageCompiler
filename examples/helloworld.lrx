@@ -1,3 +1,8 @@
+/*
+ * Lorax Hello World
+ * Author: Chris D'Angelo
+ */
+
 // resulting Abstract Syntax Tree
 //
 // program: Ast.program =

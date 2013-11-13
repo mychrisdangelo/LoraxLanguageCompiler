@@ -1,0 +1,94 @@
+/*
+ * Lorax Parsing Kitchen Sink
+ * Author: Chris D'Angelo
+ */
+
+// parsing requires global variables must be declared first
+int a;
+tree <float>b(3);
+float c;
+char d;
+string e;
+
+int inc (int x) {
+	return x + 1;
+}
+
+char capitalize_letter_a (char a) {
+	if (a == 'a') {
+		return 'A';
+	}
+	return '0';
+}
+
+int change_first_child_letter_to_p(tree <char>r(2)) {
+	r%(1-1)@ = 'w'; // for fun
+	// r%1-1@ = 'w'; // this is acceptable syntax but not semantics
+	r%0@ = 'p';
+	return 0;
+}
+
+int change_letter_to_q(tree <char>n(2)) {
+	n@ = 'q';
+	return 0;
+}
+
+int print_for_me_please(string s)
+{
+	print(s + "\n");
+}
+
+int capitalize_all_of_me(string s)
+{
+	string tmp;
+	tmp = s;
+	while (tmp%0 != null) {
+		if (tmp@ < 'z') {
+			// lowercase
+			tmp@ = tmp@ + 'A' - 'a';
+		}
+		tmp = tmp%0;
+	}
+	return 0;
+}
+
+int main() {
+	// parsing requires function locals must be declared first
+	tree <float>g(3);
+	tree <char>k(2);
+	int l;
+	char m;
+	bool s;
+	bool t;
+	string v;
+	tree <char>z(2);
+	int y;
+	l = 2;
+	a = 4;
+
+	while (l < a) {
+		inc(l);
+		break;
+	}
+	y = -1;
+	print(a mod 3);
+	g = 1.1[2.1, 2.2[2.21, 2.22, 2.23], 2.3[2.31, 2.32]];
+
+	k = 'z'['x', 'y'['b', 'a']];
+	print(capitalize_letter_a(k%1%1));
+
+	change_letter_to_q(k%1%1);
+	print(k%1%1@); // should print 0 and tree should be 'z'['x', 'q'['b', 'a']];
+	change_first_child_letter_to_p(k);
+	print(k); // should print 0 and tree should be 'z'['p', 'q'['b', 'a']];
+
+	print(t = (!s || false && true));
+
+	print_for_me_please("hello");
+
+	v = "hello";
+	capitalize_all_of_me(v);
+	print(v);
+
+	z = k + 'm'['n', 'o']; // will give 'a' a child 'm' (which itself has two children)
+}

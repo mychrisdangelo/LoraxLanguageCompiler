@@ -59,7 +59,7 @@ rule token = parse
 | "&&"		 { AND }
 | "||"		 { OR }	
 | '@'	     { AT }
-| '%'		 { CHILD }	
+| '%'		 { CHILD }
 | digit+ as lxm 				{ INT_LITERAL(int_of_string lxm) }
 | decimal as lxm 				{ FLOAT_LITERAL(float_of_string lxm) }
 | '\"' ([^'\"']* as lxm) '\"' { STRING_LITERAL(lxm) }

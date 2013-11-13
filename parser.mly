@@ -123,6 +123,7 @@ expr:
   | NOT expr             { Unop($2, Not) }
   | expr CHILD  expr     { Binop($1, Child, $3) }
   | expr AT              { Unop($1, At) }
+  | expr AT ASSIGN expr  { DeepAssign($1, $4) }
   | ID ASSIGN expr       { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
