@@ -6,46 +6,51 @@
 
 open Ast
 
-(* checked c_expression *)
-
-type c_expr =
+(* checked expression *)
+type expr =
 	Char_Literal of char
 	| Int_Literal of int
 	| Float_Literal of float
 	| Bool_Literal of bool
 	| Null_Literal
-	| Binop of var_type * c_expr * bop * c_expr
-	| Unop of var_type * c_expr * uop
-	| Assign of var_type * c_lvalue * c_expr (* lvalue and right side *)
-	| FuncCall of func_decl * c_expr list
-	| Rvalue of var_type * c_lvalue (* variable (on the right side) *)
+  	| Id of string
+	| Binop of var_type * expr * bop * expr
+	| Unop of var_type * expr * uop
+	| Assign of var_type * lvalue * expr (* lvalue and right side *)
+	| FuncCall of func_decl * expr list
+  	| Tree of expr * expr list
+	| Rvalue of var_type * lvalue (* variable (on the right side) *)
 	| NoExpr
 
-and c_lvalue = var_decl * c_expr
+and lvalue = var_decl * expr
 
-type c_stmt =
-	CodeBlock of c_block
-	| Loop of c_expr * c_block
-	| Conditional of c_expr * c_block * c_block
-	| Return of c_expr
-	| Expression of c_expr
+type stmt =
+	Block of block
+	(*| Conditional of expr * block * block*)
+	| Expr of expr
+	| Return of expr
+  	| If of expr * stmt * stmt
+  	| For of expr * expr * expr * stmt
+  	| While of expr * stmt	
+	| Continue
+	| Break
 
-and c_block = {
-	c_locals: var_decl list;
-	c_statements: c_stmt list;
-	c_block_id: int;
+and block = {
+	locals: var_decl list;
+	statements: stmt list;
+	block_id: int;
 }
 
-and c_func = {
-	c_formals: var_decl list;
-	c_header: func_decl;
-	c_body: c_block;
+and func = {
+	formals: var_decl list;
+	header: func_decl;
+	body: block;
 }
 
-type c_program = {
-	c_globals: var_decl list;
-	c_functions: c_func list;
-	c_block_count: int
+type program = {
+	globals: var_decl list;
+	functions: func list;
+	block_count: int
 }
 
 let build_fdecl (name:string) (ret:var_type) (args:var_type list) =
@@ -55,8 +60,8 @@ let get_ret_of_fdecl (f:func_decl) =
 	let (_,t,_,_) = f in
 	t
 
-let main_fdecl (f:c_func) =
-	let fdecl = f.c_header in
+let main_fdecl (f:func) =
+	let fdecl = f.header in
 	let (name, t, formals, _) = fdecl in
 	if name = "main" && t = Simple(Int) && formals = [] then true
 	else false
@@ -73,6 +78,10 @@ let type_of_expr = function
 	| Assign(t,_,_) -> t
 	| FuncCall(fdecl,_) -> let (_,t,_,_) = fdecl in t
 
+
+
+(* Checking functions *)
+
 (* Binary op used incorrectly *)
 let binop_error (t1:var_type) (t2:var_type) (op:Ast.bop) =
 	raise(Failure("operator " ^ (string_of_binop op) ^ " not compatible with expressions of type " ^
@@ -84,9 +93,9 @@ let unop_error (t:var_type) (op:Ast.uop) =
 		(string_of_type t)))
 
 (* Validate the binary op *)
-let check_binop (c1:c_expr) (c2:c_expr) (op:Ast.bop) =
+let check_binop (c1:expr) (c2:expr) (op:Ast.bop) =
 	let (t1, t2) = (type_of_expr c1, type_of_expr c2) in
-	match(t1, t2) with
+let check_binop (c1:expr) (c2:expr) (op:Ast.bop) =
 		(Simple(Int), Simple(Int)) -> Binop(Simple(Int), c1, op, c2) (* standard arithmetic binops *)
 		| (Simple(Char), Simple(Char)) -> (* string binops with 2 string operands *)
 			let f = (match op with
@@ -126,7 +135,7 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:Ast.bop) =
 
 
 (* Validate the Unary op *)
-let check_unop (c:c_expr) (op:Ast.uop) =
+let check_unop (c:expr) (op:Ast.uop) =
 	let t = type_of_expr c in
 	match t with
 		Simple(Num) ->
@@ -154,7 +163,7 @@ let rec compare_arglists formals actuals =
 		-> (head1 = head2) && compare_arglists tail1 tail2
 	| _ -> false
 
-and check_func (name:string) (cl:c_expr list) env =
+and check_func (name:string) (cl:expr list) env =
 	let decl = Symtab.symtab_find name env in
 	let func = (match decl with FuncDecl(f) -> f
 		| _ -> raise(Failure("symbol " ^ name ^ " is not a function"))) in
@@ -169,7 +178,7 @@ and check_func (name:string) (cl:c_expr list) env =
 		" arguments but called with " ^ (string_of_int (List.length formals))))
 
 (* Verify that lvalues are valid *)
-and check_lvalue (lv:lvalue) (checked:c_expr) env =
+and check_lvalue (lv:lvalue) (checked:expr) env =
 	let (name,e) = lv in
 	let decl = Symtab.symtab_find name env in
 	let var = (match decl with VarDecl(v) -> v
@@ -276,15 +285,15 @@ and check_fdecl (f:string) env =
 (* check a block *)
 and check_block (b:block) (ret_type:var_type) env =
 	let vars = check_vdecllist b.locals (fst env, b.block_id) in
-	{ c_locals = vars;
-		c_statements = check_stmtlist b.statements ret_type (fst env, b.block_id);
-		c_block_id = b.block_id}
+	{ locals = vars;
+		statements = check_stmtlist b.statements ret_type (fst env, b.block_id);
+		block_id = b.block_id}
 
 (* check a function *)
 and check_func (f:func) env =
 	let checked = check_block f.body f.ret_type env in
 	let formals = check_vdecllist f.formals (fst env, f.body.block_id) in
-	{ c_header = check_fdecl f.name env; c_body = checked; c_formals = formals }
+	{ header = check_fdecl f.name env; body = checked; formals = formals }
 
 (* check a function list *)
 and check_funclist (funcs:func list) env =
@@ -293,7 +302,7 @@ and check_funclist (funcs:func list) env =
 	| head :: tail -> check_func head env :: check_funclist tail env
 
 (* Vrify that main function is correct *)
-and check_main (f:c_func list) =
+and check_main (f:func list) =
 	if (List.filter main_fdecl f) = [] then false
 	else true
 
@@ -301,5 +310,5 @@ and check_main (f:c_func list) =
 let check_program (p:program) env =
 	let vars = check_vdecllist p.globals env in
 	let checked = check_funclist p.functions env in
-	if (check_main checked) then {c_globals = vars; c_functions = checked; c_block_count = p.block_count}
+	if (check_main checked) then {globals = vars; functions = checked; block_count = p.block_count}
 	else raise(Failure("function main(^) -> # not found"))
