@@ -1,8 +1,15 @@
+// Resulting Abstract Syntax Tree
+//
+// program: Ast.program =
+//   ([],
+//    [{Ast.fname = "main"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int; formals = [];
+//      locals = [("a", Ast.Lrx_Atom Ast.Lrx_Char)];
+//      body =
+//       [Ast.Expr (Ast.Assign ("a", Ast.String_Literal "hello"));
+//        Ast.Expr (Ast.Call ("print", [Ast.Id "a"]))]}])
+
 int main() {
 	char a;
 	a = "hello";
 	print(a);
-	{
-		print(b);
-	}
 }
