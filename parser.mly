@@ -7,7 +7,7 @@
 %{ open Ast %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
-%token PLUS MINUS TIMES DIVIDE MOD ASSIGN
+%token PLUS MINUS TIMES DIVIDE MOD ASSIGN POP
 %token AND OR NOT
 %token EQ NEQ LT LEQ GT GEQ
 %token LBRACKET RBRACKET
@@ -30,7 +30,7 @@
 %left AND
 %left EQ NEQ
 %left LT GT LEQ GEQ
-%left PLUS MINUS
+%left PLUS MINUS POP
 %left TIMES DIVIDE MOD
 %left NEG NOT
 %left CHILD
@@ -122,6 +122,7 @@ expr:
   | MINUS expr %prec NEG { Unop($2, Neg) }
   | NOT expr             { Unop($2, Not) }
   | expr CHILD  expr     { Binop($1, Child, $3) }
+  | expr POP             { Unop($1, Pop) }
   | expr AT              { Unop($1, At) }
   | expr AT ASSIGN expr  { DeepAssign($1, $4) }
   | ID ASSIGN expr       { Assign($1, $3) }

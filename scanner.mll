@@ -31,6 +31,7 @@ rule token = parse
 | ','        { COMMA }
 | '+'        { PLUS }
 | '-'        { MINUS }
+| "--"       { POP }
 | '*'        { TIMES }
 | "mod"      { MOD } 
 | '/'        { DIVIDE }

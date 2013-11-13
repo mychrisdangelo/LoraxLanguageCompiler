@@ -3,6 +3,90 @@
  * Author: Chris D'Angelo
  */
 
+// resulting Abstract Syntax Tree
+// program: Ast.program =
+//   ([("e",
+//      Ast.Lrx_Tree {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 1});
+//     ("d", Ast.Lrx_Atom Ast.Lrx_Char); ("c", Ast.Lrx_Atom Ast.Lrx_Float);
+//     ("b",
+//      Ast.Lrx_Tree {Ast.datatype = Ast.Lrx_Float; degree = Ast.Int_Literal 3});
+//     ("a", Ast.Lrx_Atom Ast.Lrx_Int)],
+//    [{Ast.fname = "main"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int; formals = [];
+//      locals =
+//       [("g",
+//         Ast.Lrx_Tree
+//          {Ast.datatype = Ast.Lrx_Float; degree = Ast.Int_Literal 3});
+//        ("k",
+//         Ast.Lrx_Tree
+//          {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 2});
+//        ("l", Ast.Lrx_Atom Ast.Lrx_Int); ("m", Ast.Lrx_Atom Ast.Lrx_Char);
+//        ("s", Ast.Lrx_Atom Ast.Lrx_Bool); ("t", Ast.Lrx_Atom Ast.Lrx_Bool);
+//        ("v",
+//         Ast.Lrx_Tree
+//          {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 1});
+//        ("z",
+//         Ast.Lrx_Tree
+//          {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 2});
+//        ("y", Ast.Lrx_Atom Ast.Lrx_Int)];
+//      body =
+//       [Ast.Expr (Ast.Assign ("l", Ast.Int_Literal 2));
+//        Ast.Expr (Ast.Assign ("a", Ast.Int_Literal 4));
+//        Ast.While (Ast.Binop (Ast.Id "l", Ast.Less, Ast.Id "a"),
+//         Ast.Block [Ast.Expr (Ast.Call ("inc", [Ast.Id "l"])); Ast.Break]);
+//        Ast.Expr (Ast.Assign ("y", Ast.Unop (Ast.Int_Literal 1, Ast.Neg)));
+//        Ast.Expr
+//         (Ast.Call ("print",
+//           [Ast.Binop (Ast.Id "a", Ast.Mod, Ast.Int_Literal 3)]));
+//        Ast.Expr
+//         (Ast.Assign ("g",
+//           Ast.Tree (Ast.Float_Literal 1.1,
+//            [Ast.Float_Literal 2.1;
+//             Ast.Tree (Ast.Float_Literal 2.2,
+//              [Ast.Float_Literal 2.21; Ast.Float_Literal 2.22;
+//               Ast.Float_Literal 2.23]);
+//             Ast.Tree (Ast.Float_Literal 2.3,
+//              [Ast.Float_Literal 2.31; Ast.Float_Literal 2.32])])));
+//        Ast.Expr
+//         (Ast.Assign ("k",
+//           Ast.Tree (Ast.Char_Literal 'z',
+//            [Ast.Char_Literal 'x';
+//             Ast.Tree (Ast.Char_Literal 'y',
+//              [Ast.Char_Literal 'b'; Ast.Char_Literal 'a'])])));
+//        Ast.Expr
+//         (Ast.Call ("print",
+//           [Ast.Call ("capitalize_letter_a",
+//             [Ast.Binop (Ast.Binop (Ast.Id "k", Ast.Child, Ast.Int_Literal 1),
+//               Ast.Child, Ast.Int_Literal 1)])]));
+//        Ast.Expr
+//         (Ast.Call ("change_letter_to_q",
+//           [Ast.Binop (Ast.Binop (Ast.Id "k", Ast.Child, Ast.Int_Literal 1),
+//             Ast.Child, Ast.Int_Literal 1)]));
+//        Ast.Expr
+//         (Ast.Call ("print",
+//           [Ast.Unop
+//             (Ast.Binop (Ast.Binop (Ast.Id "k", Ast.Child, Ast.Int_Literal 1),
+//               Ast.Child, Ast.Int_Literal 1),
+//             Ast.At)]));
+//        Ast.Expr (Ast.Call ("change_first_child_letter_to_p", [Ast.Id "k"]));
+//        Ast.Expr (Ast.Call ("print", [Ast.Id "k"]));
+//        Ast.Expr
+//         (Ast.Call ("print",
+//           [Ast.Assign ("t",
+//             Ast.Binop (Ast.Unop (Ast.Id "s", Ast.Not), Ast.Or,
+//              Ast.Binop (Ast.Bool_Literal false, Ast.And,
+//               Ast.Bool_Literal true)))]));
+//         (Ast.Assign ("z",
+//           Ast.Unop
+//            (Ast.Binop
+//              (Ast.Tree (Ast.Char_Literal 'm',
+//                [Ast.Char_Literal 'n'; Ast.Char_Literal 'o']),
+//              Ast.Child, Ast.Int_Literal 0),
+//            Ast.Pop)));
+//        Ast.For (Ast.Assign ("l", Ast.Int_Literal 0),
+//         Ast.Binop (Ast.Id "l", Ast.Less, Ast.Int_Literal 42),
+//         Ast.Assign ("l", Ast.Binop (Ast.Id "l", Ast.Add, Ast.Int_Literal 1)),
+//         Ast.Block [Ast.Expr (Ast.Call ("print", [Ast.Id "l"]))])]}])
+
 // parsing requires global variables must be declared first
 int a;
 tree <float>b(3);
@@ -91,4 +175,23 @@ int main() {
 	print(v);
 
 	z = k + 'm'['n', 'o']; // will give 'a' a child 'm' (which itself has two children)
+
+	z%1--; // pop the second (ref: 1) child off of z
+	z = 'm'['n', 'o']--; // will nullify this tree
+	z = 'm'['n', 'o']%0--; // will pop the 'n' from the tree
+
+	for (l = 0; l < 42; l = l + 1) {
+		print(l);
+	}
+
 }
+
+
+
+
+
+
+
+
+
+

@@ -24,6 +24,7 @@ type uop =
     Neg
   | Not
   | At
+  | Pop
 
 type expr =
     Int_Literal of int
@@ -110,9 +111,10 @@ let rec string_of_expr = function
       (match o with 
           Neg -> "-" ^ string_of_expr e
         | Not -> "!" ^ string_of_expr e
-        | At -> string_of_expr e ^ " @ ")
+        | At -> string_of_expr e ^ "@"
+        | Pop -> string_of_expr e ^ "--")
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
-  | DeepAssign(l, r) -> string_of_expr l ^ " @ = " ^ string_of_expr r
+  | DeepAssign(l, r) -> string_of_expr l ^ "@ = " ^ string_of_expr r
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Tree(r, cl) -> string_of_expr r ^ "[" ^ String.concat ", " (List.map string_of_expr cl) ^ "]"
