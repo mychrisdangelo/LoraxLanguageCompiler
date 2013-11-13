@@ -73,14 +73,17 @@ let type_of_expr = function
 	| Assign(t,_,_) -> t
 	| FuncCall(fdecl,_) -> let (_,t,_,_) = fdecl in t
 
+(* Binary op used incorrectly *)
 let binop_error (t1:var_type) (t2:var_type) (op:Ast.bop) =
 	raise(Failure("operator " ^ (string_of_binop op) ^ " not compatible with expressions of type " ^
 		(string_of_type t1) ^ " and " ^ (string_of_type t2)))
 
+(* Unary op used incorrectly *)
 let unop_error (t:var_type) (op:Ast.uop) =
 	raise(Failure("operator " ^ (string_of_unop op) ^ " not compatible with expression of type " ^
 		(string_of_type t)))
 
+(* Validate the binary op *)
 let check_binop (c1:c_expr) (c2:c_expr) (op:Ast.bop) =
 	let (t1, t2) = (type_of_expr c1, type_of_expr c2) in
 	match(t1, t2) with
@@ -122,6 +125,7 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:Ast.bop) =
 		| _ -> binop_error t1 t2 op
 
 
+(* Validate the Unary op *)
 let check_unop (c:c_expr) (op:Ast.uop) =
 	let t = type_of_expr c in
 	match t with
@@ -164,6 +168,7 @@ and check_func (name:string) (cl:c_expr list) env =
 	else raise(Failure("function " ^ name ^ " expected " ^ (string_of_int (List.length actuals)) ^
 		" arguments but called with " ^ (string_of_int (List.length formals))))
 
+(* Verify that lvalues are valid *)
 and check_lvalue (lv:lvalue) (checked:c_expr) env =
 	let (name,e) = lv in
 	let decl = Symtab.symtab_find name env in
@@ -180,6 +185,9 @@ and check_lvalue (lv:lvalue) (checked:c_expr) env =
 					else raise(Failure("map type does not match accessor type"))
 				| _ -> raise(Failure("cannot apply accessor to non-map"))
 
+
+(* Check that our expressions (as defined in parser are 
+	semantically valid *)
 and check_expr (e:expr) env =
 	match e with
 	Ast.Char_Literal(s) -> Char_Literal(s)
@@ -220,7 +228,8 @@ and check_expr (e:expr) env =
 	| Ast.FuncCall(name, el) ->
 		let checked = check_exprlist el env in
 		check_func name checked env
-		
+	
+(*Do the same for a list of expressions *)	
 and check_exprlist (el:expr list) env =
 	match el with
 	[] -> []
@@ -257,6 +266,7 @@ and check_vdecllist (v:var list) env =
 			FuncDecl(f) -> raise(Failure("symbol is not a variable"))
 			| VarDecl(v) -> v :: check_vdecllist tail env
 
+(* check that function declarations are correct *)
 and check_fdecl (f:string) env =
 	let decl = Symtab.symtab_find f env in
 	match decl with
@@ -282,10 +292,12 @@ and check_funclist (funcs:func list) env =
 	[] -> []
 	| head :: tail -> check_func head env :: check_funclist tail env
 
+(* Vrify that main function is correct *)
 and check_main (f:c_func list) =
 	if (List.filter main_fdecl f) = [] then false
 	else true
 
+(* Verify that program is correct *)
 let check_program (p:program) env =
 	let vars = check_vdecllist p.globals env in
 	let checked = check_funclist p.functions env in
