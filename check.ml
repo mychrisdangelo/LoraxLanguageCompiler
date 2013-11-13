@@ -7,9 +7,13 @@
 open Ast
 
 (* checked c_expression *)
+
 type c_expr =
-	StrLiteral of string
-	| NumLiteral of int
+	Char_Literal of char
+	| Int_Literal of int
+	| Float_Literal of float
+	| Bool_Literal of bool
+	| Null_Literal
 	| Binop of var_type * c_expr * bop * c_expr
 	| Unop of var_type * c_expr * uop
 	| Assign of var_type * c_lvalue * c_expr (* lvalue and right side *)
@@ -54,12 +58,14 @@ let get_ret_of_fdecl (f:func_decl) =
 let main_fdecl (f:c_func) =
 	let fdecl = f.c_header in
 	let (name, t, formals, _) = fdecl in
-	if name = "main" && t = Simple(Num) && formals = [] then true
+	if name = "main" && t = Simple(Int) && formals = [] then true
 	else false
 
 let type_of_expr = function
-	StrLiteral(s) -> Simple(Str)
-	| NumLiteral(n) -> Simple(Num)
+	Char_Literal(s) -> Simple(Char)
+	| Int_Literal(n) -> Simple(Int)
+	| Floar_Literal(n) -> Simple(Float)
+	| Bool_Literal(n) -> Simple(Bool)
 	| NoExpr -> Simple(None)
 	| Binop(t,_,_,_) -> t
 	| Unop(t,_,_) -> t
@@ -78,8 +84,8 @@ let unop_error (t:var_type) (op:Ast.uop) =
 let check_binop (c1:c_expr) (c2:c_expr) (op:Ast.bop) =
 	let (t1, t2) = (type_of_expr c1, type_of_expr c2) in
 	match(t1, t2) with
-		(Simple(Num), Simple(Num)) -> Binop(Simple(Num), c1, op, c2) (* standard arithmetic binops *)
-		| (Simple(Str), Simple(Str)) -> (* string binops with 2 string operands *)
+		(Simple(Int), Simple(Int)) -> Binop(Simple(Int), c1, op, c2) (* standard arithmetic binops *)
+		| (Simple(Char), Simple(Char)) -> (* string binops with 2 string operands *)
 			let f = (match op with
 			Less -> build_fdecl "__str_less" (Simple(Num)) [t1; t2]
 			| Leq -> build_fdecl "__str_lessequal" (Simple(Num)) [t1; t2]
@@ -92,7 +98,7 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:Ast.bop) =
 			| Mod -> build_fdecl "__str_index" (Simple(Num)) [t1; t2]
 			| _ -> binop_error t1 t2 op) in
 			FuncCall(f, [c1; c2])
-		| (Simple(Str), Simple(Num)) -> (* string binops with 1 string operand *)
+		| (Simple(Char), Simple(Int)) -> (* string binops with 1 string operand *)
 			(match op with
 			Minus -> let f = build_fdecl "__str_substr" t1 [t1; t2] in
 				FuncCall(f, [c1; c2])
@@ -114,6 +120,7 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:Ast.bop) =
 				FuncCall(f, [c1; c2])
 			else binop_error t1 t2 op
 		| _ -> binop_error t1 t2 op
+
 
 let check_unop (c:c_expr) (op:Ast.uop) =
 	let t = type_of_expr c in
@@ -175,14 +182,16 @@ and check_lvalue (lv:lvalue) (checked:c_expr) env =
 
 and check_expr (e:expr) env =
 	match e with
-	Ast.StrLiteral(s) -> StrLiteral(s)
-	| Ast.NumLiteral(n) -> NumLiteral(n)
+	Ast.Char_Literal(s) -> Char_Literal(s)
+	| Ast.Int_Literal(n) -> Int_Literal(n)
+	| Ast.Float_Literal(f) -> Float_Literal(f)
+	| Ast.Bool_Literal(b) -> Bool_Literal(b)
 	| Ast.NoExpr -> NoExpr
 	| Ast.Replace(e1, e2, e3) ->
 		let c1, c2 = (check_expr e1 env, check_expr e2 env) in
 		let c3 = check_expr e3 env in
 		let (t1, t2, t3) = (type_of_expr c1, type_of_expr c2, type_of_expr c3) in
-		if(t1 = t2 && t2 = t3 && t3 = Simple(Str)) then
+		if(t1 = t2 && t2 = t3 && t3 = Simple(Char)) then
 			let f = build_fdecl "__str_replace" t1 [t1; t2; t3] in
 			FuncCall(f, [c1; c2; c3])
 		else raise(Failure("operator ~ requires 3 string expressions"))
@@ -204,7 +213,7 @@ and check_expr (e:expr) env =
 		if t = result_t then Assign(t, lv, checked)
 		else 
 			(match (checked, result_t) with
-				(NumLiteral(0), Map(_,_)) -> let f = build_fdecl "__map_empty" result_t [result_t] in
+				(Int_Literal(0), Map(_,_)) -> let f = build_fdecl "__map_empty" result_t [result_t] in
 				FuncCall(f, [Rvalue(result_t, lv)])
 			| _ -> raise(Failure("assignment not compatible with expressions of type " ^
 			string_of_type result_t ^ " and " ^ string_of_type t)))
