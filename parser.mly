@@ -124,9 +124,9 @@ expr:
   | expr CHILD expr              { Binop($1, Child, $3) }
   | expr POP                     { Unop($1, Pop) }
   | expr AT                      { Unop($1, At) }
-  | expr AT ASSIGN expr          { DeepAssign($1, $4) }
- /* | ID CHILD expr ASSIGN expr    { ShallowAssign($1, $3, $5) } */
-  | ID ASSIGN expr               { Assign($1, $3) } 
+  | ID expr AT ASSIGN expr       { DeepAssign($1, $2, $5) } /* causing s/r conflict */
+  | ID CHILD expr ASSIGN expr    { ShallowAssign($1, $3, $5) } /* causing s/r conflict */
+  | ID ASSIGN expr               { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
 
