@@ -39,6 +39,7 @@ type expr =
   | Tree of expr * expr list
   | Assign of string * expr
   | DeepAssign of expr * expr
+  | ShallowAssign of string * expr * expr
   | Call of string * expr list
   | Noexpr
 
@@ -115,6 +116,7 @@ let rec string_of_expr = function
         | Pop -> string_of_expr e ^ "--")
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | DeepAssign(l, r) -> string_of_expr l ^ "@ = " ^ string_of_expr r
+  | ShallowAssign(t, c, e) -> t ^ "%" ^ string_of_expr c ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Tree(r, cl) -> string_of_expr r ^ "[" ^ String.concat ", " (List.map string_of_expr cl) ^ "]"

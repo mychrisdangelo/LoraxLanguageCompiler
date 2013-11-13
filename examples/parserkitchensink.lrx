@@ -1,6 +1,8 @@
 /*
  * Lorax Parser Kitchen Sink
- * For testing parsing abilities.
+ *
+ * NOT GUARANTEED TO BE SEMANTICALLY ACCURATE
+ * For testing parsing abilities. In other words it may parse but it won't compile.
  *
  * Author: Chris D'Angelo
  */
@@ -185,6 +187,9 @@ int main() {
 	for (l = 0; l < 42; l = l + 1) {
 		print(l);
 	}
+
+	a = b = c;
+
 
 }
 
