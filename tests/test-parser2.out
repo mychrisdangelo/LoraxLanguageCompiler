@@ -1,4 +1,15 @@
 int main()
 {
-print(39 + 3);
+do();
+do2();
+}
+
+int do2()
+{
+print(2);
+}
+
+int do()
+{
+print(1);
 }

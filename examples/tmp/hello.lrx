@@ -1,4 +1,0 @@
-int main()
-{
-  print(1);
-}
