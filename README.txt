@@ -13,7 +13,7 @@ Getting Started:
 $ make
 $ echo "main() { print("hello, world\n"); }" > hello.lrx
 $ ./lorax -c < hello.lrx
-$ g++ hello.cpp
+$ gcc hello.c
 $ ./a.out
 $ hello, world
 $
