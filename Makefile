@@ -27,7 +27,7 @@ while1
 
 TARFILES = Makefile testall.sh scanner.mll parser.mly \
 	ast.ml bytecode.ml interpret.ml compile.ml execute.ml lorax.ml \
-	$(TESTS:%=tests/test-%.mc) \
+	$(TESTS:%=tests/test-%.lrx) \
 	$(TESTS:%=tests/test-%.out)
 
 lorax : $(OBJS)

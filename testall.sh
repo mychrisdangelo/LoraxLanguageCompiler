@@ -13,7 +13,7 @@ globalerror=0
 keep=0
 
 Usage() {
-    echo "Usage: testall.sh [options] [.mc files]"
+    echo "Usage: testall.sh [options] [.lrx files]"
     echo "-k    Keep intermediate files"
     echo "-h    Print this help"
     exit 1
@@ -48,11 +48,41 @@ Run() {
     }
 }
 
+CheckParser() {
+    error=0
+    basename=`echo $1 | sed 's/.*\\///
+                             s/.lrx//'`
+    reffile=`echo $1 | sed 's/.lrx$//'`
+    basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
+
+    echo -n "$basename..."
+
+    echo 1>&2
+    echo "###### Testing $basename" 1>&2
+
+    generatedfiles=""
+
+    generatedfiles="$generatedfiles ${basename}.a.out" &&
+    Run "$lorax" "-a" "<" $1 ">" ${basename}.a.out &&
+    Compare ${basename}.a.out ${reffile}.out ${basename}.a.diff
+
+    if [ $error -eq 0 ] ; then
+    if [ $keep -eq 0 ] ; then
+        rm -f $generatedfiles
+    fi
+    echo "OK"
+    echo "###### SUCCESS" 1>&2
+    else
+    echo "###### FAILED" 1>&2
+    globalerror=$error
+    fi 
+}
+
 Check() {
     error=0
     basename=`echo $1 | sed 's/.*\\///
-                             s/.mc//'`
-    reffile=`echo $1 | sed 's/.mc$//'`
+                             s/.lrx//'`
+    reffile=`echo $1 | sed 's/.lrx$//'`
     basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
 
     echo -n "$basename..."
@@ -101,12 +131,15 @@ if [ $# -ge 1 ]
 then
     files=$@
 else
-    files="tests/fail-*.mc tests/test-*.mc"
+    files="tests/fail-*.lrx tests/test-*.lrx"
 fi
 
 for file in $files
 do
     case $file in
+    *test-parser*)
+        CheckParser $file 2>> $globallog
+        ;;
 	*test-*)
 	    Check $file 2>> $globallog
 	    ;;
