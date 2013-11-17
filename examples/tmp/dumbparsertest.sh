@@ -5,6 +5,5 @@
 ../../lorax -a < ../dfs.lrx
 ../../lorax -a < ../gcd.lrx
 ../../lorax -a < ../helloworld.lrx
-../../lorax -a < experimental.lrx
 ../../lorax -a < parserkitchensink.lrx
 ../../lorax -a < complex_tree_assignments.lrx
