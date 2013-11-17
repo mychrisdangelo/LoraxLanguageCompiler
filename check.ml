@@ -1,3 +1,12 @@
+(*
+ * Authors:
+ * Chris D'Angelo
+ * Tim Paine
+ * Kira Whithouse
+ * Special thanks to Dara Hazeghi's strlang which provided background knowledge.
+ *)
+
+(*
 open Ast
 
 (*expressions from Ast but with typing added*)
@@ -304,3 +313,5 @@ let check_program (p:program) env =
 	let checked = check_funclist p.functions env in
 	if (check_main checked) then {c_globals = vars; c_functions = checked; c_block_count = p.block_count}
 	e
+
+*)
