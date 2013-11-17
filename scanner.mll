@@ -17,6 +17,11 @@ let decimal = ((digit+ '.' digit*) | ('.' digit+))
 
 (* Regular Rules *)
 
+(* 
+ * built-in functions handled as keywords in semantic checking
+ * print, root, degree
+ *)
+
 rule token = parse
   [' ' '\t' '\r' '\n'] { token lexbuf }         (* Whitespace *)
 | "/*"       { block_comment lexbuf }           (* Comments *)

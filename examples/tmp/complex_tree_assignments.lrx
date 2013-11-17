@@ -63,6 +63,7 @@
 
 
 int main() {
+		bool b;
 	a = b = c;
 	z%0%3@ = 4;
 
@@ -76,7 +77,11 @@ int main() {
 	t@ = 4; // this is assigning the root nodes value as 4
 	t%0%1@ = 5; // this is assigning t's first child's, second child node value to 5
 	t3 = t%0%1--; // this is popping t's first child's second child node from the tree t and returns t to assign to t3
-	t%toyfunc()%3-- = t2;
+	t%toyfunc()%3@-- = t2--;
+
+	t = 5[];
+
+	b = (a%0 == null);
 
 }
 
