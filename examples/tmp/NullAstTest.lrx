@@ -1,4 +1,4 @@
-main()
+int main()
 {
 	tree <int>t(1);
 	t%1 == null;

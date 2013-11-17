@@ -1,0 +1,90 @@
+// resulting AST
+//
+// program: Ast.program =
+//   ([],
+//    [{Ast.fname = "main"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int; formals = [];
+//      locals = [];
+//      body =
+//       [Ast.Expr
+//         (Ast.Assign (Ast.Id "a", Ast.Assign (Ast.Id "b", Ast.Id "c")));
+//        Ast.Expr
+//         (Ast.Assign
+//           (Ast.Unop
+//             (Ast.Binop (Ast.Binop (Ast.Id "z", Ast.Child, Ast.Int_Literal 0),
+//               Ast.Child, Ast.Int_Literal 3),
+//             Ast.At),
+//           Ast.Int_Literal 4));
+//        Ast.Expr
+//         (Ast.Assign (Ast.Id "a",
+//           Ast.Binop (Ast.Id "z", Ast.Child, Ast.Int_Literal 0)));
+//        Ast.Expr
+//         (Ast.Assign (Ast.Binop (Ast.Id "t", Ast.Child, Ast.Int_Literal 0),
+//           Ast.Id "t2"));
+//        Ast.Expr
+//         (Ast.Assign (Ast.Binop (Ast.Id "t", Ast.Child, Ast.Int_Literal 0),
+//           Ast.Binop (Ast.Id "t3", Ast.Child, Ast.Int_Literal 0)));
+//        Ast.Expr
+//         (Ast.Assign
+//           (Ast.Unop (Ast.Binop (Ast.Id "t", Ast.Child, Ast.Int_Literal 0),
+//             Ast.At),
+//           Ast.Int_Literal 3));
+//        Ast.Expr
+//         (Ast.Assign
+//           (Ast.Binop (Ast.Binop (Ast.Id "t", Ast.Child, Ast.Int_Literal 3),
+//             Ast.Add, Ast.Unop (Ast.Int_Literal 4, Ast.At)),
+//           Ast.Int_Literal 4));
+//        Ast.Expr
+//         (Ast.Assign (Ast.Id "normal_int",
+//           Ast.Unop (Ast.Binop (Ast.Id "t", Ast.Child, Ast.Int_Literal 0),
+//            Ast.At)));
+//        Ast.Expr
+//         (Ast.Assign (Ast.Unop (Ast.Id "t", Ast.At), Ast.Int_Literal 4));
+//        Ast.Expr
+//         (Ast.Assign
+//           (Ast.Unop
+//             (Ast.Binop (Ast.Binop (Ast.Id "t", Ast.Child, Ast.Int_Literal 0),
+//               Ast.Child, Ast.Int_Literal 1),
+//             Ast.At),
+//           Ast.Int_Literal 5));
+//        Ast.Expr
+//         (Ast.Assign (Ast.Id "t3",
+//           Ast.Unop
+//            (Ast.Binop (Ast.Binop (Ast.Id "t", Ast.Child, Ast.Int_Literal 0),
+//              Ast.Child, Ast.Int_Literal 1),
+//            Ast.Pop)));
+//        Ast.Expr
+//         (Ast.Assign
+//           (Ast.Unop
+//             (Ast.Binop
+//               (Ast.Binop (Ast.Id "t", Ast.Child, Ast.Call ("toyfunc", [])),
+//               Ast.Child, Ast.Int_Literal 3),
+//             Ast.Pop),
+//           Ast.Id "t2"))]}])
+
+
+int main() {
+	a = b = c;
+	z%0%3@ = 4;
+
+	a = z%0;
+
+	t%0 = t2; // t and t2 are both trees. t2 is now being assigned the first child of t (accessed by %0)
+	t%0 = t3%0; // similar to above but now t's first child is t3's first child.
+	t%0@ = 3; // @ dereferences the value in that node. Now the t's first child's value is 3
+	t%3+4@ = 4;
+	normal_int = t%0@; // now we're assigning a normal int var the value from inside t's first child value
+	t@ = 4; // this is assigning the root nodes value as 4
+	t%0%1@ = 5; // this is assigning t's first child's, second child node value to 5
+	t3 = t%0%1--; // this is popping t's first child's second child node from the tree t and returns t to assign to t3
+	t%toyfunc()%3-- = t2;
+
+}
+
+
+
+
+
+
+
+
+

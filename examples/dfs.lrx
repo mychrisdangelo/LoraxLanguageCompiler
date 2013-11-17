@@ -13,10 +13,10 @@
 //         Ast.Lrx_Tree {Ast.datatype = Ast.Lrx_Int; degree = Ast.Int_Literal 2})];
 //      body =
 //       [Ast.Expr
-//         (Ast.Assign ("t",
+//         (Ast.Assign (Ast.Id "t",
 //           Ast.Tree (Ast.Int_Literal 1,
-//            [Ast.Int_Literal 2;
-//             Ast.Tree (Ast.Int_Literal 3,
+//            [Ast.Int_Literal 2; Ast.Int_Literal 3;
+//             Ast.Tree (Ast.Int_Literal 6,
 //              [Ast.Int_Literal 4; Ast.Int_Literal 5])])));
 //        Ast.If (Ast.Call ("dfs", [Ast.Id "t"; Ast.Int_Literal 3]),
 //         Ast.Block
@@ -37,10 +37,10 @@
 //         Ast.Block [Ast.Return (Ast.Bool_Literal false)], Ast.Block []);
 //        Ast.If (Ast.Unop (Ast.Id "t", Ast.At),
 //         Ast.Block [Ast.Return (Ast.Bool_Literal true)], Ast.Block []);
-//        Ast.For (Ast.Assign ("child", Ast.Int_Literal 0),
+//        Ast.For (Ast.Assign (Ast.Id "child", Ast.Int_Literal 0),
 //         Ast.Binop (Ast.Id "child", Ast.Less,
 //          Ast.Call ("degree", [Ast.Id "t"])),
-//         Ast.Assign ("child",
+//         Ast.Assign (Ast.Id "child",
 //          Ast.Binop (Ast.Id "child", Ast.Add, Ast.Int_Literal 1)),
 //         Ast.Block
 //          [Ast.If
@@ -48,7 +48,7 @@
 //              Ast.Neq, Ast.Null_Literal),
 //            Ast.Block
 //             [Ast.Expr
-//               (Ast.Assign ("match",
+//               (Ast.Assign (Ast.Id "match",
 //                 Ast.Binop
 //                  (Ast.Binop (Ast.Id "match", Ast.Or,
 //                    Ast.Binop

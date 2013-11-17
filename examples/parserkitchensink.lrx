@@ -7,90 +7,6 @@
  * Author: Chris D'Angelo
  */
 
-// resulting Abstract Syntax Tree
-// program: Ast.program =
-//   ([("e",
-//      Ast.Lrx_Tree {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 1});
-//     ("d", Ast.Lrx_Atom Ast.Lrx_Char); ("c", Ast.Lrx_Atom Ast.Lrx_Float);
-//     ("b",
-//      Ast.Lrx_Tree {Ast.datatype = Ast.Lrx_Float; degree = Ast.Int_Literal 3});
-//     ("a", Ast.Lrx_Atom Ast.Lrx_Int)],
-//    [{Ast.fname = "main"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int; formals = [];
-//      locals =
-//       [("g",
-//         Ast.Lrx_Tree
-//          {Ast.datatype = Ast.Lrx_Float; degree = Ast.Int_Literal 3});
-//        ("k",
-//         Ast.Lrx_Tree
-//          {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 2});
-//        ("l", Ast.Lrx_Atom Ast.Lrx_Int); ("m", Ast.Lrx_Atom Ast.Lrx_Char);
-//        ("s", Ast.Lrx_Atom Ast.Lrx_Bool); ("t", Ast.Lrx_Atom Ast.Lrx_Bool);
-//        ("v",
-//         Ast.Lrx_Tree
-//          {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 1});
-//        ("z",
-//         Ast.Lrx_Tree
-//          {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 2});
-//        ("y", Ast.Lrx_Atom Ast.Lrx_Int)];
-//      body =
-//       [Ast.Expr (Ast.Assign ("l", Ast.Int_Literal 2));
-//        Ast.Expr (Ast.Assign ("a", Ast.Int_Literal 4));
-//        Ast.While (Ast.Binop (Ast.Id "l", Ast.Less, Ast.Id "a"),
-//         Ast.Block [Ast.Expr (Ast.Call ("inc", [Ast.Id "l"])); Ast.Break]);
-//        Ast.Expr (Ast.Assign ("y", Ast.Unop (Ast.Int_Literal 1, Ast.Neg)));
-//        Ast.Expr
-//         (Ast.Call ("print",
-//           [Ast.Binop (Ast.Id "a", Ast.Mod, Ast.Int_Literal 3)]));
-//        Ast.Expr
-//         (Ast.Assign ("g",
-//           Ast.Tree (Ast.Float_Literal 1.1,
-//            [Ast.Float_Literal 2.1;
-//             Ast.Tree (Ast.Float_Literal 2.2,
-//              [Ast.Float_Literal 2.21; Ast.Float_Literal 2.22;
-//               Ast.Float_Literal 2.23]);
-//             Ast.Tree (Ast.Float_Literal 2.3,
-//              [Ast.Float_Literal 2.31; Ast.Float_Literal 2.32])])));
-//        Ast.Expr
-//         (Ast.Assign ("k",
-//           Ast.Tree (Ast.Char_Literal 'z',
-//            [Ast.Char_Literal 'x';
-//             Ast.Tree (Ast.Char_Literal 'y',
-//              [Ast.Char_Literal 'b'; Ast.Char_Literal 'a'])])));
-//        Ast.Expr
-//         (Ast.Call ("print",
-//           [Ast.Call ("capitalize_letter_a",
-//             [Ast.Binop (Ast.Binop (Ast.Id "k", Ast.Child, Ast.Int_Literal 1),
-//               Ast.Child, Ast.Int_Literal 1)])]));
-//        Ast.Expr
-//         (Ast.Call ("change_letter_to_q",
-//           [Ast.Binop (Ast.Binop (Ast.Id "k", Ast.Child, Ast.Int_Literal 1),
-//             Ast.Child, Ast.Int_Literal 1)]));
-//        Ast.Expr
-//         (Ast.Call ("print",
-//           [Ast.Unop
-//             (Ast.Binop (Ast.Binop (Ast.Id "k", Ast.Child, Ast.Int_Literal 1),
-//               Ast.Child, Ast.Int_Literal 1),
-//             Ast.At)]));
-//        Ast.Expr (Ast.Call ("change_first_child_letter_to_p", [Ast.Id "k"]));
-//        Ast.Expr (Ast.Call ("print", [Ast.Id "k"]));
-//        Ast.Expr
-//         (Ast.Call ("print",
-//           [Ast.Assign ("t",
-//             Ast.Binop (Ast.Unop (Ast.Id "s", Ast.Not), Ast.Or,
-//              Ast.Binop (Ast.Bool_Literal false, Ast.And,
-//               Ast.Bool_Literal true)))]));
-//         (Ast.Assign ("z",
-//           Ast.Unop
-//            (Ast.Binop
-//              (Ast.Tree (Ast.Char_Literal 'm',
-//                [Ast.Char_Literal 'n'; Ast.Char_Literal 'o']),
-//              Ast.Child, Ast.Int_Literal 0),
-//            Ast.Pop)));
-//        Ast.For (Ast.Assign ("l", Ast.Int_Literal 0),
-//         Ast.Binop (Ast.Id "l", Ast.Less, Ast.Int_Literal 42),
-//         Ast.Assign ("l", Ast.Binop (Ast.Id "l", Ast.Add, Ast.Int_Literal 1)),
-//         Ast.Block [Ast.Expr (Ast.Call ("print", [Ast.Id "l"]))])]}])
-
 // parsing requires global variables must be declared first
 int a;
 tree <float>b(3);
@@ -189,7 +105,19 @@ int main() {
 	}
 
 	a = b = c;
+	z%0%3@ = 4;
 
+	a = z%0;
+
+	t%0 = t2; // t and t2 are both trees. t2 is now being assigned the first child of t (accessed by %0)
+	t%0 = t3%0; // similar to above but now t's first child is t3's first child.
+	t%0@ = 3; // @ dereferences the value in that node. Now the t's first child's value is 3
+	t%z@ = 4;
+	normal_int = t%0@; // now we're assigning a normal int var the value from inside t's first child value
+	t@ = 4; // this is assigning the root nodes value as 4
+	t%0%1@ = 5; // this is assigning t's first child's, second child node value to 5
+	t3 = t%0%1--; // this is popping t's first child's second child node from the tree t and returns t to assign to t3
+	t%toyfunc()%3-- = t2;
 
 }
 

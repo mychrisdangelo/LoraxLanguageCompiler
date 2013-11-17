@@ -1,12 +1,12 @@
-do() {
+int do() {
   print(1);
 }
 
-do2() {
+int do2() {
   print(2);
 }
 
-main()
+int main()
 {
   do();
   do2();
