@@ -41,17 +41,7 @@ type c_tree_decl = {
        degree: c_expr;
 } 
 
-(*unsure about this one*)
-type c_func_decl = {
-    fname : string;
-    ret_type : var_type;
-    formals : var list;
-    locals : var list;
-    body : c_stmt list;
-} 
-
-(*unsure about this one*)
-type c_program = var_decl list * func_decl list;
+ 
 
 (*builds a function declaration with a name, return type, and variable argument list*)
 let build_fdecl (name:string) (ret:var_type) (args:var_type list) =
@@ -62,13 +52,7 @@ let get_ret_of_fdecl (f:func_decl) =
 	let (_,t,_,_) = f in
 	t
 
-(*structures the 'main' function*)
-let main_fdecl (f:c_func) =
-	let fdecl = f.c_header in
-	let (name, t, formals, _) = fdecl in
-	if name = "main" && t = Lrx_Atom(Lrx_Int) && formals = [] then true
-	else false
-               
+              
 (*called to get the Atom/Tree type of an expresion*)
 type type_of_expr =
     Int_Literal(i) -> Lrx_Atom(Lrx_Int)
@@ -286,24 +270,49 @@ and check_block (b:block) (ret_type:var_type) env =
 		c_statements = check_stmtlist b.statements ret_type (fst env, b.block_id);
 		c_block_id = b.block_id}
 
+
+and check_globals (vars: var_decl list) env =
+
+
+    fname : string;
+    ret_type : var_type;
+    formals : var list;
+    locals : var list;
+    body : c_stmt list;
+}
+
+(*unsure about this one*)
+type c_program = var_decl list * func_decl list;
+
 (* check a function *)
-and check_func (f:func) env =
-	let checked = check_block f.body f.ret_type env in
-	let formals = check_vdecllist f.formals (fst env, f.body.block_id) in
-	{ c_header = check_fdecl f.name env; c_body = checked; c_formals = formals }
+and check_function (f:func_decl) env =
+        let c_body = check_function_body f.body f.ret_type env in 
+        let c_locals = check_function_locals f.locals env in
+        let c_formals = check_function_formals f.formals env in	
+        let c_name = check_function_name f.fname env in
+        {fname = c_name; ret_type = f.ret_type; formals = c_formals; locals = c_locals; body = c_body }
 
 (* check a function list *)
-and check_funclist (funcs:func list) env =
+and check_functions (funcs:func_decl list) env =
 	match funcs with
 	[] -> []
-	| head :: tail -> check_func head env :: check_funclist tail env
+	| head :: tail -> check_function head env :: check_functions tail env
 
-and check_main (f:c_func list) =
-	if (List.filter main_fdecl f) = [] then false
-	else true
+(*structures the 'main' function*)
+let main_fdecl (f:c_func_decl) =
+	if f.fname = "main" && f.ret_type = Lrx_Atom(Lrx_Int) && f.formals = [] 
+        then true else false
+
+(*function used to match main*)
+and check_main (f:c_func_decl list) =
+	if (List.filter main_fdecl f) = [] 
+        then false else true
 
 let check_program (p:program) env =
-	let vars = check_vdecllist p.globals env in
-	let checked = check_funclist p.functions env in
-	if (check_main checked) then {c_globals = vars; c_functions = checked; c_block_count = p.block_count}
-	else raise (Failure("function main(^) -> # not found"))
+        let gs = fst p in
+        let fs = snd p in
+	let c_globals = check_globals gs env in
+	let c_functions = check_functions fs env in
+	if (check_main c_functions) 
+                then (c_globals, c_functions)
+	        else raise (Failure("function main not found"))
