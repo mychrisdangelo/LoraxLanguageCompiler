@@ -169,6 +169,9 @@ let rec compare_arglists formals actuals =
 		-> (head1 = head2) && compare_arglists tail1 tail2
 	| _ -> false
 
+(*we need to check that tree usage is correct*)
+(*let rec check_tree (e: expr) (el: expr list) env =*)
+
 (*checks that a function declaration and calling is proper, such that a function is called with the proper number and type of arguments*)
 and check_func (name:string) (cl:c_expr list) env =
 	let decl = Symtab.symtab_find name env in
@@ -200,11 +203,11 @@ and check_expr (e:expr) env =
 	| Ast.Unop(e1, op) ->
 		let checked = check_expr e1 env in
 		check_unop checked op
-        | Ast.Tree(t) ->
-                check_tree t
-	| Ast.Assign(l, ae) ->
-		let checked = check_expr ae env in
-		let deref = check_expr (snd l) env in
+        | Ast.Tree(e, el) ->
+                check_tree e el env
+	| Ast.Assign(l, r) ->
+		let checked = check_expr r env in
+		let deref = check_expr (snd r) env in
 		let (result_t, lv) = check_lvalue l deref env in
 		let t = type_of_expr checked in
 		if t = result_t then Assign(t, lv, checked)
@@ -225,9 +228,9 @@ and check_exprlist (el:expr list) env =
 	| head :: tail -> (check_expr head env) :: (check_exprlist tail env)
 
 (* check a single statement *)
-let rec check_stmt (s:stmt) ret_type env =
+let rec check_statement (s:stmt) ret_type env =
 	match s with
-	Ast.Block(b) -> Block(check_block b ret_type env)
+	Ast.Block(stmts) -> Block(check_statement_list stmts ret_type env)
         | Ast.Expr(e) -> Expr(check_expr e env)
         | Ast.Return(e) -> let checked = check_expr e env in
                            let t = type_of_expr checked in
@@ -235,63 +238,66 @@ let rec check_stmt (s:stmt) ret_type env =
                            raise (Failure("function return type " ^ string_of_type t ^ "; type " ^ string_of_type ret_type ^ "expected"))
         | Ast.If(e, s, Block([])) -> let checked = check_expr e env in
                         if type_of_expr checked = Lrx_Atom(Lrx_Bool) then
-                        If(checked, check_stmt s ret_type env, Block([])) 
+                        If(checked, check_statement s ret_type env, Block([])) 
 		        else raise(Failure("if statement must evaluate on boolean expression"))
         | Ast.If(e, s1, s2) -> let checked = check_expr e env in
                         if type_of_expr checked = Lrx_Atom(Lrx_bool) then
-                        If(checked, check_stmt s1 ret_type env, check_stmt s2 ret_type env)
+                        If(checked, check_statement s1 ret_type env, check_statement s2 ret_type env)
 		        else raise(Failure("if statement must evaluate on boolean expression"))
         | Ast.For(e1, e2, e3, s) -> let c1, c2, c3 = (check_expr e1 env, check_expr e2 env, check_expr e3 env) in
-                        if(type_of_expr c1 = Lrx_Atom(Lrx_Bool)) and 
-                        if(type_of_expr c2 = Lrx_Atom(Lrx_Bool)) and
-                        if(type_of_expr c3 = Lrx_Atom(Lrx_Bool)) then
-                        For(c1, c2, c3, check_stmt s ret_type env)
+                        if(type_of_expr c2 = Lrx_Atom(Lrx_Bool)) then
+                        For(c1, c2, c3, check_statement s ret_type env)
 		        else raise(Failure("foor loop must evaluate on boolean expressions"))
 	| Ast.While(e, s) -> let checked = check_expr e env in
 		        if type_of_expr checked = Lrx_Atom(Lrx_Bool) then 
-                        While(checked, check_stmt s ret_type env)
+                        While(checked, check_statement s ret_type env)
 		        else raise(Failure("while loop must evaluate on boolean expression"))
 
 (* check a list of statements *)
-and check_stmtlist (s:stmt list) (ret_type:var_type) env =
+and check_statement_list (s:stmt list) (ret_type:var_type) env =
 	match s with
 	[] -> []
-	| head :: tail -> check_stmt head ret_type env :: check_stmtlist tail ret_type env
+	| head :: tail -> check_statement head ret_type env :: check_statement_list tail ret_type env
 
-(*check function name*)
+
+(*check function name to ensure that it has been declared and added to the symbol table*)
 and check_function_name (f:string) env =
-	let decl = Symtab.symtab_find f env in
-	match decl with
+	match (Symtab.symtab_find f env) with
 		VarDecl(v) -> raise(Failure("symbol is not a function"))
-		| FuncDecl(f) -> f
-
-(*check global*)
-and check_global (v: var) env =
-        let id = fst var in
-        let decl = Symtab.symtab_find id env in
-        match decl with
-	        FuncDecl(f) -> raise(Failure("symbol is not a variable"))
-	        | VarDecl(v) -> v
-
-(*check global list*)
-and check_globals (vars: var list) env =
-        match vars with
-        [] -> []
-        | head :: tail -> check_global head env :: check_globals tail env
+		| FuncDecl(f) -> f (*again, we don't have VarDecl/FuncDecl types, we need to decide how the Symtab is going to store this infromation so that we can identify what kind of variable we are defining*)
 
 (* check a function *)
 and check_function (f:func_decl) env =
-        let c_body = check_function_body f.body f.ret_type env in 
-        let c_locals = check_function_locals f.locals env in
-        let c_formals = check_function_formals f.formals env in	
+        let c_body = check_statement_list f.body f.ret_type env in 
+        let c_locals = check_variables f.locals env in
+        let c_formals = check_variables f.formals env in	
         let c_name = check_function_name f.fname env in
         {fname = c_name; ret_type = f.ret_type; formals = c_formals; locals = c_locals; body = c_body }
 
-(* check a function list *)
+(* check a function list;; loops through list of function declarations and check each under environment *)
+(*builds up a list of function declarations to be returned to simple;;; we will also look through these to ensure that main has been defined*) 
 and check_functions (funcs:func_decl list) env =
 	match funcs with
 	[] -> []
-	| head :: tail -> check_function head env :: check_functions tail env
+	| head :: tail -> check_function head env :: check_functions tail env 
+
+(*check variables*)
+and check_variable (v: var) env =
+        match (snd v) with
+                (Lrx_Atom(t) | Lrx_Tree(t)) -> (*check that the type is atom/tree*)
+                        let decl = Symtab.symtab_find (fst v) env in
+                        match decl with (*check that the id string has been declared*)
+	                        FuncDecl(f) -> raise(Failure("symbol is not a variable"))
+	                        | VarDecl(v) -> v (*we don't have FunDecl/VarDecl, we need to decide how to store these in the symbol table*)
+                _ -> raise(Failure("variable type " ^ string_of_vdecl t " does not exist"))
+
+(*check global list;; loops through list of global variable declarations and checks each under environment*)
+(*builds up a list of global variable declarations to return to simple*)
+and check_variables (vars: var list) env =
+        match vars with
+        [] -> []
+        | head :: tail -> check_variable head env :: check_variables tail env
+
 
 (*function used to match main*)
 and check_main (f:c_func_decl list) =
@@ -302,8 +308,8 @@ and check_main (f:c_func_decl list) =
 let check_program (p:program) env =
         let gs = fst p in
         let fs = snd p in
-	let c_globals = check_globals gs env in
+	let c_globals = check_variables gs env in
 	let c_functions = check_functions fs env in
-	if (check_main c_functions) 
-                then (c_globals, c_functions)
+	if (check_main c_functions) (*check that main function is written*) 
+                then (c_globals, c_functions) (*return list of checked globals, functions*)
 	        else raise (Failure("function main not found"))
