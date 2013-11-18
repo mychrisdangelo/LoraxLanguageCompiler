@@ -1,6 +1,6 @@
 int main()
 {
-char a;
+tree <char>a(1);
 a = "hello, world";
 print(a);
 return 0;
