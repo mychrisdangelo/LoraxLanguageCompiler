@@ -6,7 +6,6 @@
  * Special thanks to Dara Hazeghi's strlang which provided background knowledge.
  *)
 
-(*
 open Ast
 
 (*expressions from Ast but with typing added*)
@@ -23,7 +22,7 @@ type c_expr =
   | Tree of var_type c_expr * c_expr list
   | Assign of var_type * c_expr * c_expr
   | Call of func_decl * string * c_expr list
-  | Noc_expr
+  | NoExpr
 
 (*statements from Ast but with typing added*)
 type c_stmt =
@@ -67,7 +66,7 @@ let get_ret_of_fdecl (f:func_decl) =
 let main_fdecl (f:c_func) =
 	let fdecl = f.c_header in
 	let (name, t, formals, _) = fdecl in
-	if name = "main" && t = Simple(Num) && formals = [] then true
+	if name = "main" && t = Lrx_Atom(Lrx_Int) && formals = [] then true
 	else false
                
 (*called to get the Atom/Tree type of an expresion*)
@@ -191,27 +190,21 @@ and check_func (name:string) (cl:c_expr list) env =
 (*checks expression*)
 and check_expr (e:expr) env =
 	match e with
-	Ast.StrLiteral(s) -> StrLiteral(s)
-	| Ast.NumLiteral(n) -> NumLiteral(n)
-	| Ast.NoExpr -> NoExpr
-	| Ast.Replace(e1, e2, e3) ->
-		let c1, c2 = (check_expr e1 env, check_expr e2 env) in
-		let c3 = check_expr e3 env in
-		let (t1, t2, t3) = (type_of_expr c1, type_of_expr c2, type_of_expr c3) in
-		if(t1 = t2 && t2 = t3 && t3 = Simple(Str)) then
-			let f = build_fdecl "__str_replace" t1 [t1; t2; t3] in
-			FuncCall(f, [c1; c2; c3])
-		else raise(Failure("operator ~ requires 3 string expressions"))
-	| Ast.Binop(e1, op, e2) ->
+        Ast.Int_Literal(i) -> Int_Literal(i)
+        | Ast.Float_Literal(f) -> Float_Literal(f)
+        | Ast.StringLiteral(s) -> String_Literal(s)
+        | Ast.Char_Literal(c) -> Char_Literal(c)
+        | Ast.Bool_Literal(b) -> Bool_Literal(b)
+        | Ast.Null_Literal
+        | Ast.Id(s) -> Id(s)
+        | Ast.Binop(e1, op, e2) ->
 		let (c1, c2) = (check_expr e1 env, check_expr e2 env) in
 		check_binop c1 c2 op
 	| Ast.Unop(e1, op) ->
 		let checked = check_expr e1 env in
 		check_unop checked op
-	| Ast.Rvalue(l) ->
-		let checked = check_expr (snd l) env in
-		let (result_t, lv) = check_lvalue l checked env in
-		Rvalue(result_t, lv)
+        | Ast.Tree(t) ->
+                check_tree t
 	| Ast.Assign(l, ae) ->
 		let checked = check_expr ae env in
 		let deref = check_expr (snd l) env in
@@ -224,9 +217,10 @@ and check_expr (e:expr) env =
 				FuncCall(f, [Rvalue(result_t, lv)])
 			| _ -> raise(Failure("assignment not compatible with expressions of type " ^
 			string_of_type result_t ^ " and " ^ string_of_type t)))
-	| Ast.FuncCall(name, el) ->
+	| Ast.Call(name, el) ->
 		let checked = check_exprlist el env in
 		check_func name checked env
+	| Ast.NoExpr -> NoExpr
 		
 and check_exprlist (el:expr list) env =
 	match el with
@@ -312,6 +306,4 @@ let check_program (p:program) env =
 	let vars = check_vdecllist p.globals env in
 	let checked = check_funclist p.functions env in
 	if (check_main checked) then {c_globals = vars; c_functions = checked; c_block_count = p.block_count}
-	e
-
-*)
+	else raise (Failure("function main(^) -> # not found"))
