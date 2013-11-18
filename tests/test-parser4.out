@@ -3,4 +3,5 @@ int main()
 char a;
 a = "hello, world";
 print(a);
+return 0;
 }

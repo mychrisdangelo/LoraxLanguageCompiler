@@ -5,11 +5,13 @@
 //    [{Ast.fname = "main"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int; formals = [];
 //      locals = [("a", Ast.Lrx_Atom Ast.Lrx_Char)];
 //      body =
-//       [Ast.Expr (Ast.Assign ("a", Ast.String_Literal "hello, world"));
-//        Ast.Expr (Ast.Call ("print", [Ast.Id "a"]))]}])
+//       [Ast.Expr (Ast.Assign (Ast.Id "a", Ast.String_Literal "hello, world"));
+//        Ast.Expr (Ast.Call ("print", [Ast.Id "a"]));
+//        Ast.Return (Ast.Int_Literal 0)]}])
 
 int main() {
 	char a;
 	a = "hello, world";
 	print(a);
+	return 0;
 }
