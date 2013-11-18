@@ -1,0 +1,214 @@
+main(^) -> #
+{
+write("hello, world.");
+-> 0;
+}
+
+
+(ocd) print ast
+ast: Ast.program =
+  {Ast.globals = [];
+   functions =
+    [{Ast.name = "main"; ret_type = Ast.Simple Ast.Num;
+      body =
+       {Ast.locals = [];
+        statements =
+         [Ast.Expression
+           (Ast.FuncCall ("write", [Ast.StrLiteral "\"hello, world.\""]));
+          Ast.Return (Ast.NumLiteral 0)];
+        block_id = 1};
+      formals = []}];
+   block_count = 2}
+
+
+
+
+
+
+
+(ocd) print env
+env: Ast.decl Symtab.SymMap.t * int = (<abstr>, 0)
+
+
+
+
+
+
+(ocd) print checked
+checked: Check.c_program =
+  {Check.c_globals = [];
+   c_functions =
+    [{Check.c_formals = []; c_header = ("main", Ast.Simple Ast.Num, [], 0);
+      c_body =
+       {Check.c_locals = [];
+        c_statements =
+         [Check.Expression
+           (Check.FuncCall
+             (("write", Ast.Simple Ast.None, [Ast.Simple Ast.Str], 0),
+             [Check.StrLiteral "\"hello, world.\""]));
+          Check.Return (Check.NumLiteral 0)];
+        c_block_id = 1}}];
+   c_block_count = 2}
+
+
+
+
+(ocd) print checked
+checked: Check.c_program =
+  {Check.c_globals = [];
+   c_functions =
+    [{Check.c_formals = []; c_header = ("main", Ast.Simple Ast.Num, [], 0);
+      c_body =
+       {Check.c_locals = [];
+        c_statements =
+         [Check.Expression
+           (Check.FuncCall
+             (("write", Ast.Simple Ast.None, [Ast.Simple Ast.Str], 0),
+             [Check.StrLiteral "\"hello, world.\""]));
+          Check.Return (Check.NumLiteral 0)];
+        c_block_id = 1}}];
+   c_block_count = 2}
+
+
+
+checked: Check.c_program =
+  ([],
+	[{Check.fname = "main"; 
+       ret_type = Ast.Lrx_Atom Ast.Lrx_Int;
+       Check.c_formals = [];
+       Check.c_locals = [("a", Ast.Lrx_Tree {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 1} ];
+       Check.c_body =
+         [Check.Expression (Check.Assign ("a", Ast.String_Literal "hello, world")); (* spit out by check_expr *)
+          Check.Expression (Check.Call ("print", [Check.Id "a"])) (* spit out by check_stmt *)
+          Check.Expression (Check.Call (“return”, [Check.Int_Literal 1])) (* spit out by check_stmt *)
+          ];
+	  Check.scope = 1
+      } (* any other functions go here like: ,[Check.fname=“foo2”; ….], [Check.fname…]*)
+  0) 
+
+
+
+
+
+
+(ocd) print simple
+simple: Simple.simple_program =
+  {Simple.gvars = []; fdecls = [("main", Ast.Simple Ast.Num, [], 0)];
+   funcs =
+    [{Simple.args = []; header = ("main", Ast.Simple Ast.Num, [], 0);
+      code =
+       [Simple.Decl ("__none", Ast.Simple Ast.None, -1);
+        Simple.Decl ("__reg_str_1", Ast.Simple Ast.Str, -1);
+        Simple.Decl ("__reg_num_0", Ast.Simple Ast.Num, -1);
+        Simple.Decl ("__reg_num_2", Ast.Simple Ast.Num, -1);
+        Simple.Expr
+         (Simple.Lit (("__reg_str_1", Ast.Simple Ast.Str, -1),
+           Simple.StrLit "\"hello, world.\""));
+        Simple.Expr
+         (Simple.Call (("__none", Ast.Simple Ast.None, -1),
+           ("write", Ast.Simple Ast.None, [Ast.Simple Ast.Str], 0),
+           [("__reg_str_1", Ast.Simple Ast.Str, -1)]));
+        Simple.Expr
+         (Simple.Lit (("__reg_num_0", Ast.Simple Ast.Num, -1),
+           Simple.NumLit 0));
+        Simple.Ret ("__reg_num_0", Ast.Simple Ast.Num, -1);
+        Simple.Ret ("__reg_num_2", Ast.Simple Ast.Num, -1)]}];
+   blocks = 2}
+
+
+
+
+
+
+(ocd) print program
+program: string =
+  "#include \"strlib.h\"\n\nint main(void);\n\n\nint main(void)\n{\n  string __reg_str_1_(\"\");\n  int __reg_num_0_(0);\n  int __reg_num_2_(0);\n  __reg_str_1_ = \"hello, world.\";\n  write(__reg_str_1_);\n  __reg_num_0_ = 0;\n  return __reg_num_0_;\n  return __reg_num_2_;\n}\n\n"
+
+
+
+
+
+
+
+
+
+#include "strlib.h"
+
+int main(void);
+
+
+int main(void)
+{
+  string __reg_str_1_("");
+  int __reg_num_0_(0);
+  int __reg_num_2_(0);
+  __reg_str_1_ = "hello, world.";
+  write(__reg_str_1_);
+  __reg_num_0_ = 0;
+  return __reg_num_0_;
+  return __reg_num_2_;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int main() {
+        string s;
+        tree <char>t(1);
+        t = ','[' '['w'['o'['r'['l'['d']]]]]];
+        print(s + t + "\n");
+}
+
+
+
+ program: Ast.program =
+   ([],
+    [{Ast.fname = "main"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int; formals = [];
+      locals =
+       [("s",
+         Ast.Lrx_Tree
+          {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 1});
+        ("t",
+         Ast.Lrx_Tree
+          {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 1})];
+      body =
+       [Ast.Expr
+         (Ast.Assign (Ast.Id "t",
+           Ast.Tree (Ast.Char_Literal ',',
+            [Ast.Tree (Ast.Char_Literal ' ',
+              [Ast.Tree (Ast.Char_Literal 'w',
+                [Ast.Tree (Ast.Char_Literal 'o',
+                  [Ast.Tree (Ast.Char_Literal 'r',
+                    [Ast.Tree (Ast.Char_Literal 'l', [Ast.Char_Literal 'd'])])])])])])));
+        Ast.Expr
+         (Ast.Call ("print",
+           [Ast.Binop (Ast.Binop (Ast.Id "s", Ast.Add, Ast.Id "t"), Ast.Add,
+             Ast.String_Literal "\\n")]))]}])
+
+
+
+
+
+
