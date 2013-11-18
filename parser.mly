@@ -24,7 +24,7 @@
 %token EOF
 
 %nonassoc NOELSE
-%nonassoc ELSE AT
+%nonassoc ELSE 
 %right ASSIGN
 %left OR
 %left AND
@@ -33,7 +33,7 @@
 %left PLUS MINUS 
 %left TIMES DIVIDE MOD
 %left NEG NOT
-%left CHILD POP
+%left AT CHILD POP
 
 %start program
 %type <Ast.program> program
@@ -124,10 +124,7 @@ expr:
   | expr CHILD expr              { Binop($1, Child, $3) }
   | expr POP                     { Unop($1, Pop) }
   | expr AT                      { Unop($1, At) }
-/* source of shift/reduce conflicts
-  | ID expr AT ASSIGN expr       { DeepAssign($1, $2, $5) } 
-  | ID CHILD expr ASSIGN expr    { ShallowAssign($1, $3, $5) }  */
-  | ID ASSIGN expr               { Assign($1, $3) }
+  | expr ASSIGN expr             { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
 

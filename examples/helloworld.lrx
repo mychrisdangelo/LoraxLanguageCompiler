@@ -17,7 +17,7 @@
 //          {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 1})];
 //      body =
 //       [Ast.Expr
-//         (Ast.Assign ("t",
+//         (Ast.Assign (Ast.Id "t",
 //           Ast.Tree (Ast.Char_Literal ',',
 //            [Ast.Tree (Ast.Char_Literal ' ',
 //              [Ast.Tree (Ast.Char_Literal 'w',

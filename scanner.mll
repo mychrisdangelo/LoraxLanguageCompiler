@@ -17,9 +17,14 @@ let decimal = ((digit+ '.' digit*) | ('.' digit+))
 
 (* Regular Rules *)
 
+(* 
+ * built-in functions handled as keywords in semantic checking
+ * print, root, degree
+ *)
+
 rule token = parse
-  [' ' '\t' '\r' '\n'] { token lexbuf }         (* Whitespace *)
-| "/*"       { block_comment lexbuf }           (* Comments *)
+  [' ' '\t' '\r' '\n'] { token lexbuf } 
+| "/*"       { block_comment lexbuf } 
 | "//"	     { line_comment lexbuf }
 | '('        { LPAREN }
 | ')'        { RPAREN }
@@ -63,8 +68,7 @@ rule token = parse
 | '%'		 { CHILD }
 | digit+ as lxm 				{ INT_LITERAL(int_of_string lxm) }
 | decimal as lxm 				{ FLOAT_LITERAL(float_of_string lxm) }
-| '\"' ([^'\"']* as lxm) '\"' { STRING_LITERAL(lxm) }
-(* | '\"' (_* as lxm ) '\"' 		{ STRING_LITERAL(lxm) } *)
+| '\"' ([^'\"']* as lxm) '\"'   { STRING_LITERAL(lxm) }
 | '\'' (_ as lxm ) '\'' 		{ CHAR_LITERAL(lxm) }
 | ("true" | "false") as lxm		{ BOOL_LITERAL(bool_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
@@ -78,4 +82,4 @@ and block_comment = parse
 
 and line_comment = parse
 | ['\n' '\r'] { token lexbuf }
-| _                          { line_comment lexbuf }
+| _           { line_comment lexbuf }

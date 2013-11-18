@@ -37,9 +37,7 @@ type expr =
   | Binop of expr * op * expr
   | Unop of expr * uop
   | Tree of expr * expr list
-  | Assign of string * expr
-  | DeepAssign of string * expr * expr
-  | ShallowAssign of string * expr * expr
+  | Assign of expr * expr
   | Call of string * expr list
   | Noexpr
 
@@ -114,9 +112,7 @@ let rec string_of_expr = function
         | Not -> "!" ^ string_of_expr e
         | At -> string_of_expr e ^ "@"
         | Pop -> string_of_expr e ^ "--")
-  | Assign(v, e) -> v ^ " = " ^ string_of_expr e
-  | DeepAssign(t, e1, e2) -> t ^ string_of_expr e1 ^ "@ = " ^ string_of_expr e2
-  | ShallowAssign(t, e1, e2) -> t ^ "%" ^ string_of_expr e1 ^ " = " ^ string_of_expr e2
+  | Assign(v, e) -> string_of_expr v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Tree(r, cl) -> string_of_expr r ^ "[" ^ String.concat ", " (List.map string_of_expr cl) ^ "]"
