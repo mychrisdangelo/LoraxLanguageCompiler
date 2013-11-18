@@ -80,7 +80,7 @@ checked: Check.c_program =
        Check.c_body =
          [Check.Expression (Check.Assign ("a", Ast.String_Literal "hello, world")); (* spit out by check_expr *)
           Check.Expression (Check.Call ("print", [Check.Id "a"])) (* spit out by check_stmt *)
-          Check.Expression (Check.Call (“return”, [Check.Int_Literal 1])) (* spit out by check_stmt *)
+          Check.Statement (Check.Return (Check.Int_Literal 1)) (* spit out by check_stmt *)
           ];
 	  Check.scope = 1
       } (* any other functions go here like: ,[Check.fname=“foo2”; ….], [Check.fname…]*)
