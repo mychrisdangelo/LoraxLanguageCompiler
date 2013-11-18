@@ -41,16 +41,16 @@ type c_tree_decl = {
        degree: c_expr;
 } 
 
- 
+type c_func_decl = { 
+    fname : string;
+    ret_type : var_type;
+    formals : var list;
+    locals : var list;
+    body : c_stmt list;
+}
 
-(*builds a function declaration with a name, return type, and variable argument list*)
-let build_fdecl (name:string) (ret:var_type) (args:var_type list) =
-	(name, ret, args, 0)
-
-(*gets the return type of a function*)
-let get_ret_of_fdecl (f:func_decl) =
-	let (_,t,_,_) = f in
-	t
+(*unsure about this one*)
+type c_program = var_decl list * func_decl list;
 
               
 (*called to get the Atom/Tree type of an expresion*)
@@ -78,6 +78,19 @@ let binop_error (t1:var_type) (t2:var_type) (op:Ast.bop) =
 let unop_error (t:var_type) (op:Ast.uop) =
 	raise(Failure("operator " ^ (string_of_unop op) ^ " not compatible with expression of type " ^
 		(string_of_type t)))
+
+
+(*structures the 'main' function*)
+let main_fdecl (f:c_func_decl) =
+	if f.fname = "main" && f.ret_type = Lrx_Atom(Lrx_Int) && f.formals = [] 
+        then true else false
+
+
+
+(*builds a function declaration with a name, return type, and variable argument list*)
+let build_fdecl (name:string) (ret:var_type) (args:var_type list) =
+	(name, ret, args, 0)
+
 
 
 (*check binary operators ADD SUB MULT DIV MOD EQUAL NEQ LESS LEQ GREATER GEQ CHILD AND OR*)
@@ -238,7 +251,6 @@ let rec check_stmt (s:stmt) ret_type env =
 		        if type_of_expr checked = Lrx_Atom(Lrx_Bool) then 
                         While(checked, check_stmt s ret_type env)
 		        else raise(Failure("while loop must evaluate on boolean expression"))
-----
 
 (* check a list of statements *)
 and check_stmtlist (s:stmt list) (ret_type:var_type) env =
@@ -246,43 +258,26 @@ and check_stmtlist (s:stmt list) (ret_type:var_type) env =
 	[] -> []
 	| head :: tail -> check_stmt head ret_type env :: check_stmtlist tail ret_type env
 
-(*checks a variable declaration*)
-and check_vdecllist (v:var list) env =
-	match v with
-	[] -> []
-	| head :: tail ->
-		let decl = Symtab.symtab_find (fst head) env in
-		match decl with
-			FuncDecl(f) -> raise(Failure("symbol is not a variable"))
-			| VarDecl(v) -> v :: check_vdecllist tail env
-
-(*checks a function declaration*)
-and check_fdecl (f:string) env =
+(*check function name*)
+and check_function_name (f:string) env =
 	let decl = Symtab.symtab_find f env in
 	match decl with
 		VarDecl(v) -> raise(Failure("symbol is not a function"))
 		| FuncDecl(f) -> f
 
-(* check a block *)
-and check_block (b:block) (ret_type:var_type) env =
-	let vars = check_vdecllist b.locals (fst env, b.block_id) in
-	{ c_locals = vars;
-		c_statements = check_stmtlist b.statements ret_type (fst env, b.block_id);
-		c_block_id = b.block_id}
+(*check global*)
+and check_global (v: var) env =
+        let id = fst var in
+        let decl = Symtab.symtab_find id env in
+        match decl with
+	        FuncDecl(f) -> raise(Failure("symbol is not a variable"))
+	        | VarDecl(v) -> v
 
-
-and check_globals (vars: var_decl list) env =
-
-
-    fname : string;
-    ret_type : var_type;
-    formals : var list;
-    locals : var list;
-    body : c_stmt list;
-}
-
-(*unsure about this one*)
-type c_program = var_decl list * func_decl list;
+(*check global list*)
+and check_globals (vars: var list) env =
+        match vars with
+        [] -> []
+        | head :: tail -> check_global head env :: check_globals tail env
 
 (* check a function *)
 and check_function (f:func_decl) env =
@@ -298,16 +293,12 @@ and check_functions (funcs:func_decl list) env =
 	[] -> []
 	| head :: tail -> check_function head env :: check_functions tail env
 
-(*structures the 'main' function*)
-let main_fdecl (f:c_func_decl) =
-	if f.fname = "main" && f.ret_type = Lrx_Atom(Lrx_Int) && f.formals = [] 
-        then true else false
-
 (*function used to match main*)
 and check_main (f:c_func_decl list) =
 	if (List.filter main_fdecl f) = [] 
         then false else true
 
+(*check program by first checking variables and then function declarations*)
 let check_program (p:program) env =
         let gs = fst p in
         let fs = snd p in
