@@ -97,3 +97,43 @@ and simplify_prototype (f:c_func_decl) = function
 let rec simplify_pgrm (p:c_program) = 
   {globals: fst p ;prototypes: simplify_prototypes snd p; functions:
     simplify_funcs snd p  }
+
+receive: ( global_vars, functions ) functions: c_name, ret_type, c_formals, c_locals, c_body
+
+return to output.ml file: { global_vars, function_prototypes, functions }
+
+function_prototypes:
+for each function:
+assemble function prototype
+add it to list of prototypes
+
+functions:
+simplify_locals:
+wrap local vars into simple_statement type
+simplify_body:
+for each c_statement:
+match it with c_stmt
+if conditional_type: do conditional checks
+if loop_type: do loops
+if return: simplify_expr, return
+if expression: simplify_expr, return
+simplify_return:
+generate the return type
+append return to the end of body
+build out simple_func_type to return: { header, args, code }
+
+simplify_expr:
+match c_expr:
+if StrLiteral: create temp_var and build new expr with temp_var
+if floatliteral: ''
+if charliteral: ''
+if intliteral: '' 
+if boolliteral:  ''
+if nullliteral: ''
+if Id:
+if Binop:
+if Unop:
+if Tree:
+if Assign: build out assign using new types, handling child_assign, data_assign,name_assign
+if Call:
+if NoExpr:
