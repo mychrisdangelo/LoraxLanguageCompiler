@@ -16,6 +16,9 @@ let scope_parents = Array.create 1000 0
 
 
 
+(*As the blocks are parsed, they are assigned a unique id to differentiate their
+ * scopr from that of other blocks. Symtab uses these block ids as an indicator
+ * of scope, and to build activation records recursively*)
 (*
 type block = {
         locals: var list;
@@ -30,7 +33,6 @@ let gen_block_id (u:unit) =
 
 
 (*Print the symbol table of the given environment*)
-(*Don't need to change*)
 let string_of_symtab env =
 	let symlist = SymMap.fold
 		(fun s t prefix -> (string_of_decl t) :: prefix) (fst env) [] in
