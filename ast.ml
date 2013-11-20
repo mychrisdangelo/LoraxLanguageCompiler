@@ -165,9 +165,9 @@ let string_of_var_type = function
 let string_of_fdecl fdecl =
   (string_of_var_type fdecl.ret_type) ^ " " ^ 
   fdecl.fname ^ "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")\n{\n" ^
-  String.concat ";\n" (List.map string_of_vdecl fdecl.block.locals) ^ (if
-      (List.length fdecl.block.locals) > 0 then ";\n" else "") ^
-  String.concat "" (List.map string_of_stmt fdecl.block.body) ^
+  String.concat ";\n" (List.map string_of_vdecl fdecl.body.locals) ^ (if
+      (List.length fdecl.body.locals) > 0 then ";\n" else "") ^
+  String.concat "" (List.map string_of_stmt fdecl.body.body) ^
   "}\n"
 
 let string_of_program (vars, funcs) =
