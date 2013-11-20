@@ -57,6 +57,7 @@ type var_type =
   | Lrx_Atom of atom_type
 
 type var = string * var_type
+type var_decl = string * var_type * int
 
 type stmt =
     Block of stmt list
@@ -68,15 +69,27 @@ type stmt =
   | Continue
   | Break
 
-type func_decl = {
+type decl = 
+     FuncDecl of func_decl
+    | VarDecl of var_decl
+
+type block = {
+    locals : var list;
+    body: stmt list;
+    block_id: int;
+}
+
+type func = {
     fname : string;
     ret_type : var_type; 
     formals : var list;
-    locals : var list;
-    body : stmt list;
+    body: block;
+    (*locals : var list;
+    body : stmt list;*)
   }
+type func_decl = string * var_type * var_type list * int
 
-type program = var list * func_decl list
+type program = var list * func list
 
 let string_of_binop = function
         Add -> "+" 
@@ -152,8 +165,9 @@ let string_of_var_type = function
 let string_of_fdecl fdecl =
   (string_of_var_type fdecl.ret_type) ^ " " ^ 
   fdecl.fname ^ "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")\n{\n" ^
-  String.concat ";\n" (List.map string_of_vdecl fdecl.locals) ^ (if (List.length fdecl.locals) > 0 then ";\n" else "") ^
-  String.concat "" (List.map string_of_stmt fdecl.body) ^
+  String.concat ";\n" (List.map string_of_vdecl fdecl.block.locals) ^ (if
+      (List.length fdecl.block.locals) > 0 then ";\n" else "") ^
+  String.concat "" (List.map string_of_stmt fdecl.block.body) ^
   "}\n"
 
 let string_of_program (vars, funcs) =
