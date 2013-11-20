@@ -1,4 +1,4 @@
-(*
+(*(*
  * Authors:
  * Chris D'Angelo
  * Tim Paine
@@ -307,3 +307,5 @@ let check_program (p:program) env =
 	let checked = check_funclist p.functions env in
 	if (check_main checked) then {c_globals = vars; c_functions = checked; c_block_count = p.block_count}
 	else raise (Failure("function main(^) -> # not found"))
+
+    *)

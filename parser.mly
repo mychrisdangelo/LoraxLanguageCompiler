@@ -50,8 +50,8 @@ fdecl:
      { { fname = $2;
    ret_type = $1;
 	 formals = $4;
-	 locals = List.rev $7;
-	 body = List.rev $8 } }
+	 fblock = {locals = List.rev $7;
+     body = List.rev $8 } } }
 
 formals_opt:
     /* nothing */ { [] }

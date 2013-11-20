@@ -87,11 +87,11 @@ and symtab_add_block (b:block) env =
 	let env = symtab_add_stmts b.body env in
     (*add all statements, need to do all subblocks
      * before we do the outer block*)
-	scope_parents.(block_id) <- scope; ((fst env), scope) in
+    let block_id = gen_block_id() in  
+    scope_parents.(block_id) <- scope; ((fst env),scope) 
     (*add the current block to the parent scope table
      * i.e. the parent scope of this block is equal to 
      * the current scope of the environment*)
-    let block_id = gen_block_id() 
 
 and symtab_add_func (f:func) env =
 	let scope = snd env in (*current scope is 2nd element in env*)
@@ -122,3 +122,5 @@ let symtab_of_program (p:Ast.program) =
 	let env = add_builtins(SymMap.empty, 0) in
 	let env = symtab_add_vars p.globals env in
 	symtab_add_funcs p.functions env
+
+    
