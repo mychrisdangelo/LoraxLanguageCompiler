@@ -69,10 +69,6 @@ type stmt =
   | Continue
   | Break
 
-type decl = 
-     FuncDecl of func_decl
-    | VarDecl of var_decl
-
 type block = {
     locals : var list;
     body: stmt list;
@@ -90,6 +86,10 @@ type func = {
 type func_decl = string * var_type * var_type list * int
 
 type program = var list * func list
+
+type decl = 
+     FuncDecl of func_decl
+    | VarDecl of var_decl
 
 let string_of_binop = function
         Add -> "+" 
