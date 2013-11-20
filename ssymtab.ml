@@ -52,14 +52,15 @@ let rec symtab_add_decl (name:string) (decl:decl) env =
 	let to_find = name ^ "_" ^ (string_of_int scope) in
 	if SymMap.mem to_find table (*if there is a duplicate*)
 		then raise(Failure("symbol " ^ name ^ " declared twice in same scope"))
-	else ((SymMap.add to_find decl table), scope )
+	else ((SymMap.add to_find decl table), scope ) (*else add*)
 
-(* add list of variables to the symbol table *)	
+(* recursively add list of variables to the symbol table along with the scope of
+ * the block in which they were declared*)	
 let rec symtab_add_vars (vars:var list) env =
 	match vars with
 	[] -> env
 	| (name,t) :: tail -> let env = symtab_add_decl name (VarDecl(name, t, snd env)) env in (*name, type, scope*)
-		symtab_add_vars tail env
+		symtab_add_vars tail env 
 
 (* add declarations inside statements to the symbol table *)
 let rec symtab_add_stmts (stmts:stmt list) env =
@@ -69,9 +70,10 @@ let rec symtab_add_stmts (stmts:stmt list) env =
 		Block(s) -> symtab_add_block s env (*statement is an arbitrary block*)
 		| For(e1,e2,e3,s) -> symtab_add_block s env (*add the for's block to the
         record*)
-		| While(e, s) -> symtab_add_block s env
+		| While(e, s) -> symtab_add_block s env (*same deal as for*)
 		| If(e, s1, s2) -> let env = symtab_add_block s1 env in symtab_add_block s2 env 
-		| _ -> env) in symtab_add_stmts tail env
+		| _ -> env) in symtab_add_stmts tail envi (*add both of if's blocks
+        separately*)
 
 
 (* need to check this *)
