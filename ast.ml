@@ -72,14 +72,14 @@ type stmt =
 type block = {
     locals : var list;
     body: stmt list;
-    block_id: int;
+    (*block_id: int;*)
 }
 
 type func = {
     fname : string;
     ret_type : var_type; 
     formals : var list;
-    body: block;
+    fblock: block;
     (*locals : var list;
     body : stmt list;*)
   }
@@ -165,9 +165,9 @@ let string_of_var_type = function
 let string_of_fdecl fdecl =
   (string_of_var_type fdecl.ret_type) ^ " " ^ 
   fdecl.fname ^ "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")\n{\n" ^
-  String.concat ";\n" (List.map string_of_vdecl fdecl.body.locals) ^ (if
-      (List.length fdecl.body.locals) > 0 then ";\n" else "") ^
-  String.concat "" (List.map string_of_stmt fdecl.body.body) ^
+  String.concat ";\n" (List.map string_of_vdecl fdecl.fblock.locals) ^ (if
+      (List.length fdecl.fblock.locals) > 0 then ";\n" else "") ^
+  String.concat "" (List.map string_of_stmt fdecl.fblock.body) ^
   "}\n"
 
 let string_of_program (vars, funcs) =
