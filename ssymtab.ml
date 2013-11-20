@@ -25,11 +25,11 @@ type block = {
         statements: stmt list;
         block_id: int;
 }
-let block_id = ref 1
-let gen_block_id (u:unit) =
-    let x = block_id.contents in
-    block_id := x + 1; x
 *)
+let scope_id = ref 1
+let gen_block_id (u:unit) =
+    let x = scope_id.contents in
+    scope_id := x + 1; x
 
 
 (*Print the symbol table of the given environment*)
@@ -80,19 +80,18 @@ let rec symtab_add_stmts (stmts:stmt list) env =
 
 (* need to check this *)
 and symtab_add_block (b:block) env =
-	if(b.block_id != -1) then 
-		let (table, scope) = env in (*get current environment*)
-		let env = symtab_add_vars b.locals (table, b.block_id) in
-        (*add the block's local variables to the table with scope
-         * equal to the current block's id*)
-		let env = symtab_add_stmts b.statements env in
-        (*add all statements, need to do all subblocks
-         * before we do the outer block*)
-		scope_parents.(b.block_id) <- scope; ((fst env), scope)
-        (*add the current block to the parent scope table
-         * i.e. the parent scope of this block is equal to 
-         * the current scope of the environment*)
-	else env
+	let (table, scope) = env in (*get current environment*)
+	let env = symtab_add_vars b.locals (table, block_id) in
+    (*add the block's local variables to the table with scope
+     * equal to the current block's id*)
+	let env = symtab_add_stmts b.body env in
+    (*add all statements, need to do all subblocks
+     * before we do the outer block*)
+	scope_parents.(block_id) <- scope; ((fst env), scope) in
+    (*add the current block to the parent scope table
+     * i.e. the parent scope of this block is equal to 
+     * the current scope of the environment*)
+    let block_id = gen_block_id() 
 
 and symtab_add_func (f:func) env =
 	let scope = snd env in (*current scope is 2nd element in env*)
