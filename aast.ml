@@ -57,7 +57,7 @@ type var_type =
   | Lrx_Atom of atom_type
 
 type var = string * var_type
-type var_decl = var * int
+type var_decl = string * var_type * int
 
 type stmt =
     Block of stmt list
@@ -87,7 +87,7 @@ type func = {
     (*locals : var list;
     body : stmt list;*)
   }
-type func_decl = func * int 
+type func_decl = string * var_type * var_type list * int
 
 type program = var list * func list
 

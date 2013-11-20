@@ -61,7 +61,7 @@ let rec symtab_add_decl (name:string) (decl:decl) env =
 let rec symtab_add_vars (vars:var list) env =
 	match vars with
 	[] -> env
-	| (name,t) :: tail -> let env = symtab_add_decl name (VarDecl(name, t, snd env)) env in (*name, type, scope*)
+	| (vname,vtype) :: tail -> let env = symtab_add_decl vname (VarDecl(vname,vtype, snd env)) env in (*name, type, scope*)
 		symtab_add_vars tail env 
 
 (* add declarations inside statements to the symbol table *)
@@ -74,9 +74,9 @@ let rec symtab_add_stmts (stmts:stmt list) env =
         record*)
 		| While(e, s) -> symtab_add_block s env (*same deal as for*)
 		| If(e, s1, s2) -> let env = symtab_add_block s1 env in symtab_add_block s2 env 
-		| _ -> env) in symtab_add_stmts tail envi (*add both of if's blocks
-        separately*)
-
+		(*add both of if's blocks separately*)
+        | _ -> env) in symtab_add_stmts tail env (*return, continue, break,
+        etc*)
 
 (* need to check this *)
 and symtab_add_block (b:block) env =
@@ -97,7 +97,7 @@ and symtab_add_block (b:block) env =
 and symtab_add_func (f:func) env =
 	let scope = snd env in (*current scope is 2nd element in env*)
 	let args = List.map snd f.formals in (*gets name of every formal*)
-	let env = symtab_add_decl f.name (FuncDecl(f.name, f.ret_type, args, scope)) env in 
+	let env = symtab_add_decl f.fname (FuncDecl(f.fname, f.ret_type, args, scope)) env in 
     (*add current function to table*)
 	let env = symtab_add_vars f.formals ((fst env), f.body.block_id) in 
     (*adds vars to table*)
@@ -115,7 +115,8 @@ and symtab_add_funcs (funcs:func list) env =
 
 (* add builtin functions to the symbol table *)
 let add_builtins env =
-	let env = symtab_add_decl "print" (FuncDecl("print", Lrx_Atom(Null), [Simple(Str)], 0)) env (*in
+	let env = symtab_add_decl "print" (FuncDecl("print", Lrx_Atom(Null),
+    [Lrx_Tree(Lrx_Char)], 0)) env (*in
 	symtab_add_decl "exit" (FuncDecl("exit", Simple(None), [Simple(Num)], 0)) env*)
 
 let symtab_of_program (p:Ast.program) =
