@@ -90,13 +90,13 @@ and symtab_add_stmt (s:stmt) env =
 (* need to check this *)
 and symtab_add_block (b:block) env =
 	let (table, scope) = env in (*get current environment*)
+    let block_id = gen_block_id() in  
 	let env = symtab_add_vars b.locals (table, block_id) in
     (*add the block's local variables to the table with scope
      * equal to the current block's id*)
 	let env = symtab_add_stmts b.body env in
     (*add all statements, need to do all subblocks
      * before we do the outer block*)
-    let block_id = gen_block_id() in  
     scope_parents.(block_id) <- scope; ((fst env), scope) 
     (*add the current block to the parent scope table
      * i.e. the parent scope of this block is equal to 
