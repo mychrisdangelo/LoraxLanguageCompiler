@@ -107,9 +107,9 @@ and symtab_add_func (f:func) env =
 	let args = List.map snd f.formals in (*gets name of every formal*)
 	let env = symtab_add_decl f.fname (FuncDecl(f.fname, f.ret_type, args, scope)) env in 
     (*add current function to table*)
-	let env = symtab_add_vars f.formals ((fst env), f.body.block_id) in 
+	let env = symtab_add_vars f.formals ((fst env), !scope_id) in 
     (*adds vars to table*)
-	symtab_add_block f.body ((fst env), scope) (*add body to symtable given
+	symtab_add_block f.fblock ((fst env), scope) (*add body to symtable given
     current environment and scope*) 
 
 
@@ -122,11 +122,10 @@ and symtab_add_funcs (funcs:func list) env =
 
 
 (* add builtin functions to the symbol table *)
-(*let add_builtins env =
-	let env = symtab_add_decl "print" (FuncDecl("print", Lrx_Atom(Null),
-    [Lrx_Tree(Lrx_Char)], 0)) env (*in
-	symtab_add_decl "exit" (FuncDecl("exit", Simple(None), [Simple(Num)], 0)) env*)
-*)
+let add_builtins env =
+	let env = symtab_add_decl "print" (FuncDecl("print", Lrx_Tree((Lrx_Char, Int_Literal(200))),0)) env 
+	in symtab_add_decl "exit" (FuncDecl("exit", Simple(None), [Simple(Num)], 0)) env
+
 let symtab_of_program (p:Ast.program) =
 	let env = add_builtins(SymMap.empty, 0) in
 	let env = symtab_add_vars p.globals env in
