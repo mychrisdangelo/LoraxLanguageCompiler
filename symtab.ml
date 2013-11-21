@@ -70,13 +70,22 @@ let rec symtab_add_stmts (stmts:stmt list) env =
 	[] -> env (*block contains no statements*)
 	| head :: tail -> let env = (match head with
 		Block(s) -> symtab_add_block s env (*statement is an arbitrary block*)
-		| For(e1,e2,e3,s) -> symtab_add_block s env (*add the for's block to the
+		| For(e1,e2,e3,s) -> symtab_add_stmt s env (*add the for's block to the
         record*)
-		| While(e, s) -> symtab_add_block s env (*same deal as for*)
-		| If(e, s1, s2) -> let env = symtab_add_block s1 env in symtab_add_block s2 env 
+		| While(e, s) -> symtab_add_stmt s env (*same deal as for*)
+		| If(e, s1, s2) -> let env = symtab_add_stmt s1 env in symtab_add_stmt s2 env 
 		(*add both of if's blocks separately*)
         | _ -> env) in symtab_add_stmts tail env (*return, continue, break,
         etc*)
+
+and symtab_add_stmt (s:stmt) env = 
+	let env = (match s with
+    Block(s) -> symtab_add_block s env (*statement is an arbitrary block*)
+    | For(e1,e2,e3,s) -> symtab_add_stmt s env  (*add the for's block to the
+    record*)
+	| While(e, s) -> symtab_add_stmt s env (*same deal as for*)
+	| If(e, s1, s2) -> let env = symtab_add_stmt s1 env in symtab_add_stmt s2 env 
+    | _ -> env) in env 
 
 (* need to check this *)
 and symtab_add_block (b:block) env =
@@ -88,7 +97,7 @@ and symtab_add_block (b:block) env =
     (*add all statements, need to do all subblocks
      * before we do the outer block*)
     let block_id = gen_block_id() in  
-    scope_parents.(block_id) <- scope; ((fst env),scope) 
+    scope_parents.(block_id) <- scope; ((fst env), scope) 
     (*add the current block to the parent scope table
      * i.e. the parent scope of this block is equal to 
      * the current scope of the environment*)
@@ -113,11 +122,11 @@ and symtab_add_funcs (funcs:func list) env =
 
 
 (* add builtin functions to the symbol table *)
-let add_builtins env =
+(*let add_builtins env =
 	let env = symtab_add_decl "print" (FuncDecl("print", Lrx_Atom(Null),
     [Lrx_Tree(Lrx_Char)], 0)) env (*in
 	symtab_add_decl "exit" (FuncDecl("exit", Simple(None), [Simple(Num)], 0)) env*)
-
+*)
 let symtab_of_program (p:Ast.program) =
 	let env = add_builtins(SymMap.empty, 0) in
 	let env = symtab_add_vars p.globals env in

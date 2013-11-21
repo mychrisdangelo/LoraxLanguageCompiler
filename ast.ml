@@ -60,7 +60,7 @@ type var = string * var_type
 type var_decl = string * var_type * int
 
 type stmt =
-    Block of stmt list
+    Block of block 
   | Expr of expr
   | Return of expr
   | If of expr * stmt * stmt
@@ -69,7 +69,7 @@ type stmt =
   | Continue
   | Break
 
-type block = {
+and block = {
     locals : var list;
     body: stmt list;
     (*block_id: int;*)
@@ -132,11 +132,10 @@ let rec string_of_expr = function
   | Noexpr -> ""
 
 let rec string_of_stmt = function
-    Block(stmts) ->
-      "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
+    Block(blk) -> "{\n" ^ String.concat "" (List.map string_of_stmt blk.body) ^ "}\n"
   | Expr(expr) -> string_of_expr expr ^ ";\n";
   | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";
-  | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
+  | If(e, s, Block(blk)) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
   | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
       string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
   | For(e1, e2, e3, s) ->
@@ -169,6 +168,12 @@ let string_of_fdecl fdecl =
       (List.length fdecl.fblock.locals) > 0 then ";\n" else "") ^
   String.concat "" (List.map string_of_stmt fdecl.fblock.body) ^
   "}\n"
+
+let string_of_decl = function
+  VarDecl(vname, vtype, id) -> (string_of_int id) ^ " " ^ vname ^ " " ^ string_of_var_type vtype
+  | FuncDecl(fname, ftype, formals, id) -> (string_of_int id) ^ " " ^ fname ^ " (" ^ String.concat
+      "; " (List.map string_of_var_type formals) ^ ") " ^ string_of_var_type ftype
+
 
 let string_of_program (vars, funcs) =
   String.concat ";\n" (List.map string_of_vdecl vars) ^ (if (List.length vars) > 0 then ";\n" else "") ^
