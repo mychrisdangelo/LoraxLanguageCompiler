@@ -21,6 +21,8 @@ let scope_parents = Array.create 1000 0
  * As the blocks are parsed, they are assigned a unique id to differentiate their
  * scope from that of other blocks. Symtab uses these block ids as an indicator
  * of scope, and to build activation records recursively
+ * 
+ * Return value is always 1 behind. scope_id is one ahead.
  *)
 let scope_id = ref 1
 let gen_block_id (u:unit) =
@@ -58,7 +60,7 @@ let rec symtab_add_decl (name:string) (decl:decl) env =
 	let (table, scope) = env in (* get current scope and environment *)
 	let to_find = name ^ "_" ^ (string_of_int scope) in
 	if SymMap.mem to_find table then raise(Failure("symbol " ^ name ^ " declared twice in same scope"))
-	else ignore (print_string to_find); ((SymMap.add to_find decl table), scope)
+	else ignore (print_string (to_find ^ "\n")); ((SymMap.add to_find decl table), scope)
 
 (* 
  * recursively add list of variables to the symbol table along with the scope of
@@ -83,16 +85,17 @@ let rec symtab_add_stmts (stmts:stmt list) env =
 
 and symtab_add_block (b:block) env =
 	let (table, scope) = env in (* get current environment *)
-    let block_id = gen_block_id () in  
-	let env = symtab_add_vars b.locals (table, block_id) in (* add the block's local variables to the table with scope equal to the current block's id *)
-	let env = symtab_add_stmts b.statements env in (* add all statements, need to do all subblocks before we do the outer block *)
-    scope_parents.(block_id) <- scope; ((fst env), scope)     (* add the current block to the parent scope table i.e. the parent scope of this block is equal to the current scope of the environment *)
+    let block_id = gen_block_id () in (* block_id represents the current scope *)
+	let env = symtab_add_vars b.locals (table, block_id) in 
+	let env = symtab_add_stmts b.statements env in 
+    scope_parents.(block_id) <- scope; (* parent is the outer scope (i.e block_id - 1) *)
+    ((fst env), scope) (* return what we've made *)
 
 and symtab_add_func (f:func) env =
 	let scope = snd env in
 	let args = List.map snd f.formals in (* gets name of every formal *)
 	let env = symtab_add_decl f.fname (SymTab_FuncDecl(f.fname, f.ret_type, args, scope)) env in (* add current function to table *)
-	let env = symtab_add_vars f.formals ((fst env), !scope_id) in (* adds vars to table *)
+	let env = symtab_add_vars f.formals ((fst env), !scope_id) in (* add vars to the next scope in. scope_id is ahead by one *)
 	symtab_add_block f.fblock ((fst env), scope) (* add body to symtable given current environment and scope *) 
 
 (* add list of functions to the symbol table *)
