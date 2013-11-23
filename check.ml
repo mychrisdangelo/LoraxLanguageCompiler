@@ -6,6 +6,8 @@
  * Special thanks to Dara Hazeghi's strlang which provided background knowledge.
  *)
 
+(*
+
 open Ast
 
 (*expressions from Ast but with typing added*)
@@ -312,3 +314,6 @@ let check_program (p:program) env =
 	if (check_main c_functions) (*check that main function is written*) 
                 then (c_globals, c_functions) (*return list of checked globals, functions*)
 	        else raise (Failure("function main not found"))
+
+
+*)
