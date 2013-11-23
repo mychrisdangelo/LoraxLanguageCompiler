@@ -70,7 +70,7 @@ let rec symtab_add_stmts (stmts:stmt list) env =
 	match stmts with
 	[] -> env (*block contains no statements*)
 	| head :: tail -> let env = (match head with
-		Block(s) -> symtab_add_block s env (*statement is an arbitrary block*)
+		CodeBlock(s) -> symtab_add_block s env (*statement is an arbitrary block*)
 		| For(e1,e2,e3,s) -> symtab_add_block s env (*add the for's block to the
         record*)
 		| While(e, s) -> symtab_add_block s env (*same deal as for*)
@@ -97,7 +97,7 @@ and symtab_add_block (b:block) env =
 	let env = symtab_add_vars b.locals (table, block_id) in
     (*add the block's local variables to the table with scope
      * equal to the current block's id*)
-	let env = symtab_add_stmts b.body env in
+	let env = symtab_add_stmts b.statements env in
     (*add all statements, need to do all subblocks
      * before we do the outer block*)
     scope_parents.(block_id) <- scope; ((fst env), scope) 

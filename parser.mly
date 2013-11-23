@@ -2,6 +2,8 @@
  * Authors:
  * Doug Beinstock 
  * Chris D'Angelo
+ * Special thanks to Dara Hazeghi's strlang and Stephen Edward's MicroC
+ * which provided background knowledge.
  */
 
 %{ open Ast %}
@@ -48,15 +50,12 @@ program:
 fdecl:
    var_type ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
      { { fname = $2;
-   ret_type = $1;
-	 formals = $4;
-	 fblock = {locals = List.rev $7;
-     body = List.rev $8 } } }
-
+         ret_type = $1;
+	       formals = $4;
+	       fblock = {locals = List.rev $7; statements = List.rev $8 } } }
 
 block:
-	LBRACE vdecl_list stmt_list RBRACE
-		{ {locals = List.rev $2; body = $3} }
+	LBRACE vdecl_list stmt_list RBRACE { {locals = List.rev $2; statements = $3} }
 
 
 formals_opt:
@@ -93,13 +92,12 @@ stmt_list:
   | stmt_list stmt { $2 :: $1 }
 
 stmt:
-    block {Block($1) }
-  |  expr SEMI { Expr($1) }
+    block { CodeBlock($1) }
+  | expr SEMI { Expr($1) }
   | RETURN expr SEMI { Return($2) }
-  | IF LPAREN expr RPAREN block %prec NOELSE { If($3, $5, { locals=[]; body=[]}) }
-  | IF LPAREN expr RPAREN block ELSE block    { If($3, $5, $7) }
-  | FOR LPAREN expr_opt SEMI expr_opt SEMI expr_opt RPAREN block
-     { For($3, $5, $7, $9) }
+  | IF LPAREN expr RPAREN block %prec NOELSE { If($3, $5, {locals = []; statements = []}) }
+  | IF LPAREN expr RPAREN block ELSE block { If($3, $5, $7) }
+  | FOR LPAREN expr_opt SEMI expr_opt SEMI expr_opt RPAREN block { For($3, $5, $7, $9) }
   | WHILE LPAREN expr RPAREN block { While($3, $5) }
   | BREAK SEMI { Break }
   | CONTINUE SEMI { Continue }

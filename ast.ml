@@ -1,7 +1,8 @@
 (* 
  * Authors:
  * Chris D'Angelo
- * Special thanks to Dara Hazeghi's strlang which provided background knowledge.
+ * Special thanks to Dara Hazeghi's strlang and Stephen Edward's MicroC
+ * which provided background knowledge.
  *)
 
 type op = 
@@ -57,10 +58,23 @@ type var_type =
   | Lrx_Atom of atom_type
 
 type var = string * var_type
+
+(* 
+ * wrappers for use in symtab 
+ * var_decl = <<identifier name>> * 
+ *            <<data type>> * 
+ *            <<block id to be assigned in symtab>>
+ * 
+ * func_decl = <<identifier name>> * 
+ *             <<return data type>> * 
+ *             <<formal arg list>> * 
+ *             <<block id to be assigned in symtab>>
+ *)
 type var_decl = string * var_type * int
+type func_decl = string * var_type * var_type list * int
 
 type stmt =
-    Block of block 
+    CodeBlock of block 
   | Expr of expr
   | Return of expr
   | If of expr * block * block 
@@ -68,11 +82,10 @@ type stmt =
   | While of expr * block 
   | Continue
   | Break
-
+  
 and block = {
     locals : var list;
-    body: stmt list;
-    (*block_id: int;*)
+    statements: stmt list;
 }
 
 type func = {
@@ -80,16 +93,13 @@ type func = {
     ret_type : var_type; 
     formals : var list;
     fblock: block;
-    (*locals : var list;
-    body : stmt list;*)
-  }
-type func_decl = string * var_type * var_type list * int
+}
 
 type program = var list * func list
 
 type decl = 
-     FuncDecl of func_decl
-    | VarDecl of var_decl
+    FuncDecl of func_decl
+  | VarDecl of var_decl
 
   (*
 let string_of_binop = function
