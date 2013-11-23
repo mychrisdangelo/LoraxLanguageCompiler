@@ -122,11 +122,11 @@ and symtab_add_funcs (funcs:func list) env =
 
 
 (* add builtin functions to the symbol table *)
-(*let add_builtins env =
+let add_builtins env =
 	let env = symtab_add_decl "print" (FuncDecl("print", Null_Literal, [Lrx_Tree((Lrx_Char, Int_Literal(1024)))],0)) env 
 	in symtab_add_decl "exit" (FuncDecl("exit", Simple(None), [Simple(Num)], 0)) env
-*)
+
 let symtab_of_program (p:Ast.program) =
-	(*let env = add_builtins(SymMap.empty, 0) in*)
+	let env = add_builtins(SymMap.empty, 0) in
 	let env = symtab_add_vars p.globals env in
 	symtab_add_funcs p.functions env
