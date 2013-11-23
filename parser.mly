@@ -53,6 +53,10 @@ fdecl:
 	 fblock = {locals = List.rev $7;
      body = List.rev $8 } } }
 
+(*block:
+	LBRACE var_list stmt_list RBRACE
+		{ {locals = List.rev $2; statements = $3; block_id = gen_block_id ()} }
+*)
 formals_opt:
     /* nothing */ { [] }
   | formal_list   { List.rev $1 }
