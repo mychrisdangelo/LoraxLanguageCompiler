@@ -22,9 +22,8 @@ type inter_expr =
  | Tree of inter_var * inter_expr * inter_expr list
  (* We need to talk about the following two cases as a group/I dont really know
   * how this should be handled *)
- | ShallowAssign of inter_var * inter_var * inter_var (* this is most likely
+ | Assign of inter_var * inter_expr * inter_expr (* this is most likely
  incorrect *)
- | DeepAssign of inter_var * inter_var * inter_var (* this is also incorrect*)
 
 type inter_stmt =
   Decl of inter_var
@@ -61,18 +60,25 @@ and simplify_expr (e:c_expr) = function
   (* TODO *)
 
 and simplify_stmt (s:c_stmt) = function
-  (* TODO *)
+  match s with
+  Block(b) -> simplify_block b (* Block type needs to be defined in ast and
+  check so that we can separate out local variable declarations *)
+  | Expr(e) -> simplify_expr
+  | Return(e) -> (* TODO *)
+  | If(e, s, s) ->
+  | For(e, e, e, s) ->
+  | While(e, s) ->
+  | Continue ->
+  | Break -> 
 
-and simplify_body (l:c_stmt list) = function 
-  (* TODO *)
+
+and simplify_stmtlist (l:c_stmt list) = function 
+  [] -> []
+  | head::tail -> simple_stmt head:: simplify_stmtlist tail
 
 and simplify_locals (l:var list) = function
   [] -> []
   | _ -> List.map (fun e -> Decl(e)) l 
-   
-  
-and simplify_ret (v:var_type) = function
-  (* TODO *)
 
 and simplify_funcs (l:c_func_decl list) = function
   [] -> []
@@ -81,10 +87,9 @@ and simplify_funcs (l:c_func_decl list) = function
 and simplify_func (f:c_func_decl) = function
   let body = simplify_body f.body in
   let locals = simplify_locals f.locals in
-  let ret = simplify_ret f.ret_type in
   let head = simplify_prototype f in
   let formals = f.formals in
-  {args = formals; header = head; code: locals @ body @ ret}
+  {args = formals; header = head; code: locals @ body}
 
 
 and simplify_prototypes (l:c_func_decl list) = function
@@ -97,7 +102,7 @@ and simplify_prototype (f:c_func_decl) = function
 let rec simplify_pgrm (p:c_program) = 
   {globals: fst p ;prototypes: simplify_prototypes snd p; functions:
     simplify_funcs snd p  }
-
+(*
 receive: ( global_vars, functions ) functions: c_name, ret_type, c_formals, c_locals, c_body
 
 return to output.ml file: { global_vars, function_prototypes, functions }
@@ -137,3 +142,4 @@ if Tree:
 if Assign: build out assign using new types, handling child_assign, data_assign,name_assign
 if Call:
 if NoExpr:
+*)
