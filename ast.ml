@@ -61,17 +61,20 @@ type var = string * var_type
 
 (* 
  * wrappers for use in symtab 
- * var_decl = <<identifier name>> * 
+ * scope_var_decl = 
+ *            <<identifier name>> * 
  *            <<data type>> * 
  *            <<block id to be assigned in symtab>>
  * 
- * func_decl = <<identifier name>> * 
+ * scope func_decl = 
+ *             <<identifier name>> * 
  *             <<return data type>> * 
  *             <<formal arg list>> * 
  *             <<block id to be assigned in symtab>>
  *)
-type var_decl = string * var_type * int
-type func_decl = string * var_type * var_type list * int
+type scope_var_decl = string * var_type * int
+
+type scope_func_decl = string * var_type * var_type list * int
 
 type stmt =
     CodeBlock of block 
@@ -98,9 +101,9 @@ type func = {
 type program = var list * func list
 
 type decl = 
-    FuncDecl of func_decl
-  | VarDecl of var_decl
-
+    SymTab_FuncDecl of scope_func_decl
+  | SymTab_VarDecl of scope_var_decl
+  
   
 let string_of_binop = function
         Add -> "+" 

@@ -68,7 +68,7 @@ let rec symtab_add_decl (name:string) (decl:decl) env =
 let rec symtab_add_vars (vars:var list) env =
 	match vars with
 	[] -> env
-	| (vname,vtype) :: tail -> let env = symtab_add_decl vname (VarDecl(vname,vtype, snd env)) env in (*name, type, scope*)
+	| (vname,vtype) :: tail -> let env = symtab_add_decl vname (SymTab_VarDecl(vname,vtype, snd env)) env in (*name, type, scope*)
 		symtab_add_vars tail env 
 
 (* add declarations inside statements to the symbol table *)
@@ -92,7 +92,7 @@ and symtab_add_block (b:block) env =
 and symtab_add_func (f:func) env =
 	let scope = snd env in (* current scope is 2nd element in env *)
 	let args = List.map snd f.formals in (* gets name of every formal *)
-	let env = symtab_add_decl f.fname (FuncDecl(f.fname, f.ret_type, args, scope)) env in (* add current function to table *)
+	let env = symtab_add_decl f.fname (SymTab_FuncDecl(f.fname, f.ret_type, args, scope)) env in (* add current function to table *)
 	let env = symtab_add_vars f.formals ((fst env), !scope_id) in (* adds vars to table *)
 	symtab_add_block f.fblock ((fst env), scope) (* add body to symtable given current environment and scope *) 
 
@@ -105,9 +105,9 @@ and symtab_add_funcs (funcs:func list) env =
 
 (* add builtin functions to the symbol table *)
 let add_builtins env =
-    symtab_add_decl "print" (FuncDecl("print", Lrx_Atom(Lrx_Int), [Lrx_Tree({datatype = Lrx_Char; degree = Int_Literal(1)})],0)) env 
+    symtab_add_decl "print" (SymTab_FuncDecl("print", Lrx_Atom(Lrx_Int), [Lrx_Tree({datatype = Lrx_Char; degree = Int_Literal(1)})],0)) env 
 
 let symtab_of_program (p:Ast.program) =
-	let env = add_builtins(SymMap.empty, 0) in
+	let env = add_builtins (SymMap.empty, 0) in
 	let env = symtab_add_vars (fst p) env in
-	symtab_add_funcs (snd p)  env
+	symtab_add_funcs (snd p) env
