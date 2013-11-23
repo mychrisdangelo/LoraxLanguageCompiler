@@ -60,7 +60,7 @@ let rec symtab_add_decl (name:string) (decl:decl) env =
 	let (table, scope) = env in (* get current scope and environment *)
 	let to_find = name ^ "_" ^ (string_of_int scope) in
 	if SymMap.mem to_find table then raise(Failure("symbol " ^ name ^ " declared twice in same scope"))
-	else ignore (print_string (to_find ^ "\n")); ((SymMap.add to_find decl table), scope)
+	else ((SymMap.add to_find decl table), scope)
 
 (* 
  * recursively add list of variables to the symbol table along with the scope of
@@ -109,6 +109,12 @@ and symtab_add_funcs (funcs:func list) env =
 let add_builtins env =
     symtab_add_decl "print" (SymTab_FuncDecl("print", Lrx_Atom(Lrx_Int), [Lrx_Tree({datatype = Lrx_Char; degree = Int_Literal(1)})], 0)) env 
 
+(* 
+ * env: Ast.decl Symtab.SymMap.t * int = (<abstr>, 0)
+ * the "int" is used to passed from function to function
+ * to remember the current scope. it is not used outside this
+ * file
+ *)
 let symtab_of_program (p:Ast.program) =
 	let env = add_builtins (SymMap.empty, 0) in
 	let env = symtab_add_vars (fst p) env in
