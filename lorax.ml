@@ -15,6 +15,8 @@ let _ =
     | Symtab    -> let env = Symtab.symtab_of_program program in
                     print_string (Symtab.string_of_symtab env)
     | Compile    -> let env = Symtab.symtab_of_program program in
-                    print_string (Symtab.string_of_symtab env)
+                    let ast = Parser.program Scanner.token lexbuf in
+                    let checked = Check.check_program ast env in
+                    print_string "compile not implemented. ocamldebug to peak at checked."
     | Binary     -> raise (Failure "binary not implemented")
  
