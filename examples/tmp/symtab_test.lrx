@@ -1,0 +1,22 @@
+int a;
+
+int inc2(int b)
+{
+	int c;
+	print(c);
+}
+
+int inc(int a)
+{
+	int b;
+	b = 2;
+	inc2(b);
+}
+
+int main() {
+	int d;
+	if (true) {
+		int d;
+		d = 4;
+	}
+}

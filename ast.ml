@@ -66,7 +66,7 @@ type var = string * var_type
  *            <<data type>> * 
  *            <<block id to be assigned in symtab>>
  * 
- * scope func_decl = 
+ * scope_func_decl = 
  *             <<identifier name>> * 
  *             <<return data type>> * 
  *             <<formal arg list>> * 

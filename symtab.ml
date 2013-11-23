@@ -33,9 +33,9 @@ let string_of_decl = function
 	| SymTab_FuncDecl(n, t, f, id) -> 
 	  (string_of_var_type t) ^ " " ^ 
       n ^ "(" ^ 
-      String.concat ", " (List.map string_of_var_type f) ^ ")\n"
+      String.concat ", " (List.map string_of_var_type f) ^ ")"
 
-(*Print the symbol table of the given environment*)
+(* Print the symbol table of the given environment *)
 let string_of_symtab env =
 	let symlist = SymMap.fold
 		(fun s t prefix -> (string_of_decl t) :: prefix) (fst env) [] in
@@ -55,11 +55,10 @@ let rec symtab_find (name:string) env =
 		else symtab_find name (table, scope_parents.(scope))
 
 let rec symtab_add_decl (name:string) (decl:decl) env =
-	let (table, scope) = env in (*get current scope and environment*)
+	let (table, scope) = env in (* get current scope and environment *)
 	let to_find = name ^ "_" ^ (string_of_int scope) in
-	if SymMap.mem to_find table (*if there is a duplicate*)
-		then raise(Failure("symbol " ^ name ^ " declared twice in same scope"))
-	else ((SymMap.add to_find decl table), scope ) (*else add*)
+	if SymMap.mem to_find table then raise(Failure("symbol " ^ name ^ " declared twice in same scope"))
+	else ignore (print_string to_find); ((SymMap.add to_find decl table), scope)
 
 (* 
  * recursively add list of variables to the symbol table along with the scope of
@@ -67,30 +66,30 @@ let rec symtab_add_decl (name:string) (decl:decl) env =
  *)	
 let rec symtab_add_vars (vars:var list) env =
 	match vars with
-	[] -> env
-	| (vname,vtype) :: tail -> let env = symtab_add_decl vname (SymTab_VarDecl(vname,vtype, snd env)) env in (*name, type, scope*)
+	  [] -> env
+	| (vname, vtype) :: tail -> let env = symtab_add_decl vname (SymTab_VarDecl(vname, vtype, snd env)) env in (* name, type, scope *)
 		symtab_add_vars tail env 
 
 (* add declarations inside statements to the symbol table *)
 let rec symtab_add_stmts (stmts:stmt list) env =
 	match stmts with
-	[] -> env (* block contains no statements *)
+	  [] -> env (* block contains no statements *)
 	| head :: tail -> let env = (match head with
 		CodeBlock(s) -> symtab_add_block s env (* statement is an arbitrary block *)
-		| For(e1,e2,e3,s) -> symtab_add_block s env (* add the for's block to the record *)
+		| For(e1, e2, e3, s) -> symtab_add_block s env (* add the for's block to the record *)
 		| While(e, s) -> symtab_add_block s env (* same deal as for *)
 		| If(e, s1, s2) -> let env = symtab_add_block s1 env in symtab_add_block s2 env (* add both of if's blocks separately *)
         | _ -> env) in symtab_add_stmts tail env (* return, continue, break, etc *)
 
 and symtab_add_block (b:block) env =
 	let (table, scope) = env in (* get current environment *)
-    let block_id = gen_block_id() in  
+    let block_id = gen_block_id () in  
 	let env = symtab_add_vars b.locals (table, block_id) in (* add the block's local variables to the table with scope equal to the current block's id *)
 	let env = symtab_add_stmts b.statements env in (* add all statements, need to do all subblocks before we do the outer block *)
     scope_parents.(block_id) <- scope; ((fst env), scope)     (* add the current block to the parent scope table i.e. the parent scope of this block is equal to the current scope of the environment *)
 
 and symtab_add_func (f:func) env =
-	let scope = snd env in (* current scope is 2nd element in env *)
+	let scope = snd env in
 	let args = List.map snd f.formals in (* gets name of every formal *)
 	let env = symtab_add_decl f.fname (SymTab_FuncDecl(f.fname, f.ret_type, args, scope)) env in (* add current function to table *)
 	let env = symtab_add_vars f.formals ((fst env), !scope_id) in (* adds vars to table *)
