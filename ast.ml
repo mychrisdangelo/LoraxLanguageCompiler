@@ -85,7 +85,10 @@ type func = {
   }
 type func_decl = string * var_type * var_type list * int
 
-type program = var list * func list
+type program = {
+	globals: var list;
+	functions: func list;
+}
 
 type decl = 
      FuncDecl of func_decl
