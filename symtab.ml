@@ -31,13 +31,14 @@ let gen_block_id (u:unit) =
     let x = scope_id.contents in
     scope_id := x + 1; x
 
-
+(*
 (*Print the symbol table of the given environment*)
 let string_of_symtab env =
 	let symlist = SymMap.fold
 		(fun s t prefix -> (string_of_decl t) :: prefix) (fst env) [] in
 	let sorted = List.sort Pervasives.compare symlist in
 	String.concat "\n" sorted
+*)
 
 (*Look for the symbol in the given environment and scope
   then recursively check in all ancestor scopes *)
@@ -70,14 +71,15 @@ let rec symtab_add_stmts (stmts:stmt list) env =
 	[] -> env (*block contains no statements*)
 	| head :: tail -> let env = (match head with
 		Block(s) -> symtab_add_block s env (*statement is an arbitrary block*)
-		| For(e1,e2,e3,s) -> symtab_add_stmt s env (*add the for's block to the
+		| For(e1,e2,e3,s) -> symtab_add_block s env (*add the for's block to the
         record*)
-		| While(e, s) -> symtab_add_stmt s env (*same deal as for*)
-		| If(e, s1, s2) -> let env = symtab_add_stmt s1 env in symtab_add_stmt s2 env 
+		| While(e, s) -> symtab_add_block s env (*same deal as for*)
+		| If(e, s1, s2) -> let env = symtab_add_block s1 env in symtab_add_block s2 env 
 		(*add both of if's blocks separately*)
         | _ -> env) in symtab_add_stmts tail env (*return, continue, break,
         etc*)
 
+        (*
 and symtab_add_stmt (s:stmt) env = 
 	let env = (match s with
     Block(s) -> symtab_add_block s env (*statement is an arbitrary block*)
@@ -86,6 +88,7 @@ and symtab_add_stmt (s:stmt) env =
 	| While(e, s) -> symtab_add_stmt s env (*same deal as for*)
 	| If(e, s1, s2) -> let env = symtab_add_stmt s1 env in symtab_add_stmt s2 env 
     | _ -> env) in env 
+*)
 
 (* need to check this *)
 and symtab_add_block (b:block) env =

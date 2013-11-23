@@ -63,9 +63,9 @@ type stmt =
     Block of block 
   | Expr of expr
   | Return of expr
-  | If of expr * stmt * stmt
-  | For of expr * expr * expr * stmt
-  | While of expr * stmt
+  | If of expr * block * block 
+  | For of expr * expr * expr * block 
+  | While of expr * block 
   | Continue
   | Break
 
@@ -91,6 +91,7 @@ type decl =
      FuncDecl of func_decl
     | VarDecl of var_decl
 
+  (*
 let string_of_binop = function
         Add -> "+" 
       | Sub -> "-" 
@@ -174,7 +175,13 @@ let string_of_decl = function
   | FuncDecl(fname, ftype, formals, id) -> (string_of_int id) ^ " " ^ fname ^ " (" ^ String.concat
       "; " (List.map string_of_var_type formals) ^ ") " ^ string_of_var_type ftype
 
-
 let string_of_program (vars, funcs) =
   String.concat ";\n" (List.map string_of_vdecl vars) ^ (if (List.length vars) > 0 then ";\n" else "") ^
   String.concat "\n" (List.map string_of_fdecl funcs)
+
+
+*)
+
+let string_of_program (vars, funcs) =
+    "Hello, World"
+

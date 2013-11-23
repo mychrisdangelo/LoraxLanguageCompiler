@@ -12,6 +12,7 @@ let _ =
       Ast        -> let listing = Ast.string_of_program program
                     in print_string listing
     | Compile    -> let env = Symtab.symtab_of_program program in
-                    (print_string (Symtab.string_of_symtab env))
+                    (*print_string (Symtab.string_of_symtab env)*)
+                    (print_string ("Hello Compile"))
     | Binary     -> raise (Failure "binary not implemented")
  
