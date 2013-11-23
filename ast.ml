@@ -181,7 +181,7 @@ and string_of_block (b:block) =
 
 let string_of_var_type = function
     Lrx_Atom(t) -> string_of_atom_type t
-  | Lrx_Tree(t) -> raise (Failure "tree is invalid function return type")
+  | Lrx_Tree(t) -> "tree <" ^ string_of_atom_type t.datatype ^ ">(" ^ string_of_expr t.degree ^ ")" (* only for use within fdecl formals *)
 
 let string_of_fdecl fdecl =
   (string_of_var_type fdecl.ret_type) ^ " " ^ 

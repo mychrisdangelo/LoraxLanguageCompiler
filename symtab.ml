@@ -19,28 +19,28 @@ let scope_parents = Array.create 1000 0
 
 (*
  * As the blocks are parsed, they are assigned a unique id to differentiate their
- * scopr from that of other blocks. Symtab uses these block ids as an indicator
+ * scope from that of other blocks. Symtab uses these block ids as an indicator
  * of scope, and to build activation records recursively
  *)
-type scope_block = {
-        locals: var list;
-        statements: stmt list;
-        block_id: int;
-}
-
 let scope_id = ref 1
 let gen_block_id (u:unit) =
     let x = scope_id.contents in
     scope_id := x + 1; x
 
-(*
+(* string_of_vdecl from ast.ml *)
+let string_of_decl = function
+	  SymTab_VarDecl(n, t, id)     -> string_of_vdecl (n, t)
+	| SymTab_FuncDecl(n, t, f, id) -> 
+	  (string_of_var_type t) ^ " " ^ 
+      n ^ "(" ^ 
+      String.concat ", " (List.map string_of_var_type f) ^ ")\n"
+
 (*Print the symbol table of the given environment*)
 let string_of_symtab env =
 	let symlist = SymMap.fold
 		(fun s t prefix -> (string_of_decl t) :: prefix) (fst env) [] in
 	let sorted = List.sort Pervasives.compare symlist in
 	String.concat "\n" sorted
-*)
 
 (*
  * Look for the symbol in the given environment and scope
@@ -99,13 +99,13 @@ and symtab_add_func (f:func) env =
 (* add list of functions to the symbol table *)
 and symtab_add_funcs (funcs:func list) env =
 	match funcs with
-	[] -> env
-	| head :: tail -> let env = symtab_add_func head env in
-		symtab_add_funcs tail env
+	   [] -> env
+	 | head :: tail -> let env = symtab_add_func head env in 
+	   symtab_add_funcs tail env
 
 (* add builtin functions to the symbol table *)
 let add_builtins env =
-    symtab_add_decl "print" (SymTab_FuncDecl("print", Lrx_Atom(Lrx_Int), [Lrx_Tree({datatype = Lrx_Char; degree = Int_Literal(1)})],0)) env 
+    symtab_add_decl "print" (SymTab_FuncDecl("print", Lrx_Atom(Lrx_Int), [Lrx_Tree({datatype = Lrx_Char; degree = Int_Literal(1)})], 0)) env 
 
 let symtab_of_program (p:Ast.program) =
 	let env = add_builtins (SymMap.empty, 0) in

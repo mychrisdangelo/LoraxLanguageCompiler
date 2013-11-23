@@ -46,16 +46,18 @@ int gcd(int x, int y){
     while (x != y) {
         if (x < y) {
             check = y - x;
-            if (check > x)
+            if (check > x) {
                 x = check;
-            else
+            } else {
                 y = check;
+            }
         } else {
             check = x - y;
-            if (check > y)
+            if (check > y) {
                 y = check;
-            else
+            } else {
                 x = check;
+            }
         }
     }
     return x;
