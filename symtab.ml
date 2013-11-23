@@ -13,21 +13,9 @@ open Ast
  * in which it is contained
  *)
 module SymMap = Map.Make(String)
-
 (* activation record data *)
 let scope_parents = Array.create 1000 0
 
-(*
- * As the blocks are parsed, they are assigned a unique id to differentiate their
- * scope from that of other blocks. Symtab uses these block ids as an indicator
- * of scope, and to build activation records recursively
- * 
- * Return value is always 1 behind. scope_id is one ahead.
- *)
-let scope_id = ref 1
-let gen_block_id (u:unit) =
-    let x = scope_id.contents in
-    scope_id := x + 1; x
 
 (* string_of_vdecl from ast.ml *)
 let string_of_decl = function
@@ -85,17 +73,16 @@ let rec symtab_add_stmts (stmts:stmt list) env =
 
 and symtab_add_block (b:block) env =
 	let (table, scope) = env in (* get current environment *)
-    let block_id = gen_block_id () in (* block_id represents the current scope *)
-	let env = symtab_add_vars b.locals (table, block_id) in 
+	let env = symtab_add_vars b.locals (table, b.block_id) in 
 	let env = symtab_add_stmts b.statements env in 
-    scope_parents.(block_id) <- scope; (* parent is the outer scope (i.e block_id - 1) *)
+    scope_parents.(b.block_id) <- scope; (* parent is the outer scope (i.e block_id - 1) *)
     ((fst env), scope) (* return what we've made *)
 
 and symtab_add_func (f:func) env =
 	let scope = snd env in
 	let args = List.map snd f.formals in (* gets name of every formal *)
 	let env = symtab_add_decl f.fname (SymTab_FuncDecl(f.fname, f.ret_type, args, scope)) env in (* add current function to table *)
-	let env = symtab_add_vars f.formals ((fst env), !scope_id) in (* add vars to the next scope in. scope_id is ahead by one *)
+	let env = symtab_add_vars f.formals ((fst env), f.fblock.block_id) in (* add vars to the next scope in. scope_id is ahead by one *)
 	symtab_add_block f.fblock ((fst env), scope) (* add body to symtable given current environment and scope *) 
 
 (* add list of functions to the symbol table *)
@@ -107,8 +94,12 @@ and symtab_add_funcs (funcs:func list) env =
 
 (* add builtin functions to the symbol table *)
 let add_builtins env =
-    symtab_add_decl "print" (SymTab_FuncDecl("print", Lrx_Atom(Lrx_Int), [Lrx_Tree({datatype = Lrx_Char; degree = Int_Literal(1)})], 0)) env 
-
+    let env = symtab_add_decl "print_string" (SymTab_FuncDecl("print_string", Lrx_Atom(Lrx_Int), [Lrx_Tree( {datatype = Lrx_Char; degree = Int_Literal(1)} )], 0)) env in 
+    let env = symtab_add_decl "print_int" (SymTab_FuncDecl("print_int", Lrx_Atom(Lrx_Int), [Lrx_Atom(Lrx_Int)], 0)) env in
+    let env = symtab_add_decl "print_float" (SymTab_FuncDecl("print_float", Lrx_Atom(Lrx_Int), [Lrx_Atom(Lrx_Float)], 0)) env in
+    let env = symtab_add_decl "print_bool" (SymTab_FuncDecl("print_bool", Lrx_Atom(Lrx_Int), [Lrx_Atom(Lrx_Bool)], 0)) env in
+    symtab_add_decl "print_char" (SymTab_FuncDecl("print_char", Lrx_Atom(Lrx_Int), [Lrx_Atom(Lrx_Char)], 0)) env 
+      
 (* 
  * env: Ast.decl Symtab.SymMap.t * int = (<abstr>, 0)
  * the "int" is used to passed from function to function

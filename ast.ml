@@ -89,6 +89,7 @@ type stmt =
 and block = {
     locals : var list;
     statements: stmt list;
+    block_id: int;
 }
 
 type func = {

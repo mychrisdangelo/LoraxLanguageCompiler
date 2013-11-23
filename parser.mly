@@ -6,7 +6,15 @@
  * which provided background knowledge.
  */
 
-%{ open Ast %}
+%{ open Ast 
+
+let scope_id = ref 1
+
+let inc_block_id (u:unit) =
+    let x = scope_id.contents in
+    scope_id := x + 1; x
+
+%}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE MOD ASSIGN POP
@@ -52,10 +60,10 @@ fdecl:
      { { fname = $2;
          ret_type = $1;
 	       formals = $4;
-	       fblock = {locals = List.rev $7; statements = List.rev $8 } } }
+	       fblock = {locals = List.rev $7; statements = List.rev $8; block_id = inc_block_id ()} } }
 
 block:
-	LBRACE vdecl_list stmt_list RBRACE { {locals = List.rev $2; statements = List.rev $3} }
+	LBRACE vdecl_list stmt_list RBRACE { {locals = List.rev $2; statements = List.rev $3; block_id = inc_block_id ()} }
 
 
 formals_opt:
@@ -95,7 +103,7 @@ stmt:
     block { CodeBlock($1) }
   | expr SEMI { Expr($1) }
   | RETURN expr SEMI { Return($2) }
-  | IF LPAREN expr RPAREN block %prec NOELSE { If($3, $5, {locals = []; statements = []}) }
+  | IF LPAREN expr RPAREN block %prec NOELSE { If($3, $5, {locals = []; statements = []; block_id = inc_block_id ()}) }
   | IF LPAREN expr RPAREN block ELSE block { If($3, $5, $7) }
   | FOR LPAREN expr_opt SEMI expr_opt SEMI expr_opt RPAREN block { For($3, $5, $7, $9) }
   | WHILE LPAREN expr RPAREN block { While($3, $5) }

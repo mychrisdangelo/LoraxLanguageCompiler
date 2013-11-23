@@ -176,6 +176,8 @@ let rec compare_arglists formals actuals =
 
 (*checks that a function declaration and calling is proper, such that a function is called with the proper number and type of arguments*)
 and check_func (name:string) (cl:c_expr list) env =
+  (*if name == print, match type with symtab print_type*)
+
 	let decl = Symtab.symtab_find name env in
 	let func = (match decl with FuncDecl(f) -> f
 		| _ -> raise(Failure("symbol " ^ name ^ " is not a function"))) in
@@ -183,7 +185,7 @@ and check_func (name:string) (cl:c_expr list) env =
 	let actuals = List.map type_of_expr cl in
 	if (List.length formals) = (List.length actuals) then
 		if compare_arglists formals actuals then
-			FuncCall(func, cl)
+			Call(func, cl)
 		else
 			raise(Failure("function " ^ name ^ "'s argument types don't match its formals"))
 	else raise(Failure("function " ^ name ^ " expected " ^ (string_of_int (List.length actuals)) ^
