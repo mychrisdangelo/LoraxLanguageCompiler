@@ -60,7 +60,7 @@ type type_of_expr =
   | String_Literal(s) -> (*what do we do for strings?*)
   | Char_Literal(c) -> Lrx_Atom(Lrx_Char)
   | Bool_Literal(b) -> Lrx_Atom(Lrx_Bool) 
-  | Null_Literal
+  | Null_Literal -> Null (*not sure about this*)
   | Id(t,_) -> t (*not sure about this*)
   | Binop(t,_,_,_) -> t 
   | Unop(t,_,_) -> t 
@@ -262,9 +262,9 @@ and check_statement_list (s:stmt list) (ret_type:var_type) env =
 
 (*check function name to ensure that it has been declared and added to the symbol table*)
 and check_function_name (f:string) env =
-	match (Symtab.symtab_find f env) with
-		VarDecl(v) -> raise(Failure("symbol is not a function"))
-		| FuncDecl(f) -> f (*again, we don't have VarDecl/FuncDecl types, we need to decide how the Symtab is going to store this infromation so that we can identify what kind of variable we are defining*)
+	match (Symbols.find f env) with
+		V_Decl(v) -> raise(Failure("symbol is not a function"))
+		| FDecl(f) -> f (*again, we don't have VarDecl/FuncDecl types, we need to decide how the Symtab is going to store this infromation so that we can identify what kind of variable we are defining*)
 
 (* check a function *)
 and check_function (f:func_decl) env =
@@ -285,10 +285,10 @@ and check_functions (funcs:func_decl list) env =
 and check_variable (v: var) env =
         match (snd v) with
                 (Lrx_Atom(t) | Lrx_Tree(t)) -> (*check that the type is atom/tree*)
-                        let decl = Symtab.symtab_find (fst v) env in
+                        let decl = Symbols.find (fst v) env in
                         match decl with (*check that the id string has been declared*)
-	                        FuncDecl(f) -> raise(Failure("symbol is not a variable"))
-	                        | VarDecl(v) -> v (*we don't have FunDecl/VarDecl, we need to decide how to store these in the symbol table*)
+	                        F_Decl(f) -> raise(Failure("symbol is not a variable"))
+	                        | V_Decl(v) -> v (*we don't have FDecl/VDecl, we need to decide how to store these in the symbol table*)
                 _ -> raise(Failure("variable type " ^ string_of_vdecl t " does not exist"))
 
 (*check global list;; loops through list of global variable declarations and checks each under environment*)
@@ -297,7 +297,6 @@ and check_variables (vars: var list) env =
         match vars with
         [] -> []
         | head :: tail -> check_variable head env :: check_variables tail env
-
 
 (*function used to match main*)
 and check_main (f:c_func_decl list) =
