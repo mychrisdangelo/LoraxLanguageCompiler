@@ -55,7 +55,7 @@ fdecl:
 	       fblock = {locals = List.rev $7; statements = List.rev $8 } } }
 
 block:
-	LBRACE vdecl_list stmt_list RBRACE { {locals = List.rev $2; statements = $3} }
+	LBRACE vdecl_list stmt_list RBRACE { {locals = List.rev $2; statements = List.rev $3} }
 
 
 formals_opt:

@@ -101,7 +101,7 @@ type decl =
     FuncDecl of func_decl
   | VarDecl of var_decl
 
-  (*
+  
 let string_of_binop = function
         Add -> "+" 
       | Sub -> "-" 
@@ -142,20 +142,6 @@ let rec string_of_expr = function
   | Tree(r, cl) -> string_of_expr r ^ "[" ^ String.concat ", " (List.map string_of_expr cl) ^ "]"
   | Noexpr -> ""
 
-let rec string_of_stmt = function
-    Block(blk) -> "{\n" ^ String.concat "" (List.map string_of_stmt blk.body) ^ "}\n"
-  | Expr(expr) -> string_of_expr expr ^ ";\n";
-  | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";
-  | If(e, s, Block(blk)) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
-  | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
-      string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
-  | For(e1, e2, e3, s) ->
-      "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
-      string_of_expr e3  ^ ") " ^ string_of_stmt s
-  | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
-  | Break -> "break;"
-  | Continue -> "continue;"
-
 let string_of_atom_type = function
     Lrx_Int -> "int"
   | Lrx_Float -> "float"
@@ -168,30 +154,37 @@ let string_of_vdecl v =
       | Lrx_Tree(t) -> "tree <" ^ string_of_atom_type t.datatype ^ ">" ^ fst v ^ "(" ^ string_of_expr t.degree ^ ")"
     )
 
+let rec string_of_stmt = function
+    CodeBlock(b) -> string_of_block b
+  | Expr(expr) -> string_of_expr expr ^ ";\n";
+  | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";
+  | If(e, b1, b2) -> 
+    (match b2.statements with
+        [] -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_block b1
+      | _  -> "if (" ^ string_of_expr e ^ ")\n" ^
+              string_of_block b1 ^ "else\n" ^ string_of_block b1)
+  | For(e1, e2, e3, b) ->
+      "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
+      string_of_expr e3  ^ ") " ^ string_of_block b
+  | While(e, b) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_block b
+  | Break -> "break;"
+  | Continue -> "continue;"
+
+and string_of_block (b:block) =
+  "{\n" ^
+  String.concat ";\n" (List.map string_of_vdecl b.locals) ^ (if (List.length b.locals) > 0 then ";\n" else "") ^
+  String.concat "" (List.map string_of_stmt b.statements) ^
+  "}\n"
+
 let string_of_var_type = function
     Lrx_Atom(t) -> string_of_atom_type t
   | Lrx_Tree(t) -> raise (Failure "tree is invalid function return type")
 
 let string_of_fdecl fdecl =
   (string_of_var_type fdecl.ret_type) ^ " " ^ 
-  fdecl.fname ^ "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")\n{\n" ^
-  String.concat ";\n" (List.map string_of_vdecl fdecl.fblock.locals) ^ (if
-      (List.length fdecl.fblock.locals) > 0 then ";\n" else "") ^
-  String.concat "" (List.map string_of_stmt fdecl.fblock.body) ^
-  "}\n"
-
-let string_of_decl = function
-  VarDecl(vname, vtype, id) -> (string_of_int id) ^ " " ^ vname ^ " " ^ string_of_var_type vtype
-  | FuncDecl(fname, ftype, formals, id) -> (string_of_int id) ^ " " ^ fname ^ " (" ^ String.concat
-      "; " (List.map string_of_var_type formals) ^ ") " ^ string_of_var_type ftype
+  fdecl.fname ^ "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")\n" ^
+  string_of_block fdecl.fblock
 
 let string_of_program (vars, funcs) =
   String.concat ";\n" (List.map string_of_vdecl vars) ^ (if (List.length vars) > 0 then ";\n" else "") ^
   String.concat "\n" (List.map string_of_fdecl funcs)
-
-
-*)
-
-let string_of_program (vars, funcs) =
-    "Hello, World"
-
