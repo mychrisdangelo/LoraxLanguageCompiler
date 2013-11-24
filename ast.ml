@@ -96,7 +96,7 @@ type func = {
     fname : string;
     ret_type : var_type; 
     formals : var list;
-    fblock: block;
+    fblock : block;
 }
 
 type program = var list * func list

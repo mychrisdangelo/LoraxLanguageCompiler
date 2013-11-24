@@ -9,11 +9,15 @@
 open Ast
 
 (* 
- * Maps a current environment to the scope of the block
- * in which it is contained
+ * SymMap contains string : Ast.decl pairs representing
+ * identifiername_scopenumber : decl
  *)
 module SymMap = Map.Make(String)
-(* activation record data *)
+
+(* 
+ * scope_parents keeps the list of scopes and their parent
+ * which is always child-1
+*)
 let scope_parents = Array.create 1000 0
 
 
@@ -25,7 +29,6 @@ let string_of_decl = function
       n ^ "(" ^ 
       String.concat ", " (List.map string_of_var_type f) ^ ")"
 
-(* Print the symbol table of the given environment *)
 let string_of_symtab env =
 	let symlist = SymMap.fold
 		(fun s t prefix -> (string_of_decl t) :: prefix) (fst env) [] in
@@ -72,10 +75,10 @@ let rec symtab_add_stmts (stmts:stmt list) env =
         | _ -> env) in symtab_add_stmts tail env (* return, continue, break, etc *)
 
 and symtab_add_block (b:block) env =
-	let (table, scope) = env in (* get current environment *)
+	let (table, scope) = env in 
 	let env = symtab_add_vars b.locals (table, b.block_id) in 
 	let env = symtab_add_stmts b.statements env in 
-    scope_parents.(b.block_id) <- scope; (* parent is the outer scope (i.e block_id - 1) *)
+    scope_parents.(b.block_id) <- scope; (* parent is block_id - 1 *)
     ((fst env), scope) (* return what we've made *)
 
 and symtab_add_func (f:func) env =

@@ -259,9 +259,6 @@ let rec check_statement (s:stmt) ret_type env =
                         While(checked, check_statement s ret_type env)
 		        else raise(Failure("while loop must evaluate on boolean expression"))
 
-
-
-
 (* check a list of statements *)
 and check_block (b: block) (ret_type:var_type) env =
         check_variables b.locals
