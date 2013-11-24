@@ -23,12 +23,9 @@ type c_expr =
   | C_Binop of var_type * c_expr * op * c_expr
   | C_Unop of var_type * c_expr * uop
   | C_Tree of var_type * c_expr * c_expr list
-  | C_Assign of var_type * c_lvalue * c_expr
-  | C_Rvalue of var_type * c_lvalue
+  | C_Assign of var_type * c_expr * c_expr
   | C_Call of string * c_expr list
   | C_Noexpr
-
-and c_lvalue = var * c_expr
 
 (*statements from Ast but with typing added*)
 type c_stmt =
@@ -76,12 +73,13 @@ let type_of_expr = function
   | C_Bool_Literal(b) -> Lrx_Atom(Lrx_Bool)
   | C_Binop(t,_,_,_) -> t
   | C_Id(t,_) -> t
+  | C_Assign(t,_,_) -> t
   | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
 (*| Null_Literal -> Null (*not sure about this*)
   
   | Unop(t,_,_) -> t 
   | Tree(t, d) -> Lrx_Tree(t, d) (*not sure about this*)
-  | Assign(t,_,_) -> t 
+   
   | Call(fdecl,_) -> let (_,t,_,_) = fdecl in t
   | Noexpr -> "" 
 
@@ -245,6 +243,14 @@ and check_expr (e:expr) env =
      | Binop(e1, op, e2) ->
        let (c1, c2) = (check_expr e1 env, check_expr e2 env) in
        check_binop c1 c2 op
+     | Assign(l, r) ->
+       let checked_r = check_expr r env in
+       let checked_l = check_expr l env in
+       let t_r = type_of_expr checked_r in
+       let t_l =  type_of_expr checked_l in
+       if t_r = t_l then C_Assign(t_l, checked_l, checked_r) else 
+           raise(Failure("assignment not compatible with expressions of type " ^
+           string_of_var_type t_l ^ " and " ^ string_of_var_type t_r))  
      | _ -> raise (Failure "TEMPORARY: check_expr not complete")
 
  (*    | Null_Literal
@@ -254,18 +260,7 @@ and check_expr (e:expr) env =
 		    check_unop checked op
      | Tree(e, el) ->
        check_tree e el env
-	   | Assign(l, r) ->
-		   let checked = check_expr r env in
-		   let deref = check_expr (snd r) env in
-		   let (result_t, lv) = check_lvalue l deref env in
-		   let t = type_of_expr checked in
-		   if t = result_t then C_Assign(t, lv, checked) else 
-			 (match (checked, result_t) with
-				   (NumLiteral(0), Map(_,_)) -> 
-           let f = build_fdecl "__map_empty" result_t [result_t] in FuncCall(f, [Rvalue(result_t, lv)])
-		     | _ -> 
-           raise(Failure("assignment not compatible with expressions of type " ^
-			     string_of_type result_t ^ " and " ^ string_of_type t)))
+	   
 	   | Call(name, el) ->
 		   let checked = check_exprlist el env in
 		   check_func name checked env
