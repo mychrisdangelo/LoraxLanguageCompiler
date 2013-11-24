@@ -89,13 +89,14 @@ type stmt =
 and block = {
     locals : var list;
     statements: stmt list;
+    block_id: int;
 }
 
 type func = {
     fname : string;
     ret_type : var_type; 
     formals : var list;
-    fblock: block;
+    fblock : block;
 }
 
 type program = var list * func list
