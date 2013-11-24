@@ -74,7 +74,7 @@ let type_of_expr = function
   | C_Binop(t,_,_,_) -> t
   | C_Id(t,_) -> t
   | C_Assign(t,_,_) -> t
-  | C_Tree(t, d, _, _) -> t
+  | C_Tree(t, _, _, _) -> t
   | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
 (*| Null_Literal -> Null (*not sure about this*)
   
@@ -82,7 +82,13 @@ let type_of_expr = function
   
    
   | Call(fdecl,_) -> let (_,t,_,_) = fdecl in t
-  | Noexpr -> "" 
+  | Noexpr -> ""*)
+
+  let degree_of_tree = function
+     C_Tree(_, d, _, _) -> d
+    | _ -> raise (Failure "was hoping to do this in type_of_expr but not sure if possible!!")
+
+ (*
 
 (*error raised for improper unary expression*)
 let unop_error (t:var_type) (op:Ast.uop) =
@@ -244,8 +250,13 @@ and check_l_value (l:expr) env =
        [] -> []
        | head :: tail -> 
         let checked_expr = check_expr head env in
-        let tree_type = type_of_expr checked_expr in 
-        if tree_type = t then  
+        let tree_type = type_of_expr checked_expr in
+        if tree_type = t then
+          match checked_expr with
+              C_Tree(_, tree_degree, _, _) -> if tree_degree = d then
+                  checked_expr :: check_tree_literal_is_valid d t tail env
+                else raise (Failure ("Tree literal degree is not consistent: expected " ^ string_of_int d ^ " but received " ^ string_of_int tree_degree ))  
+              | _ ->
                 checked_expr :: check_tree_literal_is_valid d t tail env
         else raise (Failure ("Tree literal type is not consistent: expected " ^ string_of_var_type t ^ " but received " ^ string_of_var_type tree_type ))
 
