@@ -76,19 +76,15 @@ let type_of_expr = function
   | C_Assign(t,_,_) -> t
   | C_Tree(t, _, _, _) -> t
   | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
-(*| Null_Literal -> Null (*not sure about this*)
+(*
+
+| Null_Literal -> Null (*not sure about this*)
   
   | Unop(t,_,_) -> t 
   
    
   | Call(fdecl,_) -> let (_,t,_,_) = fdecl in t
-  | Noexpr -> ""*)
-
-  let degree_of_tree = function
-     C_Tree(_, d, _, _) -> d
-    | _ -> raise (Failure "was hoping to do this in type_of_expr but not sure if possible!!")
-
- (*
+  | Noexpr -> ""
 
 (*error raised for improper unary expression*)
 let unop_error (t:var_type) (op:Ast.uop) =
