@@ -7,8 +7,6 @@
 
 open Ast
 
-(*
-
 (*expressions from Ast but with typing added*)
 type c_expr =
     Int_Literal of int
@@ -42,12 +40,17 @@ type c_tree_decl = {
        degree: c_expr;
 } 
 
-type c_func_decl = { 
-    fname : string;
-    ret_type : var_type;
-    formals : var list;
-    locals : var list;
-    body : c_stmt list;
+and c_block = {
+    c_locals : var list;
+    c_statements: c_stmt list;
+    c_block_id: int;
+}
+
+type c_func = { 
+    c_fname : string;
+    c_ret_type : var_type;
+    c_formals : var list;
+    c_fblock : c_block;
 }
 
 (*unsure about this one*)
@@ -256,8 +259,12 @@ let rec check_statement (s:stmt) ret_type env =
                         While(checked, check_statement s ret_type env)
 		        else raise(Failure("while loop must evaluate on boolean expression"))
 
+
+
+
 (* check a list of statements *)
-and check_statement_list (s:stmt list) (ret_type:var_type) env =
+and check_block (b: block) (ret_type:var_type) env =
+        check_variables b.locals
 	match s with
 	[] -> []
 	| head :: tail -> check_statement head ret_type env :: check_statement_list tail ret_type env
@@ -266,45 +273,37 @@ and check_statement_list (s:stmt list) (ret_type:var_type) env =
 (*check function name to ensure that it has been declared and added to the symbol table*)
 and check_function_name (f:string) env =
 	match (Symbols.find f env) with
-		V_Decl(v) -> raise(Failure("symbol is not a function"))
-		| FDecl(f) -> f (*again, we don't have VarDecl/FuncDecl types, we need to decide how the Symtab is going to store this infromation so that we can identify what kind of variable we are defining*)
+		SymTab_VarDecl(v) -> raise(Failure("symbol is not a function"))
+		| SymTab_FuncDecl(f) -> f (*again, we don't have VarDecl/FuncDecl types, we need to decide how the Symtab is going to store this infromation so that we can identify what kind of variable we are defining*)
 
 (* check a function *)
-and check_function (f:func_decl) env =
-        let c_body = check_statement_list f.body f.ret_type env in 
-        let c_locals = check_variables f.locals env in
-        let c_formals = check_variables f.formals env in	
-        let c_name = check_function_name f.fname env in
-        {fname = c_name; ret_type = f.ret_type; formals = c_formals; locals = c_locals; body = c_body }
+and check_function (f:func) env =
+        let b = check_block f.fblock f.ret_type env in
+        let f = check_variables f.formals env in	
+        let n = check_function_name f.fname env in
+        {c_fname = n; c_ret_type = f.ret_type; c_formals = f; c_fblock = b }
 
 (* check a function list;; loops through list of function declarations and check each under environment *)
 (*builds up a list of function declarations to be returned to simple;;; we will also look through these to ensure that main has been defined*) 
-and check_functions (funcs:func_decl list) env =
+and check_functions (funcs:func list) env =
 	match funcs with
 	[] -> []
 	| head :: tail -> check_function head env :: check_functions tail env 
-
-(*check variables*)
-and check_variable (v: var) env =
-        match (snd v) with
-                (Lrx_Atom(t) | Lrx_Tree(t)) -> (*check that the type is atom/tree*)
-                        let decl = Symbols.find (fst v) env in
-                        match decl with (*check that the id string has been declared*)
-	                        F_Decl(f) -> raise(Failure("symbol is not a variable"))
-	                        | V_Decl(v) -> v (*we don't have FDecl/VDecl, we need to decide how to store these in the symbol table*)
-                _ -> raise(Failure("variable type " ^ string_of_vdecl t " does not exist"))
-
-(*check global list;; loops through list of global variable declarations and checks each under environment*)
-(*builds up a list of global variable declarations to return to simple*)
-and check_variables (vars: var list) env =
-        match vars with
-        [] -> []
-        | head :: tail -> check_variable head env :: check_variables tail env
 
 (*function used to match main*)
 and check_main (f:c_func_decl list) =
 	if (List.filter main_fdecl f) = [] 
         then false else true
+
+(*builds up a list of global variable declarations to return to simple*)
+and check_variables (vars: var list) env =
+        match vars with
+        [] -> []
+        | head :: tail -> 
+                let decl = Symtab.symtab_find (fst head) env in
+                 match decl with (*check that the id string has been declared*)
+	                   SymTab_FuncDecl(f) -> raise(Failure("symbol is not a variable"))
+	                   | SymTab_VarDecl(v) -> v :: check_variables tail env 
 
 (*check program by first checking variables and then function declarations*)
 let check_program (p:program) env =
@@ -315,8 +314,4 @@ let check_program (p:program) env =
 	if (check_main c_functions) (*check that main function is written*) 
                 then (c_globals, c_functions) (*return list of checked globals, functions*)
 	        else raise (Failure("function main not found"))
-*)
-
-let check_program (p:program) env =
-  ([], [])
 
