@@ -231,6 +231,12 @@ let rec check_id_is_valid (id_name:string) env =
           SymTab_VarDecl(v) -> (snd_of_three v, fst_of_three v)
         | _ -> raise (Failure("symbol " ^ id_name ^ " is not a variable")))
 
+and check_l_value (l:expr) env =
+    match l with
+     | Id(s) -> let (t, e) = check_id_is_valid s env in
+          C_Id(t,e)
+     | _ -> raise (Failure("TEMPORARY: check lvalue not complete"))
+
 and check_expr (e:expr) env =
 	  match e with
        Int_Literal(i) -> C_Int_Literal(i)
@@ -245,7 +251,7 @@ and check_expr (e:expr) env =
        check_binop c1 c2 op
      | Assign(l, r) ->
        let checked_r = check_expr r env in
-       let checked_l = check_expr l env in
+       let checked_l = check_l_value l env in
        let t_r = type_of_expr checked_r in
        let t_l =  type_of_expr checked_l in
        if t_r = t_l then C_Assign(t_l, checked_l, checked_r) else 
