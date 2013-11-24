@@ -22,7 +22,7 @@ type c_expr =
   | C_Id of var_type * string
   | C_Binop of var_type * c_expr * op * c_expr
   | C_Unop of var_type * c_expr * uop
-  | C_Tree of var_type * c_expr * c_expr list
+  | C_Tree of var_type * int * c_expr * c_expr list
   | C_Assign of var_type * c_expr * c_expr
   | C_Call of string * c_expr list
   | C_Noexpr
@@ -74,11 +74,12 @@ let type_of_expr = function
   | C_Binop(t,_,_,_) -> t
   | C_Id(t,_) -> t
   | C_Assign(t,_,_) -> t
+  | C_Tree(t, d, _, _) -> t
   | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
 (*| Null_Literal -> Null (*not sure about this*)
   
   | Unop(t,_,_) -> t 
-  | Tree(t, d) -> Lrx_Tree(t, d) (*not sure about this*)
+  
    
   | Call(fdecl,_) -> let (_,t,_,_) = fdecl in t
   | Noexpr -> "" 
@@ -237,6 +238,27 @@ and check_l_value (l:expr) env =
           C_Id(t,e)
      | _ -> raise (Failure("TEMPORARY: check lvalue not complete"))
 
+
+ and check_tree_literal_is_valid (d:int) (t:var_type) (el:expr list) env =
+     match el with
+       [] -> []
+       | head :: tail -> 
+        let checked_expr = check_expr head env in
+        let tree_type = type_of_expr checked_expr in 
+        if tree_type = t then  
+                checked_expr :: check_tree_literal_is_valid d t tail env
+        else raise (Failure ("Tree literal type is not consistent: expected " ^ string_of_var_type t ^ " but received " ^ string_of_var_type tree_type ))
+
+and check_tree_literal_root_is_valid (e:expr) (el: expr list) env =
+  let checked_root = check_expr e env in
+  let type_root = type_of_expr checked_root in
+  match type_root with
+      (Lrx_Atom(Lrx_Int) | Lrx_Atom(Lrx_Float) | Lrx_Atom(Lrx_Char) | Lrx_Atom(Lrx_Bool)) ->
+          let degree_root = List.length el in
+              let checked_tree = check_tree_literal_is_valid degree_root type_root el env in
+              (type_root, degree_root, checked_root, checked_tree)
+    | _ -> raise (Failure ("Tree root cannot be of non-atom type: " ^ string_of_var_type type_root))
+
 and check_expr (e:expr) env =
 	  match e with
        Int_Literal(i) -> C_Int_Literal(i)
@@ -244,6 +266,8 @@ and check_expr (e:expr) env =
      | String_Literal(s) -> C_String_Literal(s)
      | Char_Literal(c) -> C_Char_Literal(c)
      | Bool_Literal(b) -> C_Bool_Literal(b)
+     | Tree(e, el) -> let (t, d, e, el) = check_tree_literal_root_is_valid e el env in 
+          C_Tree(t, d, e, el)
      | Id(s) -> let (t, e) = check_id_is_valid s env in
           C_Id(t,e)
      | Binop(e1, op, e2) ->
@@ -264,9 +288,6 @@ and check_expr (e:expr) env =
 	   | Unop(e1, op) ->
 		   let checked = check_expr e1 env in
 		    check_unop checked op
-     | Tree(e, el) ->
-       check_tree e el env
-	   
 	   | Call(name, el) ->
 		   let checked = check_exprlist el env in
 		   check_func name checked env
