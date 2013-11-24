@@ -12,7 +12,7 @@ let _ =
   match action with
       Ast        -> let listing = Ast.string_of_program program
                     in print_string listing
-    | Symtab    -> let env = Symtab.symtab_of_program program in
+    | Symtab     -> let env = Symtab.symtab_of_program program in
                     print_string (Symtab.string_of_symtab env)
     | Compile    -> let env = Symtab.symtab_of_program program in
                     let ast = Parser.program Scanner.token lexbuf in
