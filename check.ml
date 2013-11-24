@@ -7,6 +7,10 @@
 
 open Ast
 
+let fst_of_three (t, _, _) = t
+let snd_of_three (_, t, _) = t
+let fst_of_four (t, _, _, _) = t
+
 (*expressions from Ast but with typing added*)
 type c_expr =
     C_Int_Literal of int
@@ -66,15 +70,15 @@ let main_fdecl (f:c_func) =
 (*called to get the Atom/Tree type of an expresion*)
 let type_of_expr = function
     C_Int_Literal(i) -> Lrx_Atom(Lrx_Int)
-
   | C_Float_Literal(f) -> Lrx_Atom(Lrx_Float)
   | C_String_Literal(s) -> Lrx_Tree({datatype = Lrx_Char; degree = Int_Literal(1)})
   | C_Char_Literal(c) -> Lrx_Atom(Lrx_Char)
-  | C_Bool_Literal(b) -> Lrx_Atom(Lrx_Bool) 
+  | C_Bool_Literal(b) -> Lrx_Atom(Lrx_Bool)
+  | C_Binop(t,_,_,_) -> t
+  | C_Id(t,_) -> t
   | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
 (*| Null_Literal -> Null (*not sure about this*)
-  | Id(t,_) -> t (*not sure about this*)
-  | Binop(t,_,_,_) -> t 
+  
   | Unop(t,_,_) -> t 
   | Tree(t, d) -> Lrx_Tree(t, d) (*not sure about this*)
   | Assign(t,_,_) -> t 
@@ -122,10 +126,18 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
            (Add | Sub | Equal | Neq | Less | Leq | Greater | Geq) -> 
                C_Binop(Lrx_Atom(Lrx_Char), c1, op, c2)
              | _ -> binop_error t1 t2 op)
-       | _ -> raise (Failure "TEMPORARAY: check_binop not complete")
+     | _ -> raise (Failure "TEMPORARAY: check_binop not complete")
 
 
 (*
+     | (Lrx_Tree, Lrx_Atom(Lrx_Int)) ->
+          let f = 
+          (match op with
+              Child -> build_fdecl "__tree_child" (Lrx_Tree) [t1; t2]
+                 | _ -> binop_error t1 t2 op) in
+              C_Call(f, [c1; c2]))
+
+
                 | (Lrx_Tree, Lrx_Tree) -> (*two trees*)
                         let f = (match op with
                         Add -> build_fdecl "__tree_concat" (Lrx_Tree) [t1; t2]
@@ -137,11 +149,7 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
                         | Geq -> build_fdecl "_tree_greater_equal_than" (Lrx_Atom(Lrx_Bool)) [t;t2]
                         | _ -> binop_error t1 t2 op) in
                                 FuncCall(f, [c1; c2])
-                | (Lrx_Tree, Lrx_Atom(Lrx_Int)) -> (*tree and int --> child operator*) 
-                        let f = (match op with
-                        Child -> build_fdecl "__tree_child" (Lrx_Tree) [t1; t2]
-                        | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])*)
+                *)
                  
 (*
  (*check unary operators NEG NOT POP AT*) 
@@ -219,20 +227,28 @@ and check_func (name:string) (cl:c_expr list) env =
  *
  *)
 
-let rec check_expr (e:expr) env =
+let rec check_id_is_valid (id_name:string) env = 
+     let decl = Symtab.symtab_find id_name env in
+     (match decl with 
+          SymTab_VarDecl(v) -> (snd_of_three v, fst_of_three v)
+        | _ -> raise (Failure("symbol " ^ id_name ^ " is not a variable")))
+
+and check_expr (e:expr) env =
 	  match e with
        Int_Literal(i) -> C_Int_Literal(i)
      | Float_Literal(f) -> C_Float_Literal(f)
      | String_Literal(s) -> C_String_Literal(s)
      | Char_Literal(c) -> C_Char_Literal(c)
      | Bool_Literal(b) -> C_Bool_Literal(b)
+     | Id(s) -> let (t, e) = check_id_is_valid s env in
+          C_Id(t,e)
      | Binop(e1, op, e2) ->
        let (c1, c2) = (check_expr e1 env, check_expr e2 env) in
        check_binop c1 c2 op
      | _ -> raise (Failure "TEMPORARY: check_expr not complete")
 
  (*    | Null_Literal
-     | Id(s) -> C_Id(s)
+     
 	   | Unop(e1, op) ->
 		   let checked = check_expr e1 env in
 		    check_unop checked op
@@ -260,9 +276,6 @@ and check_exprlist (el:expr list) env =
 	     [] -> []
 	   | head :: tail -> (check_expr head env) :: (check_exprlist tail env)
 
-let fst_of_three (t, _, _) = t
-let snd_of_three (_, t, _) = t
-let fst_of_four (t, _, _, _) = t
 
 (* check a single statement *)
 let rec check_statement (s:stmt) ret_type env =
