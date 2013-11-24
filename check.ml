@@ -19,9 +19,12 @@ type c_expr =
   | C_Binop of var_type * c_expr * op * c_expr
   | C_Unop of var_type * c_expr * uop
   | C_Tree of var_type * c_expr * c_expr list
-  | C_Assign of var_type * c_expr * c_expr
+  | C_Assign of var_type * c_lvalue * c_expr
+  | C_Rvalue of var_type * c_lvalue
   | C_Call of string * c_expr list
   | C_Noexpr
+
+and c_lvalue = var * c_expr
 
 (*statements from Ast but with typing added*)
 type c_stmt =
@@ -69,7 +72,7 @@ let type_of_expr = function
   | C_Char_Literal(c) -> Lrx_Atom(Lrx_Char)
   | C_Bool_Literal(b) -> Lrx_Atom(Lrx_Bool) 
   | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
-(*  | Null_Literal -> Null (*not sure about this*)
+(*| Null_Literal -> Null (*not sure about this*)
   | Id(t,_) -> t (*not sure about this*)
   | Binop(t,_,_,_) -> t 
   | Unop(t,_,_) -> t 
@@ -88,38 +91,44 @@ let unop_error (t:var_type) (op:Ast.uop) =
 	raise(Failure("operator " ^ (string_of_unop op) ^ " not compatible with expression of type " ^
 		(string_of_type t)))
 
-
-
-
 (*builds a function declaration with a name, return type, and variable argument list*)
 let build_fdecl (name:string) (ret:var_type) (args:var_type list) =
 	(name, ret, args, 0)
 
 (*check binary operators ADD SUB MULT DIV MOD EQUAL NEQ LESS LEQ GREATER GEQ CHILD AND OR*)
 let check_binop (c1:c_expr) (c2:c_expr) (op:Ast.bop) =
-        let (t1, t2) = (type_of_expr c1, type_of_expr c2) in
-        match(t1, t2) with 
-                (Lrx_Atom(Lrx_Int), Lrx_Atom(Lrx_Int)) -> (*two integer*)
-                        let f = (match op with
-                        (Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq) -> Binop(Lrx_Atom(Lrx_Int), c1, op, c2)
-                        | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
-                | (Lrx_Atom(Lrx_Float), Lrx_Atom(Lrx_Float)) -> (*two floats*)
-                         let f = (match op with
-                        (Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq) -> Binop(Lrx_Atom(Lrx_Float), c1, op, c2)
-                        | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
+    let (t1, t2) = (type_of_expr c1, type_of_expr c2) in
+    match(t1, t2) with 
+       (Lrx_Atom(Lrx_Int), Lrx_Atom(Lrx_Int)) -> (*two integer*)
+       let f = 
+           (match op with
 
-                | (Lrx_Atom(Lrx_Bool), Lrx_Atom(Lrx_Bool)) -> (*two bools*)
-                         let f = (match op with
-                        (Equal | Neq | And | Or) -> Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
-                        | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
-                | (Lrx_Atom(Lrx_Char), Lrx_Atom(Lrx_Char)) ->
-                         let f = (match op with
+(* semantic anlysis must accept comparison of null_literal to tree is valid *)
+
+               (Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq) -> 
+               Binop(Lrx_Atom(Lrx_Int), c1, op, c2)
+             | _ -> binop_error t1 t2 op) in
+               FuncCall(f, [c1; c2])
+             | (Lrx_Atom(Lrx_Float), Lrx_Atom(Lrx_Float)) -> (*two floats*)
+                let f = 
+                    (match op with
+                        (Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq) -> 
+                        Binop(Lrx_Atom(Lrx_Float), c1, op, c2)
+                      | _ -> binop_error t1 t2 op) in
+                        FuncCall(f, [c1; c2])
+                      | (Lrx_Atom(Lrx_Bool), Lrx_Atom(Lrx_Bool)) -> (*two bools*)
+                        let f = (match op with
+                                    (Equal | Neq | And | Or) -> Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
+                                  | _ -> binop_error t1 t2 op) in
+                                    FuncCall(f, [c1; c2])
+                                  | (Lrx_Atom(Lrx_Char), Lrx_Atom(Lrx_Char)) ->
+                        let f = (match op with
                         (Add | Sub |  Equal | Neq | Less | Leq | Greater | Geq) -> Binop(Lrx_Atom(Lrx_Float), c1, op, c2)
                         | _ -> binop_error t1 t2 op) in
                                 FuncCall(f, [c1; c2])
+
+
+
                 | (Lrx_Tree, Lrx_Tree) -> (*two trees*)
                         let f = (match op with
                         Add -> build_fdecl "__tree_concat" (Lrx_Tree) [t1; t2]
@@ -196,29 +205,32 @@ and check_func (name:string) (cl:c_expr list) env =
 (*checks expression*)
 
 (*
- * Change to and check_expr
+ * Change to 
  *
   *
  *
   *
- *
+ * and check_expr
+ * and check_lvalue
   *
- *
+ *         |
+ *         |
+ *         |
+ *         |
+  *        V 
+  *
   *
  *
  *)
 
-
-
 let rec check_expr (e:expr) env =
 	  match e with
        Int_Literal(i) -> C_Int_Literal(i)
-
      | Float_Literal(f) -> C_Float_Literal(f)
      | String_Literal(s) -> C_String_Literal(s)
      | Char_Literal(c) -> C_Char_Literal(c)
      | Bool_Literal(b) -> C_Bool_Literal(b)
-     | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
+     | _ -> raise (Failure "TEMPORARY: check_expr not complete")
  (*    | Null_Literal
      | Id(s) -> C_Id(s)
      | Binop(e1, op, e2) ->
@@ -261,7 +273,6 @@ let rec check_statement (s:stmt) ret_type env =
 	     CodeBlock(b) ->
        let checked_block = check_block b ret_type env in
        C_CodeBlock(checked_block)
-
      | Return(e) -> 
        let checked = check_expr e env in
        let t = type_of_expr checked in
@@ -333,8 +344,6 @@ and check_is_vardecls (vars: var list) env =
         	 SymTab_FuncDecl(f) -> raise(Failure("symbol is not a variable"))
 	       | SymTab_VarDecl(v) -> 
            (fst_of_three v, snd_of_three v) :: check_is_vardecls tail env 
-
-
 
 (* 
  * returns (<<verified list of global variable declarations>>, 
