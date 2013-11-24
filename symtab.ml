@@ -97,7 +97,7 @@ and symtab_add_funcs (funcs:func list) env =
 
 (* add builtin functions to the symbol table *)
 let add_builtins env =
-    let env = symtab_add_decl "print_string" (SymTab_FuncDecl("print_string", Lrx_Atom(Lrx_Int), [Lrx_Tree( {datatype = Lrx_Char; degree = Int_Literal(1)} )], 0)) env in 
+    let env = symtab_add_decl "print_string" (SymTab_FuncDecl("print_string", Lrx_Atom(Lrx_Int), [Lrx_Tree({datatype = Lrx_Char; degree = Int_Literal(1)})], 0)) env in 
     let env = symtab_add_decl "print_int" (SymTab_FuncDecl("print_int", Lrx_Atom(Lrx_Int), [Lrx_Atom(Lrx_Int)], 0)) env in
     let env = symtab_add_decl "print_float" (SymTab_FuncDecl("print_float", Lrx_Atom(Lrx_Int), [Lrx_Atom(Lrx_Float)], 0)) env in
     let env = symtab_add_decl "print_bool" (SymTab_FuncDecl("print_bool", Lrx_Atom(Lrx_Int), [Lrx_Atom(Lrx_Bool)], 0)) env in

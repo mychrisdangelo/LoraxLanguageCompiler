@@ -63,12 +63,13 @@ let main_fdecl (f:c_func) =
 (*called to get the Atom/Tree type of an expresion*)
 let type_of_expr = function
     C_Int_Literal(i) -> Lrx_Atom(Lrx_Int)
-    | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
-(*   | Float_Literal(f) -> Lrx_Atom(Lrx_Float)
-  | String_Literal(s) -> (*what do we do for strings?*)
-  | Char_Literal(c) -> Lrx_Atom(Lrx_Char)
-  | Bool_Literal(b) -> Lrx_Atom(Lrx_Bool) 
-  | Null_Literal -> Null (*not sure about this*)
+
+  | C_Float_Literal(f) -> Lrx_Atom(Lrx_Float)
+  | C_String_Literal(s) -> Lrx_Tree({datatype = Lrx_Char; degree = Int_Literal(1)})
+  | C_Char_Literal(c) -> Lrx_Atom(Lrx_Char)
+  | C_Bool_Literal(b) -> Lrx_Atom(Lrx_Bool) 
+  | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
+(*  | Null_Literal -> Null (*not sure about this*)
   | Id(t,_) -> t (*not sure about this*)
   | Binop(t,_,_,_) -> t 
   | Unop(t,_,_) -> t 
@@ -212,12 +213,13 @@ and check_func (name:string) (cl:c_expr list) env =
 let rec check_expr (e:expr) env =
 	  match e with
        Int_Literal(i) -> C_Int_Literal(i)
-       | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
-(*      | Float_Literal(f) -> C_Float_Literal(f)
-     | StringLiteral(s) -> C_String_Literal(s)
+
+     | Float_Literal(f) -> C_Float_Literal(f)
+     | String_Literal(s) -> C_String_Literal(s)
      | Char_Literal(c) -> C_Char_Literal(c)
      | Bool_Literal(b) -> C_Bool_Literal(b)
-     | Null_Literal
+     | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
+ (*    | Null_Literal
      | Id(s) -> C_Id(s)
      | Binop(e1, op, e2) ->
 		   let (c1, c2) = (check_expr e1 env, check_expr e2 env) in
@@ -265,9 +267,9 @@ let rec check_statement (s:stmt) ret_type env =
        let t = type_of_expr checked in
        if t = ret_type then C_Return(checked) else
        raise (Failure("function return type " ^ string_of_var_type t ^ "; type " ^ string_of_var_type ret_type ^ "expected"))
-| _ -> raise (Failure "TEMPORARY: check_statement not complete")
-(*      | Expr(e) -> Expr(check_expr e env) 
-     | If(e, s, Block([])) -> 
+     | Expr(e) -> C_Expr(check_expr e env) 
+     | _ -> raise (Failure "TEMPORARY: check_statement not complete")
+(*      | If(e, s, Block([])) -> 
        let checked = check_expr e env in
        if type_of_expr checked = Lrx_Atom(Lrx_Bool) then
        If(checked, check_statement s ret_type env, Block([])) 
