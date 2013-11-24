@@ -39,8 +39,8 @@ type c_stmt =
 
 (*tree declaration from Ast but with typing added*)
 and c_tree_decl = {
-    datatype: atom_type;
-    degree: c_expr;
+    c_datatype: atom_type;
+    c_degree: c_expr;
 } 
 
 and c_block = {
@@ -81,11 +81,6 @@ let type_of_expr = function
   | Call(fdecl,_) -> let (_,t,_,_) = fdecl in t
   | Noexpr -> "" 
 
-(*error raised for improper binary expression*)
-let binop_error (t1:var_type) (t2:var_type) (op:Ast.bop) =
-	raise(Failure("operator " ^ (string_of_binop op) ^ " not compatible with expressions of type " ^
-		(string_of_type t1) ^ " and " ^ (string_of_type t2)))
-
 (*error raised for improper unary expression*)
 let unop_error (t:var_type) (op:Ast.uop) =
 	raise(Failure("operator " ^ (string_of_unop op) ^ " not compatible with expression of type " ^
@@ -94,41 +89,43 @@ let unop_error (t:var_type) (op:Ast.uop) =
 (*builds a function declaration with a name, return type, and variable argument list*)
 let build_fdecl (name:string) (ret:var_type) (args:var_type list) =
 	(name, ret, args, 0)
+*)
 
-(*check binary operators ADD SUB MULT DIV MOD EQUAL NEQ LESS LEQ GREATER GEQ CHILD AND OR*)
-let check_binop (c1:c_expr) (c2:c_expr) (op:Ast.bop) =
-    let (t1, t2) = (type_of_expr c1, type_of_expr c2) in
-    match(t1, t2) with 
-       (Lrx_Atom(Lrx_Int), Lrx_Atom(Lrx_Int)) -> (*two integer*)
-       let f = 
-           (match op with
+(*error raised for improper binary expression*)
+let binop_error (t1:var_type) (t2:var_type) (op:op) =
+  raise(Failure("operator " ^ (string_of_binop op) ^ " not compatible with expressions of type " ^
+    (string_of_var_type t1) ^ " and " ^ (string_of_var_type t2)))
 
 (* semantic anlysis must accept comparison of null_literal to tree is valid *)
 
-               (Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq) -> 
-               Binop(Lrx_Atom(Lrx_Int), c1, op, c2)
-             | _ -> binop_error t1 t2 op) in
-               FuncCall(f, [c1; c2])
-             | (Lrx_Atom(Lrx_Float), Lrx_Atom(Lrx_Float)) -> (*two floats*)
-                let f = 
-                    (match op with
-                        (Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq) -> 
-                        Binop(Lrx_Atom(Lrx_Float), c1, op, c2)
-                      | _ -> binop_error t1 t2 op) in
-                        FuncCall(f, [c1; c2])
-                      | (Lrx_Atom(Lrx_Bool), Lrx_Atom(Lrx_Bool)) -> (*two bools*)
-                        let f = (match op with
-                                    (Equal | Neq | And | Or) -> Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
-                                  | _ -> binop_error t1 t2 op) in
-                                    FuncCall(f, [c1; c2])
-                                  | (Lrx_Atom(Lrx_Char), Lrx_Atom(Lrx_Char)) ->
-                        let f = (match op with
-                        (Add | Sub |  Equal | Neq | Less | Leq | Greater | Geq) -> Binop(Lrx_Atom(Lrx_Float), c1, op, c2)
-                        | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
+(*check binary operators ADD SUB MULT DIV MOD EQUAL NEQ LESS LEQ GREATER GEQ CHILD AND OR*)
+let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
+    let (t1, t2) = (type_of_expr c1, type_of_expr c2) in
+    match (t1, t2) with 
+       (Lrx_Atom(Lrx_Int), Lrx_Atom(Lrx_Int)) ->
+       (match op with
+           (Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq) -> 
+               C_Binop(Lrx_Atom(Lrx_Int), c1, op, c2)
+             | _ -> binop_error t1 t2 op)
+     | (Lrx_Atom(Lrx_Float), Lrx_Atom(Lrx_Float)) ->
+       (match op with
+           (Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq) -> 
+               C_Binop(Lrx_Atom(Lrx_Float), c1, op, c2)
+             | _ -> binop_error t1 t2 op)
+     | (Lrx_Atom(Lrx_Bool), Lrx_Atom(Lrx_Bool)) ->
+       (match op with
+           (And | Or | Equal | Neq) -> 
+               C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
+             | _ -> binop_error t1 t2 op)
+     | (Lrx_Atom(Lrx_Char), Lrx_Atom(Lrx_Char)) ->
+       (match op with
+           (Add | Sub | Equal | Neq | Less | Leq | Greater | Geq) -> 
+               C_Binop(Lrx_Atom(Lrx_Char), c1, op, c2)
+             | _ -> binop_error t1 t2 op)
+       | _ -> raise (Failure "TEMPORARAY: check_binop not complete")
 
 
-
+(*
                 | (Lrx_Tree, Lrx_Tree) -> (*two trees*)
                         let f = (match op with
                         Add -> build_fdecl "__tree_concat" (Lrx_Tree) [t1; t2]
@@ -144,10 +141,9 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:Ast.bop) =
                         let f = (match op with
                         Child -> build_fdecl "__tree_child" (Lrx_Tree) [t1; t2]
                         | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
-                 | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
-
+                                FuncCall(f, [c1; c2])*)
+                 
+(*
  (*check unary operators NEG NOT POP AT*) 
 let check_unop (c:c_expr) (op:Ast.uop) = 
         let t = type_of_expr c in
@@ -211,7 +207,7 @@ and check_func (name:string) (cl:c_expr list) env =
  *
   *
  * and check_expr
- * and check_lvalue
+ * 
   *
  *         |
  *         |
@@ -230,12 +226,13 @@ let rec check_expr (e:expr) env =
      | String_Literal(s) -> C_String_Literal(s)
      | Char_Literal(c) -> C_Char_Literal(c)
      | Bool_Literal(b) -> C_Bool_Literal(b)
+     | Binop(e1, op, e2) ->
+       let (c1, c2) = (check_expr e1 env, check_expr e2 env) in
+       check_binop c1 c2 op
      | _ -> raise (Failure "TEMPORARY: check_expr not complete")
+
  (*    | Null_Literal
      | Id(s) -> C_Id(s)
-     | Binop(e1, op, e2) ->
-		   let (c1, c2) = (check_expr e1 env, check_expr e2 env) in
-		   check_binop c1 c2 op
 	   | Unop(e1, op) ->
 		   let checked = check_expr e1 env in
 		    check_unop checked op
