@@ -1,3 +1,10 @@
+(* 
+ * Authors:
+ * Chris D'Angelo
+ * Special thanks to Dara Hazeghi's strlang and Stephen Edward's MicroC
+ * which provided background knowledge.
+ *)
+
 type action = Ast | Symtab | SAnalysis | Compile | Binary 
 
 let _ =

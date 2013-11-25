@@ -1,4 +1,6 @@
-/*
+#define DO_NOT_COMPILE_THIS_FILE_UNTIL_CG_TEAM_IS_READY
+#ifndef DO_NOT_COMPILE_THIS_FILE_UNTIL_CG_TEAM_IS_READY
+
 #ifndef __LRXLIB_H__
 #define __LRXLIB_H__
 
@@ -203,4 +205,5 @@ void print_tree( struct lrx_tree *t, enum lrx_primitives type) {
 
 #endif
 
-*/
+// DO_NOT_COMPILE_THIS_FILE_UNTIL_CG_TEAM_IS_READY
+#endif 

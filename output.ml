@@ -14,4 +14,5 @@ open Check
 open Intermediate
 
 let rec c_of_inter_pgrm (p:string) =
-	"#include <stdio.h>\n\n int main() { printf(\"dummy program\\n\"); return 0; }"
+	"#include \"lrxlib.h\"\n" ^
+	"#include <stdio.h>\n\nint main() { printf(\"dummy program\\n\"); return 0; }"

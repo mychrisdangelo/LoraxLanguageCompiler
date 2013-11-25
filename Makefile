@@ -1,3 +1,10 @@
+#
+# Authors:
+# Chris D'Angelo
+# Special thanks to Dara Hazeghi's strlang and Stephen Edward's MicroC
+# which provided background knowledge.
+#
+
 OBJS = ast.cmo symtab.cmo check.cmo intermediate.cmo output.cmo parser.cmo scanner.cmo lorax.cmo
 
 lorax : $(OBJS)
