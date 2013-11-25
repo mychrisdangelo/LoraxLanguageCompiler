@@ -78,6 +78,36 @@ CheckParser() {
     fi 
 }
 
+CheckSemanticAnalysis() {
+    error=0
+    basename=`echo $1 | sed 's/.*\\///
+                             s/.lrx//'`
+    reffile=`echo $1 | sed 's/.lrx$//'`
+    basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
+
+    echo -n "$basename..."
+
+    echo 1>&2
+    echo "###### Testing $basename" 1>&2
+
+    generatedfiles=""
+
+    generatedfiles="$generatedfiles ${basename}.s.out" &&
+    Run "$lorax" "-s" "<" $1 ">" ${basename}.s.out &&
+    Compare ${basename}.s.out ${reffile}.out ${basename}.s.diff
+
+    if [ $error -eq 0 ] ; then
+    if [ $keep -eq 0 ] ; then
+        rm -f $generatedfiles
+    fi
+    echo "OK"
+    echo "###### SUCCESS" 1>&2
+    else
+    echo "###### FAILED" 1>&2
+    globalerror=$error
+    fi 
+}
+
 Check() {
     error=0
     basename=`echo $1 | sed 's/.*\\///
@@ -139,6 +169,9 @@ do
     case $file in
     *test-parser*)
         CheckParser $file 2>> $globallog
+        ;;
+    *test-sa*)
+        CheckSemanticAnalysis $file 2>> $globallog
         ;;
 	*test-*)
 	    Check $file 2>> $globallog

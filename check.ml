@@ -127,7 +127,7 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
            (Add | Sub | Equal | Neq | Less | Leq | Greater | Geq) -> 
                C_Binop(Lrx_Atom(Lrx_Char), c1, op, c2)
              | _ -> binop_error t1 t2 op)
-     | _ -> raise (Failure "TEMPORARAY: check_binop not complete")
+     | _ -> raise (Failure "TEMPORARY: check_binop not complete")
 
 
 (*

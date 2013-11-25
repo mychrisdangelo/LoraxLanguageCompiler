@@ -1,0 +1,8 @@
+int a; // global scope
+
+int main()
+{
+	int b;
+	int a; // scope of main function
+	return 0;
+}
