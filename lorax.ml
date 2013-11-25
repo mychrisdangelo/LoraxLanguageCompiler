@@ -10,8 +10,8 @@ type action = Ast | Symtab | SAnalysis | Compile | Binary
 let _ =
   let action = if Array.length Sys.argv > 1 then
     List.assoc Sys.argv.(1) [ ("-a", Ast);
-            ("-st", Symtab);
-            ("-sa", SAnalysis);
+            ("-t", Symtab);
+            ("-s", SAnalysis);
 			      ("-c", Compile);
 			      ("-b", Binary)]
   else Compile in
@@ -23,8 +23,8 @@ let _ =
     | Symtab     -> let env = Symtab.symtab_of_program program in
                     print_string (Symtab.string_of_symtab env)
     | SAnalysis  -> let env = Symtab.symtab_of_program program in
-                    ignore (Check.check_program program env);
-                    print_string "Passed Semantic Analysis.\n"
+                    let checked = Check.check_program program env in
+                    ignore checked; print_string "Passed Semantic Analysis.\n"
     | Compile    -> let env = Symtab.symtab_of_program program in
                     let checked = Check.check_program program env in
                     let inter_pgrm = Intermediate.intermediate_rep_program checked in
