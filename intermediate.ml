@@ -1,4 +1,4 @@
-open Ast
+(*open Ast
 open Check
 
 type inter_var = Ast.var
@@ -142,4 +142,5 @@ if Tree:
 if Assign: build out assign using new types, handling child_assign, data_assign,name_assign
 if Call:
 if NoExpr:
+*)
 *)
