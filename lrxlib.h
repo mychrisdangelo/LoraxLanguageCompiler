@@ -1,3 +1,4 @@
+/*
 #ifndef __LRXLIB_H__
 #define __LRXLIB_H__
 
@@ -201,3 +202,5 @@ void print_tree( struct lrx_tree *t, enum lrx_primitives type) {
   
 
 #endif
+
+*/
