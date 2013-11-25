@@ -1,6 +1,7 @@
-(*open Ast
+open Ast
 open Check
 
+(*
 type inter_var = Ast.var
 type inter_var_type = Ast.var_type
 type inter_fdecl = Ast.func_decl
@@ -144,3 +145,13 @@ if Call:
 if NoExpr:
 *)
 *)
+
+(* 
+ * To: Doug/Zhaarn/Tim
+ * From: Chris
+ * Message: this is the entry point function that I'm using in 
+ * lorax.ml. If you can please keep it this way. 
+ *)
+
+let rec intermediate_rep_program (p:c_program) =
+  "dummy return value"

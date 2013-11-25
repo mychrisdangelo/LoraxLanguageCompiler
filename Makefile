@@ -1,4 +1,4 @@
-OBJS = ast.cmo symtab.cmo check.cmo parser.cmo scanner.cmo lorax.cmo
+OBJS = ast.cmo symtab.cmo check.cmo intermediate.cmo output.cmo parser.cmo scanner.cmo lorax.cmo
 
 lorax : $(OBJS)
 	ocamlc -o lorax -g $(OBJS)
@@ -31,8 +31,12 @@ symtab.cmo: ast.cmo
 symtab.cmx: ast.cmx
 check.cmo: symtab.cmo
 check.cmx: symtab.cmx
-lorax.cmo: scanner.cmo parser.cmi ast.cmo symtab.cmo
-lorax.cmx: scanner.cmx parser.cmx ast.cmx symtab.cmx
+intermediate.cmo: check.cmo
+intermediate.cmx: check.cmx
+output.cmo: intermediate.cmo
+output.cmx: intermediate.cmx
+lorax.cmo: scanner.cmo parser.cmi ast.cmo symtab.cmo check.cmo intermediate.cmo output.cmo
+lorax.cmx: scanner.cmx parser.cmx ast.cmx symtab.cmx check.cmx intermediate.cmx output.cmx
 parser.cmo: ast.cmo parser.cmi 
 parser.cmx: ast.cmx parser.cmi 
 scanner.cmo: parser.cmi 
