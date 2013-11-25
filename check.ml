@@ -74,7 +74,10 @@ let type_of_expr = function
   | C_Binop(t,_,_,_) -> t
   | C_Id(t,_) -> t
   | C_Assign(t,_,_) -> t
-  | C_Tree(t, _, _, _) -> t
+  | C_Tree(t, d, _, _) -> 
+    (match t with
+    Lrx_Atom(t) -> Lrx_Tree({datatype = t; degree = Int_Literal(d)})
+    | _ -> raise (Failure "Tree type must be Lrx_atom"))
   | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
 (*
 
@@ -246,15 +249,15 @@ and check_l_value (l:expr) env =
        [] -> []
        | head :: tail -> 
         let checked_expr = check_expr head env in
-        let tree_type = type_of_expr checked_expr in
-        if tree_type = t then
-          match checked_expr with
-              C_Tree(_, tree_degree, _, _) -> if tree_degree = d then
+        match checked_expr with
+              C_Tree(tree_type, tree_degree, _, _) -> if tree_degree = d && tree_type = t then
                   checked_expr :: check_tree_literal_is_valid d t tail env
-                else raise (Failure ("Tree literal degree is not consistent: expected " ^ string_of_int d ^ " but received " ^ string_of_int tree_degree ))  
-              | _ ->
+                else raise (Failure ("Tree type is not consistent: expected <" ^ string_of_var_type t ^ ", " ^ string_of_int d ^ "> but received <" ^ string_of_var_type tree_type ^ ", " ^ string_of_int tree_degree ^ ">"))  
+              | _ -> 
+              let tree_type = (type_of_expr checked_expr) in
+                if tree_type = t then
                 checked_expr :: check_tree_literal_is_valid d t tail env
-        else raise (Failure ("Tree literal type is not consistent: expected " ^ string_of_var_type t ^ " but received " ^ string_of_var_type tree_type ))
+              else raise (Failure ("Tree literal type is not consistent: expected " ^ string_of_var_type t ^ " but received " ^ string_of_var_type tree_type ))
 
 and check_tree_literal_root_is_valid (e:expr) (el: expr list) env =
   let checked_root = check_expr e env in
