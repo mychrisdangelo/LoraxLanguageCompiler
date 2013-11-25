@@ -1,4 +1,4 @@
-(*
+(* 
  * Authors:
  * Chris D'Angelo
  * Kira Whithouse
@@ -6,6 +6,10 @@
  *)
 
 open Ast
+
+let fst_of_three (t, _, _) = t
+let snd_of_three (_, t, _) = t
+let fst_of_four (t, _, _, _) = t
 
 (*expressions from Ast but with typing added*)
 type c_expr =
@@ -18,7 +22,7 @@ type c_expr =
   | C_Id of var_type * string
   | C_Binop of var_type * c_expr * op * c_expr
   | C_Unop of var_type * c_expr * uop
-  | C_Tree of var_type * c_expr * c_expr list
+  | C_Tree of var_type * int * c_expr * c_expr list
   | C_Assign of var_type * c_expr * c_expr
   | C_Call of string * c_expr list
   | C_Noexpr
@@ -36,8 +40,8 @@ type c_stmt =
 
 (*tree declaration from Ast but with typing added*)
 and c_tree_decl = {
-    datatype: atom_type;
-    degree: c_expr;
+    c_datatype: atom_type;
+    c_degree: c_expr;
 } 
 
 and c_block = {
@@ -63,62 +67,78 @@ let main_fdecl (f:c_func) =
 (*called to get the Atom/Tree type of an expresion*)
 let type_of_expr = function
     C_Int_Literal(i) -> Lrx_Atom(Lrx_Int)
-    | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
-(*   | Float_Literal(f) -> Lrx_Atom(Lrx_Float)
-  | String_Literal(s) -> (*what do we do for strings?*)
-  | Char_Literal(c) -> Lrx_Atom(Lrx_Char)
-  | Bool_Literal(b) -> Lrx_Atom(Lrx_Bool) 
-  | Null_Literal -> Null (*not sure about this*)
-  | Id(t,_) -> t (*not sure about this*)
-  | Binop(t,_,_,_) -> t 
-  | Unop(t,_,_) -> t 
-  | Tree(t, d) -> Lrx_Tree(t, d) (*not sure about this*)
-  | Assign(t,_,_) -> t 
-  | Call(fdecl,_) -> let (_,t,_,_) = fdecl in t
-  | Noexpr -> "" 
+  | C_Float_Literal(f) -> Lrx_Atom(Lrx_Float)
+  | C_String_Literal(s) -> Lrx_Tree({datatype = Lrx_Char; degree = Int_Literal(1)})
+  | C_Char_Literal(c) -> Lrx_Atom(Lrx_Char)
+  | C_Bool_Literal(b) -> Lrx_Atom(Lrx_Bool)
+  | C_Binop(t,_,_,_) -> t
+  | C_Id(t,_) -> t
+  | C_Assign(t,_,_) -> t
+  | C_Tree(t, _, _, _) -> t
+  | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
+(*
 
-(*error raised for improper binary expression*)
-let binop_error (t1:var_type) (t2:var_type) (op:Ast.bop) =
-	raise(Failure("operator " ^ (string_of_binop op) ^ " not compatible with expressions of type " ^
-		(string_of_type t1) ^ " and " ^ (string_of_type t2)))
+| Null_Literal -> Null (*not sure about this*)
+  
+  | Unop(t,_,_) -> t 
+  
+   
+  | Call(fdecl,_) -> let (_,t,_,_) = fdecl in t
+  | Noexpr -> ""
 
 (*error raised for improper unary expression*)
 let unop_error (t:var_type) (op:Ast.uop) =
 	raise(Failure("operator " ^ (string_of_unop op) ^ " not compatible with expression of type " ^
 		(string_of_type t)))
 
-
-
-
 (*builds a function declaration with a name, return type, and variable argument list*)
 let build_fdecl (name:string) (ret:var_type) (args:var_type list) =
 	(name, ret, args, 0)
+*)
+
+(*error raised for improper binary expression*)
+let binop_error (t1:var_type) (t2:var_type) (op:op) =
+  raise(Failure("operator " ^ (string_of_binop op) ^ " not compatible with expressions of type " ^
+    (string_of_var_type t1) ^ " and " ^ (string_of_var_type t2)))
+
+(* semantic anlysis must accept comparison of null_literal to tree is valid *)
 
 (*check binary operators ADD SUB MULT DIV MOD EQUAL NEQ LESS LEQ GREATER GEQ CHILD AND OR*)
-let check_binop (c1:c_expr) (c2:c_expr) (op:Ast.bop) =
-        let (t1, t2) = (type_of_expr c1, type_of_expr c2) in
-        match(t1, t2) with 
-                (Lrx_Atom(Lrx_Int), Lrx_Atom(Lrx_Int)) -> (*two integer*)
-                        let f = (match op with
-                        (Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq) -> Binop(Lrx_Atom(Lrx_Int), c1, op, c2)
-                        | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
-                | (Lrx_Atom(Lrx_Float), Lrx_Atom(Lrx_Float)) -> (*two floats*)
-                         let f = (match op with
-                        (Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq) -> Binop(Lrx_Atom(Lrx_Float), c1, op, c2)
-                        | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
+let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
+    let (t1, t2) = (type_of_expr c1, type_of_expr c2) in
+    match (t1, t2) with 
+       (Lrx_Atom(Lrx_Int), Lrx_Atom(Lrx_Int)) ->
+       (match op with
+           (Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq) -> 
+               C_Binop(Lrx_Atom(Lrx_Int), c1, op, c2)
+             | _ -> binop_error t1 t2 op)
+     | (Lrx_Atom(Lrx_Float), Lrx_Atom(Lrx_Float)) ->
+       (match op with
+           (Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq) -> 
+               C_Binop(Lrx_Atom(Lrx_Float), c1, op, c2)
+             | _ -> binop_error t1 t2 op)
+     | (Lrx_Atom(Lrx_Bool), Lrx_Atom(Lrx_Bool)) ->
+       (match op with
+           (And | Or | Equal | Neq) -> 
+               C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
+             | _ -> binop_error t1 t2 op)
+     | (Lrx_Atom(Lrx_Char), Lrx_Atom(Lrx_Char)) ->
+       (match op with
+           (Add | Sub | Equal | Neq | Less | Leq | Greater | Geq) -> 
+               C_Binop(Lrx_Atom(Lrx_Char), c1, op, c2)
+             | _ -> binop_error t1 t2 op)
+     | _ -> raise (Failure "TEMPORARAY: check_binop not complete")
 
-                | (Lrx_Atom(Lrx_Bool), Lrx_Atom(Lrx_Bool)) -> (*two bools*)
-                         let f = (match op with
-                        (Equal | Neq | And | Or) -> Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
-                        | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
-                | (Lrx_Atom(Lrx_Char), Lrx_Atom(Lrx_Char)) ->
-                         let f = (match op with
-                        (Add | Sub |  Equal | Neq | Less | Leq | Greater | Geq) -> Binop(Lrx_Atom(Lrx_Float), c1, op, c2)
-                        | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
+
+(*
+     | (Lrx_Tree, Lrx_Atom(Lrx_Int)) ->
+          let f = 
+          (match op with
+              Child -> build_fdecl "__tree_child" (Lrx_Tree) [t1; t2]
+                 | _ -> binop_error t1 t2 op) in
+              C_Call(f, [c1; c2]))
+
+
                 | (Lrx_Tree, Lrx_Tree) -> (*two trees*)
                         let f = (match op with
                         Add -> build_fdecl "__tree_concat" (Lrx_Tree) [t1; t2]
@@ -130,14 +150,9 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:Ast.bop) =
                         | Geq -> build_fdecl "_tree_greater_equal_than" (Lrx_Atom(Lrx_Bool)) [t;t2]
                         | _ -> binop_error t1 t2 op) in
                                 FuncCall(f, [c1; c2])
-                | (Lrx_Tree, Lrx_Atom(Lrx_Int)) -> (*tree and int --> child operator*) 
-                        let f = (match op with
-                        Child -> build_fdecl "__tree_child" (Lrx_Tree) [t1; t2]
-                        | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
-                 | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
-
+                *)
+                 
+(*
  (*check unary operators NEG NOT POP AT*) 
 let check_unop (c:c_expr) (op:Ast.uop) = 
         let t = type_of_expr c in
@@ -195,50 +210,91 @@ and check_func (name:string) (cl:c_expr list) env =
 (*checks expression*)
 
 (*
- * Change to and check_expr
+ * Change to 
  *
   *
  *
   *
- *
+ * and check_expr
+ * 
   *
- *
+ *         |
+ *         |
+ *         |
+ *         |
+  *        V 
+  *
   *
  *
  *)
 
+let rec check_id_is_valid (id_name:string) env = 
+     let decl = Symtab.symtab_find id_name env in
+     (match decl with 
+          SymTab_VarDecl(v) -> (snd_of_three v, fst_of_three v)
+        | _ -> raise (Failure("symbol " ^ id_name ^ " is not a variable")))
+
+and check_l_value (l:expr) env =
+    match l with
+     | Id(s) -> let (t, e) = check_id_is_valid s env in
+          C_Id(t,e)
+     | _ -> raise (Failure("TEMPORARY: check lvalue not complete"))
 
 
-let rec check_expr (e:expr) env =
+ and check_tree_literal_is_valid (d:int) (t:var_type) (el:expr list) env =
+     match el with
+       [] -> []
+       | head :: tail -> 
+        let checked_expr = check_expr head env in
+        let tree_type = type_of_expr checked_expr in
+        if tree_type = t then
+          match checked_expr with
+              C_Tree(_, tree_degree, _, _) -> if tree_degree = d then
+                  checked_expr :: check_tree_literal_is_valid d t tail env
+                else raise (Failure ("Tree literal degree is not consistent: expected " ^ string_of_int d ^ " but received " ^ string_of_int tree_degree ))  
+              | _ ->
+                checked_expr :: check_tree_literal_is_valid d t tail env
+        else raise (Failure ("Tree literal type is not consistent: expected " ^ string_of_var_type t ^ " but received " ^ string_of_var_type tree_type ))
+
+and check_tree_literal_root_is_valid (e:expr) (el: expr list) env =
+  let checked_root = check_expr e env in
+  let type_root = type_of_expr checked_root in
+  match type_root with
+      (Lrx_Atom(Lrx_Int) | Lrx_Atom(Lrx_Float) | Lrx_Atom(Lrx_Char) | Lrx_Atom(Lrx_Bool)) ->
+          let degree_root = List.length el in
+              let checked_tree = check_tree_literal_is_valid degree_root type_root el env in
+              (type_root, degree_root, checked_root, checked_tree)
+    | _ -> raise (Failure ("Tree root cannot be of non-atom type: " ^ string_of_var_type type_root))
+
+and check_expr (e:expr) env =
 	  match e with
        Int_Literal(i) -> C_Int_Literal(i)
-       | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
-(*      | Float_Literal(f) -> C_Float_Literal(f)
-     | StringLiteral(s) -> C_String_Literal(s)
+     | Float_Literal(f) -> C_Float_Literal(f)
+     | String_Literal(s) -> C_String_Literal(s)
      | Char_Literal(c) -> C_Char_Literal(c)
      | Bool_Literal(b) -> C_Bool_Literal(b)
-     | Null_Literal
-     | Id(s) -> C_Id(s)
+     | Tree(e, el) -> let (t, d, e, el) = check_tree_literal_root_is_valid e el env in 
+          C_Tree(t, d, e, el)
+     | Id(s) -> let (t, e) = check_id_is_valid s env in
+          C_Id(t,e)
      | Binop(e1, op, e2) ->
-		   let (c1, c2) = (check_expr e1 env, check_expr e2 env) in
-		   check_binop c1 c2 op
+       let (c1, c2) = (check_expr e1 env, check_expr e2 env) in
+       check_binop c1 c2 op
+     | Assign(l, r) ->
+       let checked_r = check_expr r env in
+       let checked_l = check_l_value l env in
+       let t_r = type_of_expr checked_r in
+       let t_l =  type_of_expr checked_l in
+       if t_r = t_l then C_Assign(t_l, checked_l, checked_r) else 
+           raise(Failure("assignment not compatible with expressions of type " ^
+           string_of_var_type t_l ^ " and " ^ string_of_var_type t_r))  
+     | _ -> raise (Failure "TEMPORARY: check_expr not complete")
+
+ (*    | Null_Literal
+     
 	   | Unop(e1, op) ->
 		   let checked = check_expr e1 env in
 		    check_unop checked op
-     | Tree(e, el) ->
-       check_tree e el env
-	   | Assign(l, r) ->
-		   let checked = check_expr r env in
-		   let deref = check_expr (snd r) env in
-		   let (result_t, lv) = check_lvalue l deref env in
-		   let t = type_of_expr checked in
-		   if t = result_t then C_Assign(t, lv, checked) else 
-			 (match (checked, result_t) with
-				   (NumLiteral(0), Map(_,_)) -> 
-           let f = build_fdecl "__map_empty" result_t [result_t] in FuncCall(f, [Rvalue(result_t, lv)])
-		     | _ -> 
-           raise(Failure("assignment not compatible with expressions of type " ^
-			     string_of_type result_t ^ " and " ^ string_of_type t)))
 	   | Call(name, el) ->
 		   let checked = check_exprlist el env in
 		   check_func name checked env
@@ -249,9 +305,6 @@ and check_exprlist (el:expr list) env =
 	     [] -> []
 	   | head :: tail -> (check_expr head env) :: (check_exprlist tail env)
 
-let fst_of_three (t, _, _) = t
-let snd_of_three (_, t, _) = t
-let fst_of_four (t, _, _, _) = t
 
 (* check a single statement *)
 let rec check_statement (s:stmt) ret_type env =
@@ -259,15 +312,14 @@ let rec check_statement (s:stmt) ret_type env =
 	     CodeBlock(b) ->
        let checked_block = check_block b ret_type env in
        C_CodeBlock(checked_block)
-
      | Return(e) -> 
        let checked = check_expr e env in
        let t = type_of_expr checked in
        if t = ret_type then C_Return(checked) else
        raise (Failure("function return type " ^ string_of_var_type t ^ "; type " ^ string_of_var_type ret_type ^ "expected"))
-| _ -> raise (Failure "TEMPORARY: check_statement not complete")
-(*      | Expr(e) -> Expr(check_expr e env) 
-     | If(e, s, Block([])) -> 
+     | Expr(e) -> C_Expr(check_expr e env) 
+     | _ -> raise (Failure "TEMPORARY: check_statement not complete")
+(*      | If(e, s, Block([])) -> 
        let checked = check_expr e env in
        if type_of_expr checked = Lrx_Atom(Lrx_Bool) then
        If(checked, check_statement s ret_type env, Block([])) 
@@ -331,8 +383,6 @@ and check_is_vardecls (vars: var list) env =
         	 SymTab_FuncDecl(f) -> raise(Failure("symbol is not a variable"))
 	       | SymTab_VarDecl(v) -> 
            (fst_of_three v, snd_of_three v) :: check_is_vardecls tail env 
-
-
 
 (* 
  * returns (<<verified list of global variable declarations>>, 
