@@ -24,7 +24,7 @@ type c_expr =
   | C_Unop of var_type * c_expr * uop
   | C_Tree of var_type * int * c_expr * c_expr list
   | C_Assign of var_type * c_expr * c_expr
-  | C_Call of string * c_expr list
+  | C_Call of scope_func_decl * c_expr list
   | C_Noexpr
 
 (*statements from Ast but with typing added*)
@@ -78,6 +78,7 @@ let type_of_expr = function
     (match t with
     Lrx_Atom(t) -> Lrx_Tree({datatype = t; degree = Int_Literal(d)})
     | _ -> raise (Failure "Tree type must be Lrx_atom"))
+  | C_Call(f,_) -> let (_,r,_,_) = f in r
   | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
 (*
 
@@ -86,7 +87,7 @@ let type_of_expr = function
   | Unop(t,_,_) -> t 
   
    
-  | Call(fdecl,_) -> let (_,t,_,_) = fdecl in t
+
   | Noexpr -> ""
 
 (*error raised for improper unary expression*)
@@ -130,18 +131,14 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
            (Add | Sub | Equal | Neq | Less | Leq | Greater | Geq) -> 
                C_Binop(Lrx_Atom(Lrx_Char), c1, op, c2)
              | _ -> binop_error t1 t2 op)
+     | (Lrx_Tree(t), Lrx_Atom(Lrx_Int)) ->
+          (if op = Child then
+             (let f = ("__tree_child", t1, [t1; t2], 0) in
+             C_Call(f, [c1; c2]))
+          else binop_error t1 t2 op)
      | _ -> raise (Failure "TEMPORARY: check_binop not complete")
 
-
 (*
-     | (Lrx_Tree, Lrx_Atom(Lrx_Int)) ->
-          let f = 
-          (match op with
-              Child -> build_fdecl "__tree_child" (Lrx_Tree) [t1; t2]
-                 | _ -> binop_error t1 t2 op) in
-              C_Call(f, [c1; c2]))
-
-
                 | (Lrx_Tree, Lrx_Tree) -> (*two trees*)
                         let f = (match op with
                         Add -> build_fdecl "__tree_concat" (Lrx_Tree) [t1; t2]
