@@ -236,9 +236,8 @@ let rec check_id_is_valid (id_name:string) env =
 and extract_l_value (l:c_expr) env =
     match l with
     | C_Id(t,s) -> s
-    | C_Tree(t,d,e,el) -> extract_l_value e env
-    | C_Binop(t,l,o,r) -> extract_l_value l env
-    | _ -> raise (Failure ("this is bad news bears"))
+    | C_Binop(t,l,o,r) -> extract_l_value l env 
+    | _ -> raise (Failure ("Cannot dereference expression without id"))
 
 and check_l_value (l:expr) env =
     match l with
@@ -250,7 +249,7 @@ and check_l_value (l:expr) env =
               (if op = Child then
               (let s = (extract_l_value ce env) in 
               let (t, e) = check_id_is_valid s env in
-              ce)
+              ignore t; ignore e; ce)
               else raise (Failure ("Left hand side of assignment operator is improper type")))
             | _ -> raise (Failure ("Left hand side of assignment operator is improper type"))
 
