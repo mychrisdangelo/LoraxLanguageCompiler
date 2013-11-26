@@ -245,13 +245,14 @@ and check_l_value (l:expr) env =
      | Id(s) -> let (t, e) = check_id_is_valid s env in
           C_Id(t,e)
      | _ -> let ce = (check_expr l env) in
-            let te = (type_of_expr ce) in 
-            match te with
-            | Lrx_Tree(_) ->
-              let s = (extract_l_value ce env) in 
+            match ce with 
+            | C_Binop(_,_,op,_) -> 
+              (if op = Child then
+              (let s = (extract_l_value ce env) in 
               let (t, e) = check_id_is_valid s env in
-              ce
-            | _ -> raise (Failure ("Left hand side of assignment operator cannot be of type " ^ string_of_var_type te))
+              ce)
+              else raise (Failure ("Left hand side of assignment operator is improper type")))
+            | _ -> raise (Failure ("Left hand side of assignment operator is improper type"))
 
  and check_tree_literal_is_valid (d:int) (t:var_type) (el:expr list) env =
      match el with
