@@ -72,21 +72,22 @@ let type_of_expr = function
   | C_Char_Literal(c) -> Lrx_Atom(Lrx_Char)
   | C_Bool_Literal(b) -> Lrx_Atom(Lrx_Bool)
   | C_Binop(t,_,_,_) -> t
+  | C_Unop(t,_,_) -> t 
   | C_Id(t,_) -> t
   | C_Assign(t,_,_) -> t
   | C_Tree(t, d, _, _) -> 
     (match t with
-    Lrx_Atom(t) -> Lrx_Tree({datatype = t; degree = Int_Literal(d)})
-    | _ -> raise (Failure "Tree type must be Lrx_atom"))
-  | C_Call(f,_) -> let (_,r,_,_) = f in r
+        Lrx_Atom(t) -> Lrx_Tree({datatype = t; degree = Int_Literal(d)})
+      | _ -> raise (Failure "Tree type must be Lrx_atom"))
   | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
 (*
 
 | Null_Literal -> Null (*not sure about this*)
   
-  | Unop(t,_,_) -> t 
+ 
   
    
+  | C_Call(f,_) -> let (_,r,_,_) = f in r
 
   | Noexpr -> ""
 
@@ -301,7 +302,7 @@ and check_expr (e:expr) env =
      | Unop(e, op) ->
           let checked = check_expr e env in
           check_unop checked op (* returns C_Unop *)
-     | _ -> raise (Failure "TEMPORARY: check_expr not complete")
+     | _ -> raise (Failure ("TEMPORARY: check_expr not complete " ^ string_of_expr e))
 
  (*    | Null_Literal
      
