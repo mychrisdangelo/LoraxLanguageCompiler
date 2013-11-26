@@ -1,21 +1,20 @@
 int main()
 {
-     tree <char> t(3);
-     tree <float> a(1);
-     t = 'd'['a','b','c'];
-     a = 2.0[5.0];
+     tree <int> t(1);
+     t%0%1%0 = 5[6];
+     
 }
 
 
-  // ([],
-  //  [{Ast.fname = "main"; Ast.ret_type = Ast.Lrx_Atom Ast.Lrx_Int;
-  //    Ast.formals = [];
-  //    Ast.fblock =
-  //     {Ast.locals = [];
-  //      Ast.statements =
-  //       [Ast.Expr
-  //         (Ast.Tree (Ast.Int_Literal 3,
-  //           [Ast.Int_Literal 4;
-  //            Ast.Tree (Ast.Int_Literal 5,
-  //             [Ast.Int_Literal 6; Ast.Int_Literal 7])]))];
-  //      Ast.block_id = 1}}])
+// this works
+ // tree <char> t(3);
+ //     tree <float> a(1);
+ //     t = 'd'['a','b','c'];
+ //     a = 2.0[5.0];
+ //     t%0%1 = 'e'['f','g','h'];
+
+
+//this works too
+ // tree <int> t(1);
+ //     t = 4[3[2]];
+ //     t%0%1 = 1[0];

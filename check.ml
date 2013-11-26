@@ -133,9 +133,11 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
              | _ -> binop_error t1 t2 op)
      | (Lrx_Tree(t), Lrx_Atom(Lrx_Int)) ->
           (if op = Child then
-             (let f = ("__tree_child", t1, [t1; t2], 0) in
-             C_Call(f, [c1; c2]))
+            C_Binop(Lrx_Tree(t), c1, op, c2)
           else binop_error t1 t2 op)
+(*              (let f = ("__tree_child", t1, [t1; t2], 0) in
+             C_Call(f, [c1; c2]))
+          else binop_error t1 t2 op) *)
      | _ -> raise (Failure "TEMPORARY: check_binop not complete")
 
 (*
@@ -234,11 +236,37 @@ let rec check_id_is_valid (id_name:string) env =
           SymTab_VarDecl(v) -> (snd_of_three v, fst_of_three v)
         | _ -> raise (Failure("symbol " ^ id_name ^ " is not a variable")))
 
+and extract_l_value (l:c_expr) env =
+    match l with
+    | C_Id(t,s) -> s
+    | C_Tree(t,d,e,el) -> extract_l_value e env
+    | C_Binop(t,l,o,r) -> extract_l_value l env
+    | _ -> raise (Failure ("this is bad news bears"))
+
 and check_l_value (l:expr) env =
     match l with
      | Id(s) -> let (t, e) = check_id_is_valid s env in
           C_Id(t,e)
-     | _ -> raise (Failure("TEMPORARY: check lvalue not complete"))
+     | _ -> let ce = (check_expr l env) in
+            let s = (extract_l_value ce env) in 
+            let (t, e) = check_id_is_valid s env in
+            ce
+
+            (* match e with 
+            | C_Binop(t,d,e,f) -> 
+                  let m = type_of_expr d in
+                  raise (Failure(">> " ^ string_of_var_type m))
+            | _ -> raise (Failure("???")) *)
+(*      | _ -> check_expr l env
+ *)
+     (* let e = check_expr l env in 
+            (match e with 
+            | C_Call(f, el) -> raise (Failure( " yes c call ")) WE GOT HERE!
+            | _ -> raise (Failure "not a c call")) *)
+     (* | _ -> let e = (check_expr l env) in
+            let t = (type_of_expr e) in
+            raise (Failure("???" ^ string_of_var_type t)) *)
+     (* | _ -> raise (Failure("TEMPORARY: check lvalue not complete")) *)
 
 
  and check_tree_literal_is_valid (d:int) (t:var_type) (el:expr list) env =
