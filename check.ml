@@ -90,10 +90,7 @@ let type_of_expr = function
 
   | Noexpr -> ""
 
-(*error raised for improper unary expression*)
-let unop_error (t:var_type) (op:Ast.uop) =
-	raise(Failure("operator " ^ (string_of_unop op) ^ " not compatible with expression of type " ^
-		(string_of_type t)))
+
 
 (*builds a function declaration with a name, return type, and variable argument list*)
 let build_fdecl (name:string) (ret:var_type) (args:var_type list) =
@@ -150,32 +147,33 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
                         | _ -> binop_error t1 t2 op) in
                                 FuncCall(f, [c1; c2])
                 *)
+
+let unop_error (t:var_type) (op:Ast.uop) =
+  raise(Failure("operator " ^ (string_of_unop op) ^ " not compatible with expression of type " ^ (string_of_var_type t)))
                  
-(*
- (*check unary operators NEG NOT POP AT*) 
 let check_unop (c:c_expr) (op:Ast.uop) = 
-        let t = type_of_expr c in
-        match t with
+        let te = type_of_expr c in
+        match te with
                 Lrx_Atom(Lrx_Int) ->
                         (match op with
-                                (Neg | Not) -> Unop((Lrx_Atom(Lrx_Int)), c, op)
-                                | _ -> unop_error t op)
+                              Neg -> C_Unop(Lrx_Atom(Lrx_Int), c, op)
+                              | _ -> unop_error te op)
                 | Lrx_Atom(Lrx_Float) ->
                          (match op with
-                                (Neg | Not) -> Unop((Lrx_Atom(Lrx_Float)), c, op)
-                                | _ -> unop_error t op)
-                | Lrx_Tree (a:atom_type) (d:c_expr) ->
-                        let t_d = type_of_expr d in
-                        match t_d  with
-                                |Lrx_Atom(Lrx_Int) ->
-                                         (match op with
-                                                (Not -> Unop(Lrx_Tree, c, op)) 
-                                                | Pop -> build_function "__tree_pop" () [a;d]
-                                                | At -> build_function "__tree_at" () [a;d]
-                                                | _ -> unop_error t op)
-                                | _ -> unop_error t op (*declaring a tree with degree where degree is not type int *)
-               | _ -> unop_error t op       
-                        
+                              Neg -> C_Unop(Lrx_Atom(Lrx_Float), c, op)
+                              | _ -> unop_error te op)
+                | Lrx_Atom(Lrx_Bool) ->
+                         (match op with
+                              Not -> C_Unop(Lrx_Atom(Lrx_Bool), c, op)
+                              | _ -> unop_error te op)
+                | Lrx_Tree(t) ->
+                         (match op with
+                              Pop -> C_Unop(Lrx_Tree(t), c, op)
+                              | At -> C_Unop(Lrx_Atom(t.datatype), c, op)
+                              | _ -> unop_error te op)
+               | _ -> unop_error te op
+        
+        (*                
 (*compares argument list*)
 let rec compare_arglists formals actuals =
 	match (formals,actuals) with
@@ -262,7 +260,7 @@ and check_l_value (l:expr) env =
               C_Tree(tree_type, tree_degree, _, _) -> if tree_degree = d && tree_type = t then
                   checked_expr :: check_tree_literal_is_valid d t tail env
                 else raise (Failure ("Tree type is not consistent: expected <" ^ string_of_var_type t ^ ", " ^ string_of_int d ^ "> but received <" ^ string_of_var_type tree_type ^ ", " ^ string_of_int tree_degree ^ ">"))  
-              | _ -> 
+              | _ ->
               let tree_type = (type_of_expr checked_expr) in
                 if tree_type = t then
                 checked_expr :: check_tree_literal_is_valid d t tail env
@@ -291,7 +289,7 @@ and check_expr (e:expr) env =
           C_Id(t,e)
      | Binop(e1, op, e2) ->
        let (c1, c2) = (check_expr e1 env, check_expr e2 env) in
-       check_binop c1 c2 op
+        check_binop c1 c2 op (* returns C_Binop *)
      | Assign(l, r) ->
        let checked_r = check_expr r env in
        let checked_l = check_l_value l env in
@@ -300,13 +298,14 @@ and check_expr (e:expr) env =
        if t_r = t_l then C_Assign(t_l, checked_l, checked_r) else 
            raise(Failure("assignment not compatible with expressions of type " ^
            string_of_var_type t_l ^ " and " ^ string_of_var_type t_r))  
+     | Unop(e, op) ->
+          let checked = check_expr e env in
+          check_unop checked op (* returns C_Unop *)
      | _ -> raise (Failure "TEMPORARY: check_expr not complete")
 
  (*    | Null_Literal
      
-	   | Unop(e1, op) ->
-		   let checked = check_expr e1 env in
-		    check_unop checked op
+	   
 	   | Call(name, el) ->
 		   let checked = check_exprlist el env in
 		   check_func name checked env
