@@ -38,7 +38,7 @@ type c_stmt =
   | C_Continue
   | C_Break
 
-(*tree declaration from Ast but with typing added*)
+(* tree declaration from Ast but with typing added *)
 and c_tree_decl = {
     c_datatype: atom_type;
     c_degree: c_expr;
@@ -58,7 +58,7 @@ type c_func = {
 }
 
 type c_program = var list * c_func list
-        
+
 (* structures the 'main' function *)
 let main_fdecl (f:c_func) =
   if f.c_fname = "main" && f.c_ret_type = Lrx_Atom(Lrx_Int) && f.c_formals = [] 
@@ -132,22 +132,24 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
      | (Lrx_Tree(t), Lrx_Atom(Lrx_Int)) ->
           (if op = Child then
             C_Binop(Lrx_Tree(t), c1, op, c2)
-          else binop_error t1 t2 op)      
-     | _ -> raise (Failure "TEMPORARY: check_binop not complete")
+          else binop_error t1 t2 op) 
+     | _ -> raise (Failure "wtf")    
+(*      | (Lrx_Tree(l1), Lrx_Tree(l2)) ->
+          (match op with
+              Add -> if t1 = t2 then C_Binop(Lrx_Tree(l1), c1, op, c2)
+              else -> raise (Failure "Cannot add tree of type " ^ string_of_var_type t1 ^ " with tree of type " ^ string_of_var_type t2)
+            | Equal -> build_fdecl "__tree_equal" (Lrx_Atom(Lrx_Bool)) [t1; t2]
+            | Neq -> build_fdecl "__tree_not_equal" (Lrx_Atom(Lrx_Bool)) [t1; t2]
+            | Less -> build_fdecl "__tree_less_than" (Lrx_Atom(Lrx_Bool)) [t1;t2]
+            | Leq -> build_fdecl "__tree_less_equal_than" (Lrx_Atom(Lrx_Bool)) [t1;t2]
+            | Greater -> build_fdecl "__tree_greater_than" (Lrx_Atom(Lrx_Bool)) [t1;t2]
+            | Geq -> build_fdecl "_tree_greater_equal_than" (Lrx_Atom(Lrx_Bool)) [t;t2]
+            | _ -> binop_error t1 t2 op
+      | ((Lrx_Tree(t), Null_Literal) | (Null_Literal, Lrx_Tree(t))) -> 
 
-(*
-                | (Lrx_Tree, Lrx_Tree) -> (*two trees*)
-                        let f = (match op with
-                        Add -> build_fdecl "__tree_concat" (Lrx_Tree) [t1; t2]
-                        | Equal -> build_fdecl "__tree_equal" (Lrx_Atom(Lrx_Bool)) [t1; t2]
-                        | Neq -> build_fdecl "__tree_not_equal" (Lrx_Atom(Lrx_Bool)) [t1; t2]
-                        | Less -> build_fdecl "__tree_less_than" (Lrx_Atom(Lrx_Bool)) [t1;t2]
-                        | Leq -> build_fdecl "__tree_less_equal_than" (Lrx_Atom(Lrx_Bool)) [t1;t2]
-                        | Greater -> build_fdecl "__tree_greater_than" (Lrx_Atom(Lrx_Bool)) [t1;t2]
-                        | Geq -> build_fdecl "_tree_greater_equal_than" (Lrx_Atom(Lrx_Bool)) [t;t2]
-                        | _ -> binop_error t1 t2 op) in
-                                FuncCall(f, [c1; c2])
-                *)
+      | _ -> binop_error t1 t2 op; *)
+
+                
 
 let unop_error (t:var_type) (op:Ast.uop) =
   raise(Failure("operator " ^ (string_of_unop op) ^ " not compatible with expression of type " ^ (string_of_var_type t)))
@@ -296,9 +298,14 @@ and check_expr (e:expr) env =
        let checked_l = check_l_value l env in
        let t_r = type_of_expr checked_r in
        let t_l =  type_of_expr checked_l in
-       if t_r = t_l then C_Assign(t_l, checked_l, checked_r) else 
-           raise(Failure("assignment not compatible with expressions of type " ^
-           string_of_var_type t_l ^ " and " ^ string_of_var_type t_r))  
+       (match (t_l, t_r) with
+       | (Lrx_Atom(a1), Lrx_Atom(a2)) ->
+          if t_r = t_l then C_Assign(t_l, checked_l, checked_r) else 
+            raise(Failure("assignment not compatible with expressions of type " ^ string_of_var_type t_l ^ " and " ^ string_of_var_type t_r))  
+       | (Lrx_Tree(t1), Lrx_Tree(t2)) -> 
+         if t1.datatype = t2.datatype then C_Assign(t_l, checked_l, checked_r) else
+         raise(Failure("assignment not compatible with expressions of type " ^ string_of_var_type t_l ^ " and " ^ string_of_var_type t_r))   
+       | _ -> raise(Failure("assignment not compatible with expressions of type " ^ string_of_var_type t_l ^ " and " ^ string_of_var_type t_r)) ) 
      | Unop(e, op) ->
           let checked = check_expr e env in
           check_unop checked op (* returns C_Unop *)
@@ -306,7 +313,7 @@ and check_expr (e:expr) env =
 
  (*    | Null_Literal
      
-	   
+	   Tree_declaration check needs to be written for the (degree)
 	   | Call(name, el) ->
 		   let checked = check_exprlist el env in
 		   check_func name checked env
@@ -394,7 +401,16 @@ and check_is_vardecls (vars: var list) env =
         match decl with 
         	 SymTab_FuncDecl(f) -> raise(Failure("symbol is not a variable"))
 	       | SymTab_VarDecl(v) -> 
-           (fst_of_three v, snd_of_three v) :: check_is_vardecls tail env 
+            let var = snd_of_three v in
+            match var with
+                Lrx_Tree(t) -> 
+                let checked_degree = check_expr t.degree env in
+                let type_of_degree = type_of_expr checked_degree in
+                (match type_of_degree with
+                    Lrx_Atom(Lrx_Int) -> (fst_of_three v, snd_of_three v) :: check_is_vardecls tail env
+                  | _ -> raise (Failure ("Tree degree must be of type int")))
+             | Lrx_Atom(a) -> (fst_of_three v, snd_of_three v) :: check_is_vardecls tail env
+
 
 (* 
  * returns (<<verified list of global variable declarations>>, 
