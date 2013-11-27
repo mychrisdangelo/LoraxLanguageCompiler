@@ -264,10 +264,10 @@ and check_l_value (l:expr) env =
                   checked_expr :: check_tree_literal_is_valid d t tail env
                 else raise (Failure ("Tree type is not consistent: expected <" ^ string_of_var_type t ^ ", " ^ string_of_int d ^ "> but received <" ^ string_of_var_type tree_type ^ ", " ^ string_of_int tree_degree ^ ">"))  
               | _ ->
-              let tree_type = (type_of_expr checked_expr) in
-                if tree_type = t then
+              let child_type = (type_of_expr checked_expr) in
+                if child_type = t then
                 checked_expr :: check_tree_literal_is_valid d t tail env
-              else raise (Failure ("Tree literal type is not consistent: expected " ^ string_of_var_type t ^ " but received " ^ string_of_var_type tree_type ))
+              else raise (Failure ("Tree literal type is not consistent: expected " ^ string_of_var_type t ^ " but received " ^ string_of_var_type child_type ))
 
 and check_tree_literal_root_is_valid (e:expr) (el: expr list) env =
   let checked_root = check_expr e env in

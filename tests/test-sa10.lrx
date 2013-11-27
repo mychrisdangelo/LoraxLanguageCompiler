@@ -1,0 +1,9 @@
+int main()
+{
+	tree <int>t(2);
+	tree <char>t2(2);
+	tree <int>t3(2);
+	t--;
+	t3 = t%0%1;
+	return 0;
+}

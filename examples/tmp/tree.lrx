@@ -1,11 +1,18 @@
 int main()
 {
-     tree <int> t(3);
-     t%0--;
+    //tree <int>t(2 + 1);
+     tree <char>t2(2 + 1);
 
-     
+    t = 3[4];
+
 }
 
+// call (func, 2)
+// n = 2;
+// t1 = generate_tree(t, n, int);
+// t2 = generate_tree(t2, 4, int);
+// t3 = copy(t1, t2); // will the copy function written in code gen throw a compile error?
+//                    // we can only allow a runtime error
 
 // this works
  // tree <char> t(3);
