@@ -116,14 +116,14 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
     match (t1, t2) with 
        (Lrx_Atom(Lrx_Int), Lrx_Atom(Lrx_Int)) ->
        (match op with
-           (Add | Sub | Mult | Div | Mod | Equal | Neq | Less | Leq | Greater | Geq) -> 
-               C_Binop(Lrx_Atom(Lrx_Int), c1, op, c2)
-             | _ -> binop_error t1 t2 op)
+           (Add | Sub | Mult | Div | Mod) -> C_Binop(Lrx_Atom(Lrx_Int), c1, op, c2)
+         | (Equal | Neq | Less | Leq | Greater | Geq) -> C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
+         | _ -> binop_error t1 t2 op)
      | (Lrx_Atom(Lrx_Float), Lrx_Atom(Lrx_Float)) ->
        (match op with
-           (Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq) -> 
-               C_Binop(Lrx_Atom(Lrx_Float), c1, op, c2)
-             | _ -> binop_error t1 t2 op)
+           (Add | Sub | Mult | Div) ->   C_Binop(Lrx_Atom(Lrx_Float), c1, op, c2)
+         | (Equal | Neq | Less | Leq | Greater | Geq) -> C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
+         | _ -> binop_error t1 t2 op)
      | (Lrx_Atom(Lrx_Bool), Lrx_Atom(Lrx_Bool)) ->
        (match op with
            (And | Or | Equal | Neq) -> 
@@ -131,9 +131,9 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
              | _ -> binop_error t1 t2 op)
      | (Lrx_Atom(Lrx_Char), Lrx_Atom(Lrx_Char)) ->
        (match op with
-           (Add | Sub | Equal | Neq | Less | Leq | Greater | Geq) -> 
-               C_Binop(Lrx_Atom(Lrx_Char), c1, op, c2)
-             | _ -> binop_error t1 t2 op)
+           (Add | Sub) -> C_Binop(Lrx_Atom(Lrx_Char), c1, op, c2)
+         | (Equal | Neq | Less | Leq | Greater | Geq) -> C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
+         | _ -> binop_error t1 t2 op)
      | (Lrx_Tree(t), Lrx_Atom(Lrx_Int)) ->
           (if op = Child then
             C_Binop(Lrx_Tree(t), c1, op, c2)
@@ -348,19 +348,16 @@ let rec check_statement (s:stmt) ret_type env =
         (match t with
           Lrx_Atom(Lrx_Bool) -> C_If(c, check_block b1 ret_type env, check_block b2 ret_type env)
         | _ -> raise (Failure "If statement must evaluate on boolean expression"))
-     | _ -> raise (Failure "TEMPORARY: check_statement not complete")
-
-        (*
-     | Ast.For(e1, e2, e3, s) -> 
-       let c1, c2, c3 = (check_expr e1 env, check_expr e2 env, check_expr e3 env) in
+     | For(e1, e2, e3, b) -> 
+       let (c1, c2, c3) = (check_expr e1 env, check_expr e2 env, check_expr e3 env) in
        if(type_of_expr c2 = Lrx_Atom(Lrx_Bool)) then
-       For(c1, c2, c3, check_statement s ret_type env)
-		   else raise(Failure("foor loop must evaluate on boolean expressions"))
-	   | Ast.While(e, s) -> 
-       let checked = check_expr e env in
-		   if type_of_expr checked = Lrx_Atom(Lrx_Bool) then 
-       While(checked, check_statement s ret_type env)
-		   else raise(Failure("while loop must evaluate on boolean expression"))  *)
+       C_For(c1, c2, c3, check_block b ret_type env)
+		   else raise(Failure("for loop condition must evaluate on boolean expressions"))
+	   | While(e, b) -> 
+       let c = check_expr e env in
+		   if type_of_expr c = Lrx_Atom(Lrx_Bool) then 
+       C_While(c, check_block b ret_type env)
+		   else raise(Failure("while loop must evaluate on boolean expression"))
 
 and check_is_fdecl (f:string) env =
     let fd = Symtab.symtab_find f env in

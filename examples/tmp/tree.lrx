@@ -1,13 +1,14 @@
 int main()
 {
 	bool b;
-	if(b)
+	int i;
+	while(b)
 	{
-		int a;
-	}
+		for(i = 0; i < 4; i = i + 1)
+		{
 
-	else{
-		int c;
+		}
+
 	}
 
 }
