@@ -184,15 +184,16 @@ and check_fun_call (name:string) (cl:c_expr list) env =
     (match decl with 
       SymTab_FuncDecl(f) -> f
 		| _ -> raise(Failure("symbol " ^ name ^ " is not a function"))) in
-	let (_,ret_type,formals,_) = fdecl in
-	let actuals = List.map type_of_expr cl in
-	if (List.length formals) = (List.length actuals) then
-		if compare_arglists formals actuals then
-			C_Call(fdecl, cl)
-		else
-			raise(Failure("function " ^ name ^ "'s argument types don't match its formals"))
-	else raise(Failure("function " ^ name ^ " expected " ^ (string_of_int (List.length actuals)) ^
-		" arguments but called with " ^ (string_of_int (List.length formals)))) 
+    let (fname,ret_type,formals,id) = fdecl in
+    let actuals = List.map type_of_expr cl in
+      match name with
+      | "print" -> C_Call((fname, ret_type, actuals, id), cl)
+      | _ ->
+	   if (List.length formals) = (List.length actuals) then
+		    if compare_arglists formals actuals then C_Call(fdecl, cl)
+		    else raise(Failure("function " ^ name ^ "'s argument types don't match its formals"))
+	   else raise(Failure("function " ^ name ^ " expected " ^ (string_of_int (List.length actuals)) ^
+		  " arguments but called with " ^ (string_of_int (List.length formals)))) 
 
 let rec check_id_is_valid (id_name:string) env = 
      let decl = Symtab.symtab_find id_name env in
