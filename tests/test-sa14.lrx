@@ -1,0 +1,13 @@
+int main()
+{
+	int n;
+	bool b;
+	tree <int>t(2);
+	tree <char>t2(4);
+	tree <int> t3(n);
+	t = t + t3;
+	b = t < t2;
+	b = t == t3;
+
+	return 0;
+}

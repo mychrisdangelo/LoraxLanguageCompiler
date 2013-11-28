@@ -1,9 +1,10 @@
 int main()
 {
     //tree <int>t(2 + 1);
-     tree <char>t2(2 + 1);
+     tree <int>t2(2);
 
-    t = 3[4];
+    t2 = 3[4, 6];
+    t2%0@ = 44;
 
 }
 

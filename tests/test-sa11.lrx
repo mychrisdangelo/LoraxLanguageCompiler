@@ -1,0 +1,13 @@
+int main()
+{
+	int a;
+	bool b;
+	float c;
+	a = 1;
+	b = true;
+	c = 3.14;
+	a = -a;
+	b = !b;
+	c = -17.0;
+	return 0;
+}

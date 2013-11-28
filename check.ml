@@ -133,21 +133,15 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
           (if op = Child then
             C_Binop(Lrx_Tree(t), c1, op, c2)
           else binop_error t1 t2 op) 
-     | _ -> raise (Failure "wtf")    
-(*      | (Lrx_Tree(l1), Lrx_Tree(l2)) ->
+      | (Lrx_Tree(l1), Lrx_Tree(l2)) ->
           (match op with
-              Add -> if t1 = t2 then C_Binop(Lrx_Tree(l1), c1, op, c2)
-              else -> raise (Failure "Cannot add tree of type " ^ string_of_var_type t1 ^ " with tree of type " ^ string_of_var_type t2)
-            | Equal -> build_fdecl "__tree_equal" (Lrx_Atom(Lrx_Bool)) [t1; t2]
-            | Neq -> build_fdecl "__tree_not_equal" (Lrx_Atom(Lrx_Bool)) [t1; t2]
-            | Less -> build_fdecl "__tree_less_than" (Lrx_Atom(Lrx_Bool)) [t1;t2]
-            | Leq -> build_fdecl "__tree_less_equal_than" (Lrx_Atom(Lrx_Bool)) [t1;t2]
-            | Greater -> build_fdecl "__tree_greater_than" (Lrx_Atom(Lrx_Bool)) [t1;t2]
-            | Geq -> build_fdecl "_tree_greater_equal_than" (Lrx_Atom(Lrx_Bool)) [t;t2]
-            | _ -> binop_error t1 t2 op
-      | ((Lrx_Tree(t), Null_Literal) | (Null_Literal, Lrx_Tree(t))) -> 
-
-      | _ -> binop_error t1 t2 op; *)
+              Add -> if l1.datatype = l2.datatype then C_Binop(Lrx_Tree(l1), c1, op, c2)
+              else raise (Failure ("Cannot add tree of type " ^ string_of_var_type t1 ^ " with tree of type " ^ string_of_var_type t2))
+            | (Equal | Neq) -> C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2) (*we'd like to have a warning for this case if datatypes are not equal*)
+            | (Less | Greater | Leq | Geq) -> C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
+            | _ -> binop_error t1 t2 op)
+(*       | ((Lrx_Tree(t), Null_Literal) | (Null_Literal, Lrx_Tree(t))) -> 
+ *)   | _ -> binop_error t1 t2 op 
 
                 
 
@@ -238,6 +232,7 @@ and extract_l_value (l:c_expr) env =
     match l with
     | C_Id(t,s) -> s
     | C_Binop(t,l,o,r) -> extract_l_value l env 
+    | C_Unop(t,l,o) -> extract_l_value l env
     | _ -> raise (Failure ("Cannot dereference expression without id"))
 
 and check_l_value (l:expr) env =
@@ -252,6 +247,11 @@ and check_l_value (l:expr) env =
               let (t, e) = check_id_is_valid s env in
               ignore t; ignore e; ce)
               else raise (Failure ("Left hand side of assignment operator is improper type")))
+            | C_Unop(_,_,op) -> 
+              (if op = At then
+              (let s = (extract_l_value ce env) in 
+              ignore (check_id_is_valid s env); ce)
+              else raise (Failure ("Left hand side of assignment operator is improper type")))
             | _ -> raise (Failure ("Left hand side of assignment operator is improper type"))
 
  and check_tree_literal_is_valid (d:int) (t:var_type) (el:expr list) env =
@@ -262,12 +262,12 @@ and check_l_value (l:expr) env =
         match checked_expr with
               C_Tree(tree_type, tree_degree, _, _) -> if tree_degree = d && tree_type = t then
                   checked_expr :: check_tree_literal_is_valid d t tail env
-                else raise (Failure ("Tree type is not consistent: expected <" ^ string_of_var_type t ^ ", " ^ string_of_int d ^ "> but received <" ^ string_of_var_type tree_type ^ ", " ^ string_of_int tree_degree ^ ">"))  
+                else raise (Failure ("Tree type is not consistent: expected <" ^ string_of_var_type t ^ ">(" ^ string_of_int d ^ ") but received <" ^ string_of_var_type tree_type ^ ">(" ^ string_of_int tree_degree ^ ")"))  
               | _ ->
               let child_type = (type_of_expr checked_expr) in
                 if child_type = t then
                 checked_expr :: check_tree_literal_is_valid d t tail env
-              else raise (Failure ("Tree literal type is not consistent: expected " ^ string_of_var_type t ^ " but received " ^ string_of_var_type child_type ))
+              else raise (Failure ("Tree literal type is not consistent: expected <" ^ string_of_var_type t ^ "> but received <" ^ string_of_var_type child_type ^">"))
 
 and check_tree_literal_root_is_valid (e:expr) (el: expr list) env =
   let checked_root = check_expr e env in
