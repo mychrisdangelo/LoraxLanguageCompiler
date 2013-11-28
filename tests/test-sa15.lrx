@@ -1,0 +1,14 @@
+int main()
+{
+	int n;
+	tree <int> t(2);
+	tree <char> t2(4);
+	tree <int> t3(n);
+	
+	null == null;
+	t == null;
+	t + t == t3;
+	t != t2;
+
+	return 0;
+}

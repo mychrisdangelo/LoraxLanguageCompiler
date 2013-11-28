@@ -82,7 +82,7 @@ let type_of_expr = function
   | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
 (*
 
-| Null_Literal -> Null (*not sure about this*)
+
   
  
   
@@ -107,6 +107,19 @@ let binop_error (t1:var_type) (t2:var_type) (op:op) =
 
 (*check binary operators ADD SUB MULT DIV MOD EQUAL NEQ LESS LEQ GREATER GEQ CHILD AND OR*)
 let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
+  match (c1, c2) with
+      (C_Null_Literal, C_Null_Literal) -> 
+      (match op with
+          (Equal | Neq) -> C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
+        | _ -> raise (Failure ("operator " ^ string_of_binop op ^ " not compatible with types null and null")))
+    | ((C_Null_Literal, t) | (t, C_Null_Literal)) ->
+      (match (type_of_expr t) with
+          Lrx_Tree(l) ->
+          (match op with
+              (Equal | Neq) -> C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
+            | _ -> raise (Failure ("operator " ^ string_of_binop op ^ " not compatible with types null and tree")))
+        | _ -> raise (Failure ("null cannot be compared with non-tree type")))
+    | _ ->
     let (t1, t2) = (type_of_expr c1, type_of_expr c2) in
     match (t1, t2) with 
        (Lrx_Atom(Lrx_Int), Lrx_Atom(Lrx_Int)) ->
@@ -133,15 +146,14 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
           (if op = Child then
             C_Binop(Lrx_Tree(t), c1, op, c2)
           else binop_error t1 t2 op) 
-      | (Lrx_Tree(l1), Lrx_Tree(l2)) ->
+     | (Lrx_Tree(l1), Lrx_Tree(l2)) ->
           (match op with
               Add -> if l1.datatype = l2.datatype then C_Binop(Lrx_Tree(l1), c1, op, c2)
               else raise (Failure ("Cannot add tree of type " ^ string_of_var_type t1 ^ " with tree of type " ^ string_of_var_type t2))
             | (Equal | Neq) -> C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2) (*we'd like to have a warning for this case if datatypes are not equal*)
             | (Less | Greater | Leq | Geq) -> C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
             | _ -> binop_error t1 t2 op)
-(*       | ((Lrx_Tree(t), Null_Literal) | (Null_Literal, Lrx_Tree(t))) -> 
- *)   | _ -> binop_error t1 t2 op 
+     | _ -> binop_error t1 t2 op 
 
                 
 
@@ -309,9 +321,10 @@ and check_expr (e:expr) env =
      | Unop(e, op) ->
           let checked = check_expr e env in
           check_unop checked op (* returns C_Unop *)
+     | Null_Literal -> C_Null_Literal
      | _ -> raise (Failure ("TEMPORARY: check_expr not complete " ^ string_of_expr e))
 
- (*    | Null_Literal
+ (*    
      
 	   Tree_declaration check needs to be written for the (degree)
 	   | Call(name, el) ->
