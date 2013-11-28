@@ -6,7 +6,7 @@ Quick Start
 ===============
 ```
 $ make
-$ echo "main() { print("hello, world\n"); return 0; }" > hello.lrx
+$ echo "int main() { print("hello, world\n"); return 0; }" > hello.lrx
 $ ./lorax -c < hello.lrx > hello.cpp
 $ g++ -g -Wall hello.cpp
 $ ./a.out

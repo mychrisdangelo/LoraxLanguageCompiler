@@ -105,7 +105,13 @@ type decl =
     SymTab_FuncDecl of scope_func_decl
   | SymTab_VarDecl of scope_var_decl
   
-  
+(* used by check.ml *)
+let string_of_unop = function
+    Neg -> "-"
+  | Not -> "!"
+  | At -> "@"
+  | Pop -> "--"
+
 let string_of_binop = function
         Add -> "+" 
       | Sub -> "-" 

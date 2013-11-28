@@ -1,0 +1,17 @@
+int main()
+{
+	bool b;
+	int i;
+	while(b)
+	{
+		for(i = 0; i < 4; i = i + 1)
+		{
+			break;
+			break;
+		}
+		break;
+		break;
+
+	}
+
+}

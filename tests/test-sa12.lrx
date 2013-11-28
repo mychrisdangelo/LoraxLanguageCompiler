@@ -1,0 +1,6 @@
+int main()
+{
+	tree <int>t(2);
+	t = 3[];
+	return 0;
+}
