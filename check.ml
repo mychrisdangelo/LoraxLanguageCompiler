@@ -188,6 +188,15 @@ and check_fun_call (name:string) (cl:c_expr list) env =
     let actuals = List.map type_of_expr cl in
       match name with
       | "print" -> C_Call((fname, ret_type, actuals, id), cl)
+      | ("degree" | "root") -> 
+          if ((List.length actuals) = 1) then
+          let tree_arg = List.hd actuals in 
+          match tree_arg with
+            Lrx_Tree(t) -> 
+            if name = "degree" then C_Call((fname, ret_type, actuals, id), cl)
+            else C_Call((fname, tree_arg, actuals, id), cl)
+          | _ -> raise(Failure("function degree expects tree"))
+        else raise(Failure("function " ^ name ^ " expects a single tree as an argument"))
       | _ ->
 	   if (List.length formals) = (List.length actuals) then
 		    if compare_arglists formals actuals then C_Call(fdecl, cl)

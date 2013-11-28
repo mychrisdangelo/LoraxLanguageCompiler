@@ -1,13 +1,7 @@
 int main()
 {
-	int a;
 	tree <int> t(2);
 
-	print(t, a, 4);
-	check(t, a, 4);
-}
+	degree(t);
 
-int check(tree<int>b(2), int c, int d)
-{
-	
 }
