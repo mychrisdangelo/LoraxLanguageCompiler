@@ -232,7 +232,7 @@ and check_l_value (l:expr) env =
        | head :: tail -> 
         let checked_expr = check_expr head env in
         match checked_expr with
-              C_Tree(tree_type, tree_degree, _, _) -> if tree_degree = d && tree_type = t then
+              C_Tree(tree_type, tree_degree, _, _) -> if (tree_degree = d || tree_degree = 0) && tree_type = t then
                   checked_expr :: check_tree_literal_is_valid d t tail env
                 else raise (Failure ("Tree type is not consistent: expected <" ^ string_of_var_type t ^ ">(" ^ string_of_int d ^ ") but received <" ^ string_of_var_type tree_type ^ ">(" ^ string_of_int tree_degree ^ ")"))  
               | _ ->
