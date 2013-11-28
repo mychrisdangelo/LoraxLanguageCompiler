@@ -331,10 +331,10 @@ and check_exprlist (el:expr list) env =
 
 
 (* check a single statement *)
-let rec check_statement (s:stmt) ret_type env = 
+let rec check_statement (s:stmt) ret_type env (in_loop:int) = 
 	  match s with
 	     CodeBlock(b) ->
-       let checked_block = check_block b ret_type env in
+       let checked_block = check_block b ret_type env in_loop in
        C_CodeBlock(checked_block)
      | Return(e) -> 
        let checked = check_expr e env in
@@ -346,18 +346,24 @@ let rec check_statement (s:stmt) ret_type env =
         let c = check_expr e env in
         let t = type_of_expr c in
         (match t with
-          Lrx_Atom(Lrx_Bool) -> C_If(c, check_block b1 ret_type env, check_block b2 ret_type env)
+          Lrx_Atom(Lrx_Bool) -> C_If(c, check_block b1 ret_type env in_loop, check_block b2 ret_type env in_loop)
         | _ -> raise (Failure "If statement must evaluate on boolean expression"))
      | For(e1, e2, e3, b) -> 
        let (c1, c2, c3) = (check_expr e1 env, check_expr e2 env, check_expr e3 env) in
        if(type_of_expr c2 = Lrx_Atom(Lrx_Bool)) then
-       C_For(c1, c2, c3, check_block b ret_type env)
+       C_For(c1, c2, c3, check_block b ret_type env (in_loop + 1))
 		   else raise(Failure("for loop condition must evaluate on boolean expressions"))
 	   | While(e, b) -> 
        let c = check_expr e env in
 		   if type_of_expr c = Lrx_Atom(Lrx_Bool) then 
-       C_While(c, check_block b ret_type env)
+       C_While(c, check_block b ret_type env (in_loop + 1))
 		   else raise(Failure("while loop must evaluate on boolean expression"))
+    | Continue ->
+       if in_loop = 0 then raise (Failure "continue statement not within for or while loop")
+       else C_Continue
+    | Break ->
+       if in_loop = 0 then raise (Failure "break statement not within for or while loop")
+       else C_Break
 
 and check_is_fdecl (f:string) env =
     let fd = Symtab.symtab_find f env in
@@ -366,20 +372,20 @@ and check_is_fdecl (f:string) env =
 	   | SymTab_FuncDecl(f) -> f 
 
 (* returns a verified statement list *)
-and check_statement_list (s:stmt list) (ret_type:var_type) env =
+and check_statement_list (s:stmt list) (ret_type:var_type) env (in_loop:int)=
     match s with
        [] -> []
-     | head :: tail -> check_statement head ret_type env :: check_statement_list tail ret_type env
+     | head :: tail -> check_statement head ret_type env in_loop :: check_statement_list tail ret_type env in_loop
 
 (* returns verified c_block record *)
-and check_block (b:block) (ret_type:var_type) env =
+and check_block (b:block) (ret_type:var_type) env (in_loop:int) =
     let vars = check_is_vardecls b.locals (fst env, b.block_id) in
-    let stmts = check_statement_list b.statements ret_type (fst env, b.block_id) in
+    let stmts = check_statement_list b.statements ret_type (fst env, b.block_id) in_loop in
     { c_locals = vars; c_statements = stmts; c_block_id = b.block_id }
 
 (* returns c_func record *)
 and check_function (f:func) env =
-    let checked_block = check_block f.fblock f.ret_type env in
+    let checked_block = check_block f.fblock f.ret_type env 0 in
     let checked_formals = check_is_vardecls f.formals env in	
     let checked_scope_func_decl = check_is_fdecl f.fname env in
     { c_fname = fst_of_four checked_scope_func_decl; c_ret_type = f.ret_type; c_formals = checked_formals; c_fblock = checked_block }
