@@ -1,13 +1,14 @@
 int main()
 {
-	int n;
-    tree <int>t(2);
-	tree <char>t2(4);
-	tree <int> t3(n);
+	bool b;
+	if(b)
+	{
+		int a;
+	}
 
-	t == null;
-	t == t3;
-	t != t2;
+	else{
+		int c;
+	}
 
 }
 

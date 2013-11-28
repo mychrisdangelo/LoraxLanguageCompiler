@@ -32,9 +32,9 @@ type c_stmt =
     C_CodeBlock of c_block
   | C_Expr of c_expr
   | C_Return of c_expr
-  | C_If of c_expr * c_stmt * c_stmt
-  | C_For of c_expr * c_expr * c_expr * c_stmt
-  | C_While of c_expr * c_stmt
+  | C_If of c_expr * c_block * c_block
+  | C_For of c_expr * c_expr * c_expr * c_block
+  | C_While of c_expr * c_block
   | C_Continue
   | C_Break
 
@@ -81,14 +81,7 @@ let type_of_expr = function
       | _ -> raise (Failure "Tree type must be Lrx_atom"))
   | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
 (*
-
-
-  
- 
-  
-   
   | C_Call(f,_) -> let (_,r,_,_) = f in r
-
   | Noexpr -> ""
 
 
@@ -98,14 +91,13 @@ let build_fdecl (name:string) (ret:var_type) (args:var_type list) =
 	(name, ret, args, 0)
 *)
 
-(*error raised for improper binary expression*)
+(* error raised for improper binary operation *)
 let binop_error (t1:var_type) (t2:var_type) (op:op) =
   raise(Failure("operator " ^ (string_of_binop op) ^ " not compatible with expressions of type " ^
     (string_of_var_type t1) ^ " and " ^ (string_of_var_type t2)))
 
-(* semantic anlysis must accept comparison of null_literal to tree is valid *)
 
-(*check binary operators ADD SUB MULT DIV MOD EQUAL NEQ LESS LEQ GREATER GEQ CHILD AND OR*)
+(* check binary operators *)
 let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
   match (c1, c2) with
       (C_Null_Literal, C_Null_Literal) -> 
@@ -326,7 +318,7 @@ and check_expr (e:expr) env =
 
  (*    
      
-	   Tree_declaration check needs to be written for the (degree)
+	   Tree_declaration check needs to be written for the (degree) ???
 	   | Call(name, el) ->
 		   let checked = check_exprlist el env in
 		   check_func name checked env
@@ -339,7 +331,7 @@ and check_exprlist (el:expr list) env =
 
 
 (* check a single statement *)
-let rec check_statement (s:stmt) ret_type env =
+let rec check_statement (s:stmt) ret_type env = 
 	  match s with
 	     CodeBlock(b) ->
        let checked_block = check_block b ret_type env in
@@ -350,17 +342,15 @@ let rec check_statement (s:stmt) ret_type env =
        if t = ret_type then C_Return(checked) else
        raise (Failure("function return type " ^ string_of_var_type t ^ "; type " ^ string_of_var_type ret_type ^ "expected"))
      | Expr(e) -> C_Expr(check_expr e env) 
+     | If(e, b1, b2) -> 
+        let c = check_expr e env in
+        let t = type_of_expr c in
+        (match t with
+          Lrx_Atom(Lrx_Bool) -> C_If(c, check_block b1 ret_type env, check_block b2 ret_type env)
+        | _ -> raise (Failure "If statement must evaluate on boolean expression"))
      | _ -> raise (Failure "TEMPORARY: check_statement not complete")
-(*      | If(e, s, Block([])) -> 
-       let checked = check_expr e env in
-       if type_of_expr checked = Lrx_Atom(Lrx_Bool) then
-       If(checked, check_statement s ret_type env, Block([])) 
-		   else raise(Failure("if statement must evaluate on boolean expression"))
-     | If(e, s1, s2) -> 
-       let checked = check_expr e env in
-       if type_of_expr checked = Lrx_Atom(Lrx_bool) then
-       If(checked, check_statement s1 ret_type env, check_statement s2 ret_type env)
-		   else raise(Failure("if statement must evaluate on boolean expression"))
+
+        (*
      | Ast.For(e1, e2, e3, s) -> 
        let c1, c2, c3 = (check_expr e1 env, check_expr e2 env, check_expr e3 env) in
        if(type_of_expr c2 = Lrx_Atom(Lrx_Bool)) then
@@ -426,8 +416,7 @@ and check_is_vardecls (vars: var list) env =
 
 
 (* 
- * returns (<<verified list of global variable declarations>>, 
- * <<verified list of function declarations>>) 
+ * returns (<<verified list of global variable declarations>>, <<verified list of function declarations>>) 
  *)
 let check_program (p:program) env =
     let gs = fst p in
