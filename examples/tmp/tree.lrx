@@ -1,7 +1,7 @@
 int main()
 {
 	tree <int> t(2);
-
-	degree(t);
+	tree<int> t1(4);
+	t == t1;
 
 }
