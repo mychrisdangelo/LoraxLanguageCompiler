@@ -79,17 +79,8 @@ let type_of_expr = function
     (match t with
         Lrx_Atom(t) -> Lrx_Tree({datatype = t; degree = Int_Literal(d)})
       | _ -> raise (Failure "Tree type must be Lrx_atom"))
-  | _ -> raise (Failure "TEMPORARY: type_of_expr not complete")
-(*
   | C_Call(f,_) -> let (_,r,_,_) = f in r
-  | Noexpr -> ""
-
-
-
-(*builds a function declaration with a name, return type, and variable argument list*)
-let build_fdecl (name:string) (ret:var_type) (args:var_type list) =
-	(name, ret, args, 0)
-*)
+  | (C_Noexpr | C_Null_Literal) -> raise (Failure("Type of expression called on Null_Literal or Noexpr"))
 
 (* error raised for improper binary operation *)
 let binop_error (t1:var_type) (t2:var_type) (op:op) =
@@ -174,57 +165,34 @@ let check_unop (c:c_expr) (op:Ast.uop) =
                               | _ -> unop_error te op)
                | _ -> unop_error te op
         
-        (*                
+                      
 (*compares argument list*)
 let rec compare_arglists formals actuals =
 	match (formals,actuals) with
 	([],[]) -> true
-	| (head1::tail1, head2::tail2)
-		-> (head1 = head2) && compare_arglists tail1 tail2
+	| (head1::tail1, head2::tail2) -> 
+    (match (head1, head2) with
+    | (Lrx_Tree(t1), Lrx_Tree(t2)) -> (t1.datatype = t2.datatype) && compare_arglists tail1 tail2
+    | _ -> (head1 = head2) && compare_arglists tail1 tail2)
 	| _ -> false
 
-(*we need to check that tree usage is correct*)
-(*let rec check_tree (e: expr) (el: expr list) env =*)
-
 (*checks that a function declaration and calling is proper, such that a function is called with the proper number and type of arguments*)
-and check_func (name:string) (cl:c_expr list) env =
+and check_fun_call (name:string) (cl:c_expr list) env =
   (*if name == print, match type with symtab print_type*)
-
 	let decl = Symtab.symtab_find name env in
-	let func = (match decl with FuncDecl(f) -> f
+	let fdecl = 
+    (match decl with 
+      SymTab_FuncDecl(f) -> f
 		| _ -> raise(Failure("symbol " ^ name ^ " is not a function"))) in
-	let (_,t,formals,_) = func in
+	let (_,ret_type,formals,_) = fdecl in
 	let actuals = List.map type_of_expr cl in
 	if (List.length formals) = (List.length actuals) then
 		if compare_arglists formals actuals then
-			Call(func, cl)
+			C_Call(fdecl, cl)
 		else
 			raise(Failure("function " ^ name ^ "'s argument types don't match its formals"))
 	else raise(Failure("function " ^ name ^ " expected " ^ (string_of_int (List.length actuals)) ^
 		" arguments but called with " ^ (string_of_int (List.length formals)))) 
-
-*)
-
-(*checks expression*)
-
-(*
- * Change to 
- *
-  *
- *
-  *
- * and check_expr
- * 
-  *
- *         |
- *         |
- *         |
- *         |
-  *        V 
-  *
-  *
- *
- *)
 
 let rec check_id_is_valid (id_name:string) env = 
      let decl = Symtab.symtab_find id_name env in
@@ -314,15 +282,10 @@ and check_expr (e:expr) env =
           let checked = check_expr e env in
           check_unop checked op (* returns C_Unop *)
      | Null_Literal -> C_Null_Literal
-     | _ -> raise (Failure ("TEMPORARY: check_expr not complete " ^ string_of_expr e))
-
- (*    
-     
-	   Tree_declaration check needs to be written for the (degree) ???
-	   | Call(name, el) ->
-		   let checked = check_exprlist el env in
-		   check_func name checked env
-	   | Noexpr -> C_Noexpr *)
+     | Call(n, el) -> 
+          let checked = check_exprlist el env in
+          check_fun_call n checked env
+     | Noexpr -> C_Noexpr
 		
 and check_exprlist (el:expr list) env =
 	  match el with
@@ -386,7 +349,7 @@ and check_block (b:block) (ret_type:var_type) env (in_loop:int) =
 (* returns c_func record *)
 and check_function (f:func) env =
     let checked_block = check_block f.fblock f.ret_type env 0 in
-    let checked_formals = check_is_vardecls f.formals env in	
+    let checked_formals = check_is_vardecls f.formals (fst env, f.fblock.block_id) in	
     let checked_scope_func_decl = check_is_fdecl f.fname env in
     { c_fname = fst_of_four checked_scope_func_decl; c_ret_type = f.ret_type; c_formals = checked_formals; c_fblock = checked_block }
 
