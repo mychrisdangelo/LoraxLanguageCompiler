@@ -54,4 +54,5 @@ let c_of_var_decl_list = function
 let c_of_inter_pgrm (p:ir_program) =
 	"#include \"lrxlib.h\"\n" ^ 
 	c_of_var_decl_list p.globals ^
-    c_of_func_decl_list p.headers
+    c_of_func_decl_list p.headers ^
+    (* c_of_funclist p.bodies *)
