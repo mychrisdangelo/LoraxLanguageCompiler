@@ -1,12 +1,7 @@
 open Ast
 open Check
 
-
-type inter_var = Ast.var
-type inter_var_type = Ast.var_type
-type inter_func_decl = Ast.scope_func_decl
-
-type inter_expr =
+(* type inter_expr =
     Ir_Int_Literal of int
   | Ir_Float_Literal of float
   | Ir_String_Literal of string
@@ -43,9 +38,19 @@ and inter_func = {
   ir_ret_type: inter_var_type;
   ir_formals: inter_var list;
   ir_block: inter_block;
+} *)
+
+type ir_fheader = {
+  ir_name: string;
+  ir_ret_type: var_type;
+  ir_formals: var_type list;
 }
 
-type inter_pgrm = inter_var list * inter_func list
+type ir_program = {
+    globals: var list;
+    headers: ir_fheader list;
+    bodies: c_func list;
+}
 
 (*
 
@@ -124,23 +129,6 @@ generate the return type
 append return to the end of body
 build out simple_func_type to return: { header, args, code }
 
-simplify_expr:
-match c_expr:
-if StrLiteral: create temp_var and build new expr with temp_var
-if floatliteral: ''
-if charliteral: ''
-if intliteral: '' 
-if boolliteral:  ''
-if nullliteral: ''
-if Id:
-if Binop:
-if Unop:
-if Tree:
-if Assign: build out assign using new types, handling child_assign, data_assign,name_assign
-if Call:
-if NoExpr:
-*)
-*)
 
 (* let gen_ir_id x (id:int) =
   let prefix = 
@@ -182,23 +170,27 @@ let rec gen_ir_statement (s:c_stmt) =
      | C_Continue ->
      | C_Break -> *)
 
-let rec gen_ir_func (f:c_func) =
-  ()
+(* let rec gen_ir_func (f:c_func) =
+  () *)
 (*let ir_block = gen_ir_block f.c_fblock in 
   let ir_formals = gen_ir_expr f.c_formals in
   {f.c_fname, f.c_ret_type, ir_formals, ir_block} *)
 
-and gen_ir_funcs (flist:c_func list) =
+(* and gen_ir_fbodys (flist:c_func list) =
   match flist with
   [] -> []
-  | head :: tail -> gen_ir_func head :: gen_ir_funcs tail
+  | head :: tail -> gen_ir_func_header head :: gen_ir_funcs tail *)
+*)*)
+let rec gen_ir_fbodys (flist:c_func list) =
+  flist
 
-and gen_ir_decls (flist:var list) = 
+and gen_ir_fdecls (flist:c_func list) = 
   match flist with
   [] -> []
-  | head :: tail -> (fst head) :: gen_ir_decls tail
+  | head :: tail -> 
+  {ir_name = head.c_fname; ir_ret_type = head.c_ret_type; ir_formals = List.map snd head.c_formals} :: gen_ir_fdecls tail
 
 let rec intermediate_rep_program (p:c_program) =
-  let ir_decls = gen_ir_decls (fst p) in 
-  let ir_funcs = gen_ir_funcs (snd p) in 
-  (ir_decls, ir_funcs)
+  let ir_fdecls = gen_ir_fdecls (snd p) in 
+  let ir_fbodys = gen_ir_fbodys (snd p) in 
+  {globals = fst p; headers = ir_fdecls; bodies = ir_fbodys}

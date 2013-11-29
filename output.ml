@@ -1,10 +1,4 @@
-(* let c_of_var_type = function
-	 Lrx_Atom(Lrx_Int) -> "int"
-	| Lrx_Atom(Lrx_Float) -> "float"
-	| Lrx_Atom(Lrx_Bool) -> "char"
-	| Lrx_Atom(Lrx_Char) -> "char"
-	| Lrx_Tree -> "struct lrx_tree"
-	| _ -> raise(Failure("internal error"))
+(* 
 
 let c_of_op = function
 	 Add -> "+"
@@ -24,26 +18,40 @@ let c_of_op = function
 let c_of_uop = function
 	Neg -> "-" | Not -> "!" | _ -> raise(Failure("internal error"))
 	
-let c_of_var_init = function
-	Lorax_Atom(Lrx_int) -> "0"
-	| Lorax_Atom(Lrx_float) -> "0.0"
-	| Lorax_Atom(Lrx_bool) -> "0"
-	| Lorax_Atom(Lrx_char) -> "0"
-	| _ -> raise(Failure("internal error")) *)
-
-
-(* 
- * To: Doug/Zhaarn/Tim
- * From: Chris
- * Message: this is the entry point function that I'm using in 
- * lorax.ml. The input value will NOT be a string but instead
- * will be (p:Intermediate.inter_pgrm)
  *)
 
 open Ast
 open Check
 open Intermediate
 
-let rec c_of_inter_pgrm (p:string) =
-	"#include \"lrxlib.h\"\n" ^
-	"#include <stdio.h>\n\nint main() { printf(\"dummy program\\n\"); return 0; }"
+let c_of_var_type = function
+	 Lrx_Atom(Lrx_Int) -> "int"
+	| Lrx_Atom(Lrx_Float) -> "float"
+	| Lrx_Atom(Lrx_Bool) -> "bool"
+	| Lrx_Atom(Lrx_Char) -> "char"
+(* 	| Lrx_Tree -> "struct lrx_tree"
+ *)	| _ -> raise(Failure("TEMP"))
+
+let c_of_func_decl_formals = function
+    [] -> ""
+	| formals -> String.concat (", ") (List.map c_of_var_type formals)
+
+let c_of_func_decl (f:ir_fheader) =
+	(c_of_var_type f.ir_ret_type) ^ " " ^ f.ir_name ^
+	"(" ^ (c_of_func_decl_formals f.ir_formals) ^ ");\n"
+
+let c_of_func_decl_list = function
+	[] -> ""
+	| fdecls -> String.concat ("\n") (List.map c_of_func_decl fdecls) ^ "\n\n"
+
+let c_of_var_decl (v:var) =
+	 c_of_var_type (snd v) ^ " " ^ fst v
+
+let c_of_var_decl_list = function
+	[] -> "" 
+	| vars -> (String.concat (";\n") (List.map c_of_var_decl vars)) ^ ";\n\n"
+	
+let c_of_inter_pgrm (p:ir_program) =
+	"#include \"lrxlib.h\"\n" ^ 
+	c_of_var_decl_list p.globals ^
+    c_of_func_decl_list p.headers
