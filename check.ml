@@ -132,8 +132,10 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
      | (Lrx_Tree(l1), Lrx_Tree(l2)) ->
           (match op with
               Add -> if l1.datatype = l2.datatype then C_Binop(Lrx_Tree(l1), c1, op, c2)
-              else raise (Failure ("Cannot add tree of type " ^ string_of_var_type t1 ^ " with tree of type " ^ string_of_var_type t2))
-            | (Equal | Neq) -> C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2) (*we'd like to have a warning for this case if datatypes are not equal*)
+              else raise (Failure ("Cannot add type " ^ string_of_var_type t1 ^ " with type " ^ string_of_var_type t2))
+            | (Equal | Neq) -> if l1.datatype = l2.datatype then C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2) 
+              else ((print_string ("Warning: comparison of " ^ string_of_var_type t1 ^ " with type " ^ string_of_var_type t2))
+                ; C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2))
             | (Less | Greater | Leq | Geq) -> C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
             | _ -> binop_error t1 t2 op)
      | _ -> binop_error t1 t2 op 
@@ -184,15 +186,25 @@ and check_fun_call (name:string) (cl:c_expr list) env =
     (match decl with 
       SymTab_FuncDecl(f) -> f
 		| _ -> raise(Failure("symbol " ^ name ^ " is not a function"))) in
-	let (_,ret_type,formals,_) = fdecl in
-	let actuals = List.map type_of_expr cl in
-	if (List.length formals) = (List.length actuals) then
-		if compare_arglists formals actuals then
-			C_Call(fdecl, cl)
-		else
-			raise(Failure("function " ^ name ^ "'s argument types don't match its formals"))
-	else raise(Failure("function " ^ name ^ " expected " ^ (string_of_int (List.length actuals)) ^
-		" arguments but called with " ^ (string_of_int (List.length formals)))) 
+    let (fname,ret_type,formals,id) = fdecl in
+    let actuals = List.map type_of_expr cl in
+      match name with
+      | "print" -> C_Call((fname, ret_type, actuals, id), cl)
+      | ("degree" | "root") -> 
+          if ((List.length actuals) = 1) then
+          let tree_arg = List.hd actuals in 
+          match tree_arg with
+            Lrx_Tree(t) -> 
+            if name = "degree" then C_Call((fname, ret_type, actuals, id), cl)
+            else C_Call((fname, tree_arg, actuals, id), cl)
+          | _ -> raise(Failure("function degree expects tree"))
+        else raise(Failure("function " ^ name ^ " expects a single tree as an argument"))
+      | _ ->
+	   if (List.length formals) = (List.length actuals) then
+		    if compare_arglists formals actuals then C_Call(fdecl, cl)
+		    else raise(Failure("function " ^ name ^ "'s argument types don't match its formals"))
+	   else raise(Failure("function " ^ name ^ " expected " ^ (string_of_int (List.length actuals)) ^
+		  " arguments but called with " ^ (string_of_int (List.length formals)))) 
 
 let rec check_id_is_valid (id_name:string) env = 
      let decl = Symtab.symtab_find id_name env in
@@ -232,7 +244,7 @@ and check_l_value (l:expr) env =
        | head :: tail -> 
         let checked_expr = check_expr head env in
         match checked_expr with
-              C_Tree(tree_type, tree_degree, _, _) -> if tree_degree = d && tree_type = t then
+              C_Tree(tree_type, tree_degree, _, _) -> if (tree_degree = d || tree_degree = 0) && tree_type = t then
                   checked_expr :: check_tree_literal_is_valid d t tail env
                 else raise (Failure ("Tree type is not consistent: expected <" ^ string_of_var_type t ^ ">(" ^ string_of_int d ^ ") but received <" ^ string_of_var_type tree_type ^ ">(" ^ string_of_int tree_degree ^ ")"))  
               | _ ->
