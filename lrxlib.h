@@ -1,3 +1,12 @@
+/**
+ *Lorax C Library to integrate with Lorax Language.
+ * Authors: Zhaarn Maheswaran, Doug Bienstock
+ *
+ * TODO: more complex memory management scenarios. ( Child, and dereference )
+ *
+ */
+
+
 #define DO_NOT_COMPILE_THIS_FILE_UNTIL_CG_TEAM_IS_READY
 #ifndef DO_NOT_COMPILE_THIS_FILE_UNTIL_CG_TEAM_IS_READY
 
@@ -10,13 +19,8 @@
 #include <string.h>
 #include <math.h>
 
-/*
-* INVARIANT: tree data array is initialized to fit EXACTLY the number of data elements the tree
-* was initialized with.
-*
-*/
 
-
+//enumeration constants for tree types. Mimics polymorphic property of trees
 typedef enum  {
   FLOAT,
   INT,
@@ -26,6 +30,7 @@ typedef enum  {
 
 } lrx_primitives;
 
+//enumeration constants for valid tree comparison operators
 typedef enum {
 	GT,
 	GTE,
@@ -35,6 +40,14 @@ typedef enum {
 	NEQL
 } comparisons;
 
+/*
+ * Lorax Tree Structure.
+ * data: Pointer to an array of the tree's data items.
+ * bfactor: The branching factor of the tree.
+ * size: The number of data elements in the tree.
+ * type: The data type this tree holds.
+ *
+ */
 struct lrx_tree {
 
   void **data;
@@ -47,13 +60,12 @@ struct lrx_tree {
 void _lrx_tree_memcpy( void *b1, void *b2, int size, lrx_primitives type );
 
 /**
- *Function to initialize a lorax_tree type in C. Expects 3 parameters:
- * id: the identifier in lrx program given to the tree
+ *Function to initialize a lorax_tree type in C. Expects 2 parameters:
  * bfactor: the branching factor of the tree
  * type: the data type of the tree
  *
- * mallocs a lrx_tree structure, sets the data to 0, and returns a pointer. In the future
- * this will probably need to be wrapped into some sort of smart pointer structure.
+ * Trees are initialized dynamically onto the heap. This function only reserves memory
+ * for the tree structure NOT the data items.
  */
 struct lrx_tree *construct_tree( const int bfactor,  lrx_primitives type)
 {
@@ -67,12 +79,24 @@ struct lrx_tree *construct_tree( const int bfactor,  lrx_primitives type)
 
   temp->type = type;
 
+  temp->size = 0;
+
   return temp;
 
 }
 
 
-
+/**
+ * Function to set the data items in an already initialized tree. Expects 3 parameters:
+ * t: The tree to set data items for.
+ * data_args: an array containing the data for tree t
+ * data_size: The number of data items in the data_args array
+ * 
+ * This function will malloc() the required amount of space for data_size elements
+ * and copy the data items from data_args into the newly malloc'd space. Sets the
+ * tree's data pointer to point at this array and also sets the tree's size.
+ * A tree's size should always be equal to exactly the number of data items.
+ */
 int set_tree( struct lrx_tree *t, const void *data_args, const int data_size ) {
 
   switch(t->type) {
@@ -105,36 +129,26 @@ int set_tree( struct lrx_tree *t, const void *data_args, const int data_size ) {
 }
 
 
-/*
-*concatenation IS ALMOST DONE.
-*TODO: split off concatenation into functions by the type
-*of the tree. This handles the void * problem
-*/
+/**
+ *Tree concatentation. Expects 2 arguments:
+ * t1: The tree to append to
+ * t2: The tree that is being appended
+ *
+ * Function calculates the new size of the tree and copies the data from
+ * t2 to t1 according to the rules specified in the LRM. Returns a pointer
+ * to a NEW tree structure with the concatenated data.
+ *
+ *TODO: size may actually be larger than the number of data items, fix this.
+ */
 struct lrx_tree *tree_concat( struct lrx_tree *t1, struct lrx_tree *t2 ) {
-   /*check branching factor
-	* We shouldn't do any checking in the library. Function of check.ml!
-	* if( t1->bfactor < t2->bfactor ) {
-	*  return NULL;
-	* }
-	*/
   
    struct lrx_tree *temp = construct_tree( t1->bfactor, t1->type ); //initialize the new tree struct
    
  
-	/* 
-	* calculate the size of the new buffer by
-	* calculating the heights of each tree and
-	* summing it. Initialize a temp buffer to hold
-	* the new data structure
-	*/
    void *buffer;
    int typesize;
+   //the size of the new tree is determined by adding the heights of t1 and t2. This gaurantees all data will fit
    int size =  (log2( t1->size ) / log2( t1->bfactor ) ) + (log2( t2->size ) / log2( t2->bfactor ) );
-  /*
-   *
-   * Find where to insert the second tree
-   */
-  
 
    switch(t1->type) {
    case INT:
@@ -199,6 +213,10 @@ struct lrx_tree *tree_concat( struct lrx_tree *t1, struct lrx_tree *t2 ) {
   
 }
 
+/**
+ * Special memcpy function to cope with the polymorphic nature
+ * of Lorax Tree data types.
+ */
 void _lrx_tree_memcpy( void *buffer, void *data, const int size, lrx_primitives type ) {
 	
   switch( type ) {
@@ -216,7 +234,12 @@ void _lrx_tree_memcpy( void *buffer, void *data, const int size, lrx_primitives 
   }
 }
 
-
+/**
+ *
+ *Function to print the elements of the tree.
+ * Prints in pre-order style.
+ *
+ */
 void print_tree( struct lrx_tree *t) {
   char *fmt;
   int step;
@@ -245,6 +268,15 @@ void print_tree( struct lrx_tree *t) {
   
 }
 
+/**
+ * Compares two trees accroding to rules set in the LRM.
+ * Expects 3 parameters:
+ *  t1: The first tree.
+ * t2: The second tree.
+ * operation: The comparison operation to perform.
+ *
+ * Returns 0 if t1 does not compare to t2, returns non-zero if comparison matches.
+ */
 int lrx_tree_compare( struct lrx_tree *t1, struct lrx_tree *t2, comparisions operation ) {
 	int equality = 0;
 	switch(operation) {
@@ -274,6 +306,11 @@ int lrx_tree_compare( struct lrx_tree *t1, struct lrx_tree *t2, comparisions ope
 
 }
 
+/**
+ * internal function to do equality checking.
+ * Equality checking requires a little more work so it was moved to
+ * a separate function.
+ */
 int _lrx_check_equals( struct lrx_tree *t1, struct lrx_tree *t2 ) {
 	int i;
 	int equals = 1;
