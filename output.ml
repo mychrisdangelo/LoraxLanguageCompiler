@@ -27,7 +27,7 @@ open Intermediate
 let c_of_var_type = function
 	 Lrx_Atom(Lrx_Int) -> "int"
 	| Lrx_Atom(Lrx_Float) -> "float"
-	| Lrx_Atom(Lrx_Bool) -> "bool"
+	| Lrx_Atom(Lrx_Bool) -> "int"
 	| Lrx_Atom(Lrx_Char) -> "char"
 (* 	| Lrx_Tree -> "struct lrx_tree"
  *)	| _ -> raise(Failure("TEMP"))

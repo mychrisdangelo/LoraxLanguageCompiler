@@ -1,7 +1,11 @@
+int a;
+
 int main()
 {
-	tree <int> t(2);
-	tree<int> t1(4);
-	t == t1;
+	
+}
 
+int chris(int a, char c, bool b)
+{
+	print(a);
 }
