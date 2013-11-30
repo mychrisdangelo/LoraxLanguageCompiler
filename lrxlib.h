@@ -19,6 +19,7 @@
 #include <string.h>
 #include <math.h>
 
+void _lrx_tree_memcpy( void *b1, void *b2, int size, lrx_primitives type );
 
 //enumeration constants for tree types. Mimics polymorphic property of trees
 typedef enum  {
@@ -57,7 +58,7 @@ struct lrx_tree {
 
 };
 
-void _lrx_tree_memcpy( void *b1, void *b2, int size, lrx_primitives type );
+
 
 /**
  *Function to initialize a lorax_tree type in C. Expects 2 parameters:
@@ -85,6 +86,53 @@ struct lrx_tree *construct_tree( const int bfactor,  lrx_primitives type)
 
 }
 
+/**
+*
+* Function to capture the % operation when used WITH ASSIGNMENT. 
+* function returns a pointer to a new tree structure with data items
+* assigned to the subtree given by the % operator. This function expects
+* 2 parameters:
+* t: the tree that the % operation is being performed on.
+* index: the index into the tree t that marks the start of the subtree referenced in the % operation
+*
+*Note this function is to be used only within assignment. When multiple % symbols are strung
+*together it is expected that the ocaml will string these together into a single index
+*/
+struct lrx_tree *get_subtree( struct lrx_tree *t, int index ) {
+ 
+   struct lrx_tree *temp = construct_tree( t->bfactor, t-type );
+
+  int size = t->size - index;
+
+  void *buffer;
+  int typesize;
+  switch(t->type) {
+  case INT:
+    buffer = int16_t[size];
+    typesize = sizeof(int16_t);
+    break;
+  case CHAR: case BOOL: case STRING:
+    buffer = char[size];
+    typesize = sizeof(char);
+    break;
+  case FLOAT:
+    buffer = float[size];
+    typesize = sizeof(float);
+    break;
+  }
+
+  _lrx_tree_memcpy( buffer, *(t->data)+(index*typesize), size, t->type);
+  
+  set_tree( t, buffer, typesize );
+  
+}
+
+
+//deconstructor
+void destroy_tree( struct lrx_tree *t ) {
+  free( *(t->data) );
+  free( t );
+}
 
 /**
  * Function to set the data items in an already initialized tree. Expects 3 parameters:
@@ -151,23 +199,24 @@ struct lrx_tree *tree_concat( struct lrx_tree *t1, struct lrx_tree *t2 ) {
    int size =  (log2( t1->size ) / log2( t1->bfactor ) ) + (log2( t2->size ) / log2( t2->bfactor ) );
 
    switch(t1->type) {
+
    case INT:
   
-     int16_t temp_buff[size];
+     //int16_t temp_buff[size];
      buffer = int16_t[size];
      typesize = sizeof(int16_t);
      break;
      
 
   case STRING: case BOOL: case CHAR:
-    char temp_buff[size];
-   buffer = temp_buff;
+    //char temp_buff[size];
+    buffer = char[size];
     typesize = sizeof(char);
     break;
     
    case FLOAT:
-     float temp_buff[size];
-     buffer = temp_buff;
+     //float temp_buff[size];
+     buffer = float[size];
      typesize = sizeof(float);
      break;
 
@@ -178,29 +227,35 @@ struct lrx_tree *tree_concat( struct lrx_tree *t1, struct lrx_tree *t2 ) {
 
    _lrx_tree_memcpy( buffer, t1->data, t1->size, t1->type );
   
+  	/**
+  	* loop to find the insertion point for the concatenation.
+  	* Will break if it finds an available child node, otherwise
+  	* the loop will continue and find the first available spot or
+  	* posisbly go on to a new depth level
+  	*/
    int i;
-   for( i = 1; i < t1->bfactor; i++ ) {
-     if( t1->data[i] == NULL ) {
+   for( i = 1; i < t1->size; i++ ) {
+     if( *(t1->data)[i] == NULL ) {
        break;
      }
    }
    
   
-   _lrx_tree_memcpy( buffer+i, t2->data, typesize, t2->type );
+   _lrx_tree_memcpy( buffer+i, *(t2->data), 1, t2->type );
 
   int j;
   for ( j = 1; j < t2->size; j += t2->bfactor ) {
     int k;
     i = j * t1->bfactor + 1; 
     for( k = j; k < t2->bfactor; k++ ) {
-      _lrx_tree_memcpy( buffer+i, t2->data+k, typesize,t2->type ); 
+      _lrx_tree_memcpy( buffer+i, *(t2->data)+(k*typesize), 1,t2->type ); 
       i++;
     }
     int diff;
     if( ( diff = t1->bfactor - t2->bfactor ) != 0 ) {
       int m;
       for( m = 0; m < diff; m++ ) {
-	_lrx_tree_memcpy( buffer+i, 0, typesize, t2->type );
+	_lrx_tree_memcpy( buffer+i, 0, 1, t2->type );
 	i++;
       }
     }
