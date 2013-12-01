@@ -1,7 +1,7 @@
 open Ast
 open Check
 
-(* type inter_expr =
+(*  type inter_expr =
     Ir_Int_Literal of int
   | Ir_Float_Literal of float
   | Ir_String_Literal of string
@@ -17,28 +17,14 @@ open Check
   | Ir_Noexpr
 
 type inter_stmt =
-    Ir_CodeBlock of inter_block
+    Ir_CodeBlock of c_block
   | Ir_Expr of inter_expr
   | Ir_Return of inter_expr
   | Ir_If of inter_expr * inter_block * inter_block
   | Ir_For of inter_expr * inter_expr * inter_expr * inter_block
   | Ir_While of inter_expr * inter_block
   | Ir_Continue
-  | Ir_Break
-
-
-and inter_block = {
-    ir_locals: inter_var list;
-    ir_statements: inter_stmt list;
-    ir_block_id: int;
-}
-
-and inter_func = {
-  ir_name: string;
-  ir_ret_type: inter_var_type;
-  ir_formals: inter_var list;
-  ir_block: inter_block;
-} *)
+  | Ir_Break *)
 
 type ir_fheader = {
   ir_name: string;
@@ -47,7 +33,7 @@ type ir_fheader = {
 }
 
 type ir_program = {
-    globals: scope_var_decl list;
+    globals: var list;
     headers: ir_fheader list;
     bodies: c_func list;
 }
@@ -130,23 +116,47 @@ append return to the end of body
 build out simple_func_type to return: { header, args, code }
 
 
-(* let gen_ir_id x (id:int) =
+
+
+
+
+let ir_block = gen_ir_block f.c_fblock in 
+  let ir_formals = gen_ir_expr f.c_formals in
+  {f.c_fname, f.c_ret_type, ir_formals, ir_block} *)
+*)*)
+
+let tmp_id = ref 0
+let label_id = ref 0
+
+let gen_ir_id x =
   let prefix = 
     match x with
-      Lrx_Tree(t, d) -> ("__ir_tree_" ^ string_of_var_type t ^ "_" ^ string_of_int d ^ "_")
-      | Lrx_Atom(Lrx_Bool) -> "__ir_bool_" 
+(*       Lrx_Tree(t, d) -> ("__ir_tree_" ^ string_of_var_type t ^ "_" ^ string_of_int d ^ "_")
+ *)   | Lrx_Atom(Lrx_Bool) -> "__ir_bool_" 
       | Lrx_Atom(Lrx_Char) -> "__ir_char_"
       | Lrx_Atom(Lrx_Int) -> "__ir_int_"
       | Lrx_Atom(Lrx_Float) -> "__ir_float_"
       | _ -> raise(Failure("attempting to generate ir id for unsupported type"))) 
-  in (prefix ^ (string_of_int id), x, -1, id + 1)
+  in (prefix ^ (string_of_int tmp_id), x, tmp_id); tmp_id := tmp_id + 1
 
-let rec gen_ir_expr (e:c_expr) (id:int) =
+let gen_ir_label (s:unit) =
+  let x = label_id.contents in
+  label_id := x + 1; "__LABEL_" ^ (string_of_int x)
+
+let rec gen_ir_expr (e:c_expr) =
   match e with
-       C_Int_Literal(i) -> 
-       let (s, v, _, id) = gen_ir_id Lrx_Atom(Lrx_Int) id in
-       ([Decl((s,v,_,id))); Expr(Lit((s,v,_,id), IntLit(i)))], (s,v,_,id)) //
-     | C_Float_Literal(f) -> 
+       C_Int_Literal(i) ->
+       let (s, v) = gen_ir_id Lrx_Atom(Lrx_Int) in
+       
+       ([Decl((s,v,id))); Expr(Lit((s,v,id), IntLit(i)))], (s,v,id)) //
+
+
+    let tmp = gen_tmp_var (Simple(Str)) in
+    ( [Decl(tmp); 
+       Expr(Lit(tmp, StrLit(s)))]
+       , tmp)
+
+ (*  | C_Float_Literal(f) -> 
      | C_String_Literal(s) ->
      | C_Char_Literal(c) -> 
      | C_Bool_Literal(b) -> 
@@ -157,40 +167,83 @@ let rec gen_ir_expr (e:c_expr) (id:int) =
      | C_Unop(t, e, op) ->
      | C_Call(fd, el) -> 
      | C_Null_Literal ->
-     | C_Noexpr -> 
+     | C_Noexpr ->  *)
+     | _ -> "TEMP: gen_ir_expr"
 
 let rec gen_ir_statement (s:c_stmt) =
-    match s with
-       C_CodeBlock(b) ->
-     | C_Return(e) ->
-     | C_Expr(e) -> 
+  match s with
+     C_CodeBlock(b) -> gen_ir_block b
+     | C_Return(e) -> let (ir_decls, ir_exprs) = gen_ir_expr e in ir_e @ [Ret(ir_r)]
+     | C_Expr(e) -> let (ir_e, _) = gen_ir_expr e in ir_e
+     | _ -> "unfinished gen_ir_statement"
+     (*
      | C_If(e, b1, b2) -> 
      | C_For(e1, e2, e3, b) -> 
      | C_While(e, b) -> 
      | C_Continue ->
      | C_Break -> *)
 
-(* let rec gen_ir_func (f:c_func) =
-  () *)
-(*let ir_block = gen_ir_block f.c_fblock in 
-  let ir_formals = gen_ir_expr f.c_formals in
-  {f.c_fname, f.c_ret_type, ir_formals, ir_block} *)
+(*
+  CodeBlock(b) -> simplify_block b
+  | Conditional(e, b1, b2) ->
+    let (se, r) = simplify_expr e in
+    let sb1 = simplify_block b1 in
+    let sb2 = simplify_block b2 in
+    let startlabel = gen_tmp_label () in
+    let endlabel = gen_tmp_label () in
+    se @ [If(r, startlabel)] @ sb2 @ [Jmp(endlabel); Label(startlabel)] @ sb1 @ [Label(endlabel)]
+  | Loop(e, b) ->
+    let (se, r) = simplify_expr e in
+    let sb = simplify_block b in
+    let startlabel = gen_tmp_label () in
+    let endlabel = gen_tmp_label () in
+    [Jmp(endlabel); Label(startlabel)] @ sb @ [Label(endlabel)] @ se @ [If(r, startlabel)]
+  | Return(e) ->
+    let (se, r) = simplify_expr e in
+    se @ [Ret(r)]
+  | Expression(e) -> (* only need simplified statements, not final tmp register *)
+    let (se, r) = simplify_expr e in
+    se*)
 
-(* and gen_ir_fbodys (flist:c_func list) =
+let is_vdecl = function
+    (n,t) -> true
+    | _ -> false
+
+let is_not_vdecl s = 
+    not (is_vdecl s)
+
+let rec gen_ir_statement_list (sl: c_stmt list) (b_id: int) =
+    match sl with
+    [] -> []
+    | head :: tail -> gen_ir_statement head :: gen_ir_statement_list tail
+
+let add_block_id (vl:var list) (b_id:int) =
+    List.rev (List.fold_left (fun l e -> (fst e ^ '_' ^ (string_of_int b_id), snd e)::l) [] vl)
+
+let gen_ir_block (b:c_block) =
+    let decls = add_block_id b.c_locals b.c_block_id in 
+    decls @ (gen_ir_statement_list b.c_statements b.c_block_id)
+
+let gen_ir_body (f:c_func) =
+  let flat_body = gen_ir_block f.c_fblock in
+  let fall_back_ret = gen_ir_default_ret f.c_ret_type in
+  let flat_body_w_ret = flat_body @ fall_back_ret in
+  let vdecls = List.filter is_vdecl flat_body_w_ret in
+  let stmts = List.filter is_not_vdecl flat_body_w_ret in
+  {c_fname = f.c_fname; c_ret_type = f.c_ret_type; c_formals = f.c_formals; c_fblock = vdecls @ stmts}
+
+let rec gen_ir_fbodies (flist:c_func list) =
   match flist with
   [] -> []
-  | head :: tail -> gen_ir_func_header head :: gen_ir_funcs tail *)
-*)*)
-let rec gen_ir_fbodys (flist:c_func list) =
-  flist
+  | head :: tail -> gen_ir_fbody head :: gen_ir_fbodies tail
 
 and gen_ir_fdecls (flist:c_func list) = 
   match flist with
   [] -> []
   | head :: tail -> 
-  {ir_name = head.c_fname; ir_ret_type = head.c_ret_type; ir_formals = List.map snd_of_three head.c_formals} :: gen_ir_fdecls tail
+  {ir_name = head.c_fname; ir_ret_type = head.c_ret_type; ir_formals = List.map snd head.c_formals} :: gen_ir_fdecls tail
 
 let rec intermediate_rep_program (p:c_program) =
   let ir_fdecls = gen_ir_fdecls (snd p) in 
-  let ir_fbodys = gen_ir_fbodys (snd p) in 
-  {globals = fst p; headers = ir_fdecls; bodies = ir_fbodys}
+  let ir_fbodies = gen_ir_fbodies (snd p) in 
+  {globals = fst p; headers = ir_fdecls; bodies = ir_fbodies}

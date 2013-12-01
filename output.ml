@@ -44,8 +44,8 @@ let c_of_func_decl_list = function
 	[] -> ""
 	| fdecls -> String.concat ("\n") (List.map c_of_func_decl fdecls) ^ "\n\n"
 
-let c_of_var_decl (v:var) =
-	 c_of_var_type (snd v) ^ " " ^ fst v
+let c_of_var_decl (v:scope_var_decl) =
+	 c_of_var_type (snd_of_three v) ^ " " ^ fst_of_three v
 
 let c_of_var_decl_list = function
 	[] -> "" 
