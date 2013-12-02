@@ -1,8 +1,30 @@
 int main()
 {
-	if(true){
-		return 4 + 1;
+	int a;
+	a = 4;
+	for(a; a < 5; a = a + 1){
+	
 	}
 }
+
+/*
+int main()
+{
+
+int a_1 = 0;
+int __tmp_int_3 = 0;
+int __tmp_int_1 = 0;
+int __tmp_int_0 = 0;
+
+__tmp_int_3 = 4;
+
+a_1 = __tmp_int_3;
+
+__tmp_int_1 = a_1;
+
+return __tmp_int_1;
+return __tmp_int_0;
+
+}*/
 
 

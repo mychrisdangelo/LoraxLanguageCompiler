@@ -64,7 +64,8 @@ let c_of_expr = function
   	| Ir_Bool_Literal(v, b) -> c_of_var_name v ^ " = " ^ string_of_bool b
   	| Ir_Unop(v1, op, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ string_of_unop op
   	| Ir_Binop(v1, op, v2, v3) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3 
-  	| _ -> (raise (Failure ("TEMP C of EXPR")))
+  	| Ir_Id(v1, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
+  	| Ir_Assign(v1, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
 
 let c_of_stmt (v:ir_stmt) =
 	match v with 

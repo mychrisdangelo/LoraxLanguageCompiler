@@ -27,10 +27,12 @@ type ir_expr =
   | Ir_Bool_Literal of scope_var_decl * bool
   | Ir_Unop of scope_var_decl * uop * scope_var_decl
   | Ir_Binop of scope_var_decl * op * scope_var_decl * scope_var_decl
+  | Ir_Id of scope_var_decl * scope_var_decl
+  | Ir_Assign of scope_var_decl * scope_var_decl
+
 (*| Ir_Null_Literal
-  | Ir_Id of inter_var_type * string
+  
   | Ir_Tree of inter_var_type * int * inter_expr * inter_expr list
-  | Ir_Assign of inter_var_type * inter_expr * inter_expr
   | Ir_Call of inter_func_decl * inter_expr list
   | Ir_Noexpr *)
 
@@ -95,14 +97,19 @@ let rec gen_ir_expr (e:c_expr) =
       let (s2, r2) = gen_ir_expr e2 in
       let tmp = gen_tmp_var v in
       ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
-  
+  | C_Id(t, s, i) ->
+      (* let tmp = gen_tmp_var t in 
+       ([Ir_Decl(tmp); Ir_Expr(Ir_Id(tmp, (s, t, i)))], tmp) *)
+      ([], (s, t, i))
+  | C_Assign(t, l, r) ->
+      let (s1, r1) = gen_ir_expr l in
+      let (s2, r2) = gen_ir_expr r in
+      (s2 @ [Ir_Expr(Ir_Assign(r1, r2))], r2)
   | _ -> raise (Failure ("TEMP gen_ir_expr"))
 
  (*
      | C_String_Literal(s) ->
-     | C_Tree(t, d, e, el) ->
-     | C_Assign(t, l, r) ->
-     | C_Id(t, s, i) -> 
+     | C_Tree(t, d, e, el) ->     
      | C_Call(fd, el) -> 
      | C_Null_Literal ->
      | C_Noexpr -> 
@@ -124,10 +131,23 @@ and gen_ir_stmt (s: c_stmt) =
           let startlabel = gen_tmp_label () in
           let endlabel = gen_tmp_label () in
           s @ [Ir_If(r, startlabel)] @ irb2 @ [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb1 @ [Ir_Label(endlabel)]
+     | C_For(e1, e2, e3, b) -> 
+        let (s1, r1) = gen_ir_expr e1 in 
+        let (s2, r2) = gen_ir_expr e2 in 
+        let (s3, r3) = gen_ir_expr e3 in 
+        let irb = gen_ir_block b in
+        let startlabel = gen_tmp_label () in
+        let endlabel = gen_tmp_label () in
+        [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ s3 @ irb @ [Ir_Label(endlabel)] @ s1 @ s2 @ [Ir_If(r2, startlabel)]
+     | C_While(e, b) -> 
+        let (s, r) = gen_ir_expr e in 
+        let irb = gen_ir_block b in
+        let startlabel = gen_tmp_label () in
+        let endlabel = gen_tmp_label () in
+        [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb @ [Ir_Label(endlabel)] @ s @ [Ir_If(r, startlabel)]
      | _ ->raise (Failure ("TEMP gen_ir_stmt"))
 (*      
-     | C_For(e1, e2, e3, b) -> 
-     | C_While(e, b) -> 
+     
      | C_Continue ->
      | C_Break ->  *)
 
