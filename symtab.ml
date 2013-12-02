@@ -14,10 +14,6 @@ open Ast
  *)
 module SymMap = Map.Make(String)
 
-(* 
- * scope_parents keeps the list of scopes and their parent
- * which is always child-1
-*)
 let scope_parents = Array.create 1000 0
 
 
@@ -35,6 +31,13 @@ let string_of_symtab env =
 	let sorted = List.sort Pervasives.compare symlist in
 	String.concat "\n" sorted
 
+let rec symtab_get_id (name:string) env = 
+	let(table, scope) = env in
+	let to_find = name ^ "_" ^ (string_of_int scope) in
+	if SymMap.mem to_find table then scope
+	else
+		if scope = 0 then raise (Failure("symbol " ^ name ^ " not declared in current scope"))
+		else symtab_get_id name (table, scope_parents.(scope))
 (*
  * Look for the symbol in the given environment and scope
  * then recursively check in all ancestor scopes 

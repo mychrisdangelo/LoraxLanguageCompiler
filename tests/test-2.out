@@ -1,0 +1,48 @@
+#include "lrxlib.h"
+int a_0;
+
+int main();
+char kira(float);
+float zhaarn(float);
+int chris(int);
+
+int main()
+{
+int __tmp_int_7 = 0;
+int __tmp_int_6 = 0;
+
+__tmp_int_7 = 0;
+return __tmp_int_7;
+return __tmp_int_6;
+
+}
+char kira(float f_3)
+{
+char __tmp_char_5 = '0';
+char __tmp_char_4 = '0';
+
+__tmp_char_5 = 'c';
+return __tmp_char_5;
+return __tmp_char_4;
+
+}
+float zhaarn(float m_2)
+{
+float __tmp_float_3 = 0.0;
+float __tmp_float_2 = 0.0;
+
+__tmp_float_3 = 4.3;
+return __tmp_float_3;
+return __tmp_float_2;
+
+}
+int chris(int d_1)
+{
+int __tmp_bool_1 = false;
+int __tmp_bool_0 = false;
+
+__tmp_bool_1 = false;
+return __tmp_bool_1;
+return __tmp_bool_0;
+
+}

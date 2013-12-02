@@ -1,11 +1,6 @@
-int a;
-
 int main()
 {
-	
+	return 0;
 }
 
-int chris(int a, char c, bool b)
-{
-	print(a);
-}
+
