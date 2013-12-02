@@ -35,9 +35,9 @@ type ir_expr =
   | Ir_Noexpr *)
 
 type ir_stmt =
-  (* | If of simple_var * string
+  | Ir_If of scope_var_decl * string
   | Ir_Jmp of string
-  | Ir_Label of string *)
+  | Ir_Label of string
   | Ir_Decl of scope_var_decl
   | Ir_Ret of scope_var_decl
   | Ir_Expr of ir_expr
@@ -95,13 +95,14 @@ let rec gen_ir_expr (e:c_expr) =
       let (s2, r2) = gen_ir_expr e2 in
       let tmp = gen_tmp_var v in
       ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
+  
   | _ -> raise (Failure ("TEMP gen_ir_expr"))
 
  (*
      | C_String_Literal(s) ->
      | C_Tree(t, d, e, el) ->
-     | C_Id(t, s) -> 
      | C_Assign(t, l, r) ->
+     | C_Id(t, s, i) -> 
      | C_Call(fd, el) -> 
      | C_Null_Literal ->
      | C_Noexpr -> 
@@ -116,8 +117,15 @@ and gen_ir_stmt (s: c_stmt) =
        C_CodeBlock(b) -> gen_ir_block b
      | C_Return(e) -> let (s, r) = gen_ir_expr e in s @ [Ir_Ret(r)]
      | C_Expr(e) -> fst (gen_ir_expr e)
+     | C_If(e, b1, b2) -> 
+          let (s, r) = gen_ir_expr e in 
+          let irb1 = gen_ir_block b1 in
+          let irb2 = gen_ir_block b2 in
+          let startlabel = gen_tmp_label () in
+          let endlabel = gen_tmp_label () in
+          s @ [Ir_If(r, startlabel)] @ irb2 @ [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb1 @ [Ir_Label(endlabel)]
      | _ ->raise (Failure ("TEMP gen_ir_stmt"))
-(*      | C_If(e, b1, b2) -> 
+(*      
      | C_For(e1, e2, e3, b) -> 
      | C_While(e, b) -> 
      | C_Continue ->

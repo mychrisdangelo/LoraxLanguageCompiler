@@ -68,14 +68,16 @@ let c_of_expr = function
 
 let c_of_stmt (v:ir_stmt) =
 	match v with 
-	 Ir_Decl(d) -> c_of_var_decl d ^ " = " ^ c_of_var_def d
-  	| Ir_Ret(v) -> "return " ^ c_of_var_name v;
-   	| Ir_Expr(e) -> c_of_expr e
-    | _ -> raise (Failure ("TMP C of STMT"))
+	 Ir_Decl(d) -> c_of_var_decl d ^ " = " ^ c_of_var_def d ^ ";"
+  	| Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"
+   	| Ir_Expr(e) -> c_of_expr e ^ ";\n"
+   	| Ir_If(v, s) -> "if(" ^ c_of_var_name v ^ ") goto " ^ s ^ "" ^ ";"
+   	| Ir_Jmp(s) -> "goto " ^ s ^ ";"
+   	| Ir_Label(s) -> s ^ ":"
 
 let c_of_stmt_list = function
 	[] -> ""
-	| stmts -> String.concat (";\n") (List.map c_of_stmt stmts) ^ ";\n\n"
+	| stmts -> String.concat ("\n") (List.map c_of_stmt stmts) ^ "\n\n"
 
 let c_of_func (f: ir_func) =
 	let (t, n, sl) = f.ir_header in 
