@@ -1,6 +1,11 @@
 
 int a;//0
 
+int chris(int d){
+	int e; //4
+}
+
+
 int main()
 {
 	int a; //3
@@ -14,10 +19,17 @@ int main()
 		
 	}
 
+
+
+	
+
+	else{
+	int g;
+
+	}
+
 	c = 8; //3
 	
 }
 
-int chris(int d){
-	int e;
-}
+

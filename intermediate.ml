@@ -1,20 +1,7 @@
 open Ast
 open Check
 
-(* type inter_expr =
-    Ir_Int_Literal of int
-  | Ir_Float_Literal of float
-  | Ir_String_Literal of string
-  | Ir_Char_Literal of char
-  | Ir_Bool_Literal of bool
-  | Ir_Null_Literal
-  | Ir_Id of inter_var_type * string
-  | Ir_Binop of inter_var_type * inter_expr * op * inter_expr
-  | Ir_Unop of inter_var_type * inter_expr * uop
-  | Ir_Tree of inter_var_type * int * inter_expr * inter_expr list
-  | Ir_Assign of inter_var_type * inter_expr * inter_expr
-  | Ir_Call of inter_func_decl * inter_expr list
-  | Ir_Noexpr
+(* 
 
 type inter_stmt =
     Ir_CodeBlock of inter_block
@@ -40,6 +27,55 @@ and inter_func = {
   ir_block: inter_block;
 } *)
 
+
+let tmp_reg_id = ref 0
+let label_id = ref 0
+
+let gen_tmp_var t =
+  let x = tmp_reg_id.contents in 
+  let prefix = 
+  (match t with
+      Lrx_Atom(Lrx_Bool) -> "__ir_bool_" 
+    | Lrx_Atom(Lrx_Char) -> "__ir_char_"
+    | Lrx_Atom(Lrx_Int) -> "__ir_int_"
+    | Lrx_Atom(Lrx_Float) -> "__ir_float_"
+    | _ -> raise(Failure("unsupported type"))) in
+  tmp_reg_id := x + 1; (prefix, t, x)
+
+let gen_tmp_label (s:unit) =
+  let x = label_id.contents in
+  label_id := x + 1; "__LABEL_" ^ (string_of_int x)
+
+type ir_expr =
+    Ir_Int_Literal of var_type * string * int
+  | Ir_Float_Literal of var_type * string * float
+  | Ir_String_Literal of var_type * string * string
+  | Ir_Char_Literal of var_type * string * char
+  | Ir_Bool_Literal of var_type * string * bool
+
+(*   | Ir_Null_Literal
+  | Ir_Id of inter_var_type * string
+  | Ir_Binop of inter_var_type * inter_expr * op * inter_expr
+  | Ir_Unop of inter_var_type * inter_expr * uop
+  | Ir_Tree of inter_var_type * int * inter_expr * inter_expr list
+  | Ir_Assign of inter_var_type * inter_expr * inter_expr
+  | Ir_Call of inter_func_decl * inter_expr list
+  | Ir_Noexpr *)
+
+type ir_stmt =
+  (* | If of simple_var * string
+  | Jmp of string
+  | Label of string *)
+  | Ir_Decl of scope_var_decl
+  | Ir_Ret of scope_var_decl
+  | Ir_Expr of ir_expr
+
+type ir_func = {
+  ir_header: var_type * string * scope_var_decl list;
+  ir_vdecls: scope_var_decl list;
+  ir_stmts: ir_stmt list;
+}
+
 type ir_fheader = {
   ir_name: string;
   ir_ret_type: var_type;
@@ -47,10 +83,12 @@ type ir_fheader = {
 }
 
 type ir_program = {
-    globals: scope_var_decl list;
-    headers: ir_fheader list;
-    bodies: c_func list;
+    ir_globals: scope_var_decl list;
+    ir_headers: ir_fheader list;
+    ir_bodies: ir_func list;
 }
+
+
 
 (*
 
@@ -181,8 +219,14 @@ let rec gen_ir_statement (s:c_stmt) =
   [] -> []
   | head :: tail -> gen_ir_func_header head :: gen_ir_funcs tail *)
 *)*)
+let gen_ir_body (f: c_func) =
+  let header = (f.c_ret_type, f.c_fname, f.c_formals) in
+  {ir_header = header; ir_vdecls = []; ir_stmts = []}
+
 let rec gen_ir_fbodys (flist:c_func list) =
-  flist
+  match flist with
+  [] -> []
+  | head :: tail -> gen_ir_body head :: gen_ir_fbodys tail
 
 and gen_ir_fdecls (flist:c_func list) = 
   match flist with
@@ -193,4 +237,9 @@ and gen_ir_fdecls (flist:c_func list) =
 let rec intermediate_rep_program (p:c_program) =
   let ir_fdecls = gen_ir_fdecls (snd p) in 
   let ir_fbodys = gen_ir_fbodys (snd p) in 
-  {globals = fst p; headers = ir_fdecls; bodies = ir_fbodys}
+  {ir_globals = fst p; ir_headers = ir_fdecls; ir_bodies = ir_fbodys}
+
+
+
+
+
