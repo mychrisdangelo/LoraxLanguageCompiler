@@ -1,3 +1,6 @@
+#ifndef __LRXLIB_H__
+#define __LRXLIB_H__
+
 /**
  *Lorax C Library to integrate with Lorax Language.
  * Authors: Zhaarn Maheswaran, Doug Bienstock
@@ -7,19 +10,13 @@
  */
 
 
-#define DO_NOT_COMPILE_THIS_FILE_UNTIL_CG_TEAM_IS_READY
-#ifndef DO_NOT_COMPILE_THIS_FILE_UNTIL_CG_TEAM_IS_READY
-
-#ifndef __LRXLIB_H__
-#define __LRXLIB_H__
-
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 
-void _lrx_tree_memcpy( void *b1, void *b2, int size, lrx_primitives type );
+
 
 //enumeration constants for tree types. Mimics polymorphic property of trees
 typedef enum  {
@@ -41,6 +38,7 @@ typedef enum {
 	NEQL
 } comparisons;
 
+
 /*
  * Lorax Tree Structure.
  * data: Pointer to an array of the tree's data items.
@@ -57,6 +55,10 @@ struct lrx_tree {
   lrx_primitives type;
 
 };
+
+
+void _lrx_tree_memcpy( void *b1, void *b2, int size, lrx_primitives type );
+
 
 
 
@@ -100,7 +102,7 @@ struct lrx_tree *construct_tree( const int bfactor,  lrx_primitives type)
 */
 struct lrx_tree *get_subtree( struct lrx_tree *t, int index ) {
  
-   struct lrx_tree *temp = construct_tree( t->bfactor, t-type );
+   struct lrx_tree *temp = construct_tree( t->bfactor, t->type );
 
   int size = t->size - index;
 
@@ -196,6 +198,7 @@ struct lrx_tree *tree_concat( struct lrx_tree *t1, struct lrx_tree *t2 ) {
    void *buffer;
    int typesize;
    //the size of the new tree is determined by adding the heights of t1 and t2. This gaurantees all data will fit
+   //todo: check this????
    int size =  (log2( t1->size ) / log2( t1->bfactor ) ) + (log2( t2->size ) / log2( t2->bfactor ) );
 
    switch(t1->type) {
@@ -235,28 +238,28 @@ struct lrx_tree *tree_concat( struct lrx_tree *t1, struct lrx_tree *t2 ) {
   	*/
    int i;
    for( i = 1; i < t1->size; i++ ) {
-     if( *(t1->data)[i] == NULL ) {
+     if( *(t1->data)+(i*typesize) == NULL ) {
        break;
      }
    }
    
   
-   _lrx_tree_memcpy( buffer+i, *(t2->data), 1, t2->type );
+   _lrx_tree_memcpy( buffer+(i*typesize), *(t2->data), 1, t2->type );
 
   int j;
   for ( j = 1; j < t2->size; j += t2->bfactor ) {
     int k;
     i = j * t1->bfactor + 1; 
     for( k = j; k < t2->bfactor; k++ ) {
-      _lrx_tree_memcpy( buffer+i, *(t2->data)+(k*typesize), 1,t2->type ); 
+      _lrx_tree_memcpy( buffer+(i*typesize), *(t2->data)+(k*typesize), 1,t2->type ); 
       i++;
     }
     int diff;
     if( ( diff = t1->bfactor - t2->bfactor ) != 0 ) {
       int m;
-      for( m = 0; m < diff; m++ ) {
-	_lrx_tree_memcpy( buffer+i, 0, 1, t2->type );
-	i++;
+      for( m = 0; m < diff; m++ ) { //if bfactor is less, then we need to pad the new tree with some NULLS
+		_lrx_tree_memcpy( buffer+i,NULL, 1, t2->type );
+		i++;
       }
     }
   }
@@ -332,7 +335,7 @@ void print_tree( struct lrx_tree *t) {
  *
  * Returns 0 if t1 does not compare to t2, returns non-zero if comparison matches.
  */
-int lrx_tree_compare( struct lrx_tree *t1, struct lrx_tree *t2, comparisions operation ) {
+int lrx_tree_compare( struct lrx_tree *t1, struct lrx_tree *t2, comparisons operation ) {
 	int equality = 0;
 	switch(operation) {
 		case GT:
@@ -368,17 +371,17 @@ int lrx_tree_compare( struct lrx_tree *t1, struct lrx_tree *t2, comparisions ope
  */
 int _lrx_check_equals( struct lrx_tree *t1, struct lrx_tree *t2 ) {
 	int i;
-	int equals = 1;
+	int equality = 1;
 	for( i = 0; i < t1->size; i++ ) {
 		switch(t1->type) {
 			case INT:
-				equality = (int16_t)*(*(t1->data)+i) == (int16_t)*(*(t2->data)+i);
+				equality = *(((int16_t *)*(t1->data))+i) == *(((int16_t *)*(t2->data))+i);
 				break;
 			case CHAR: case STRING: case BOOL:
-				equality = (char)*(*(t1->data)+i) == (char)*(*(t2->data)+i);
+				equality = *(((char *)*(t1->data))+i) == *(((char *)*(t2->data))+i);	
 				break;
 			case FLOAT:
-				equality = (float)*(*(t1->data)+i) == (float)*(*(t2->data)+i);
+				equality = *(((float *)*(t1->data))+i) == *(((float *)*(t2->data))+i);
 				break;
 			}
 	}
@@ -386,5 +389,3 @@ int _lrx_check_equals( struct lrx_tree *t1, struct lrx_tree *t2 ) {
 }
 #endif
 
-// DO_NOT_COMPILE_THIS_FILE_UNTIL_CG_TEAM_IS_READY
-#endif 
