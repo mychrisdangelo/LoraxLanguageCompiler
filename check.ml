@@ -19,7 +19,7 @@ type c_expr =
   | C_Char_Literal of char
   | C_Bool_Literal of bool
   | C_Null_Literal
-  | C_Id of var_type * string
+  | C_Id of var_type * string * int
   | C_Binop of var_type * c_expr * op * c_expr
   | C_Unop of var_type * c_expr * uop
   | C_Tree of var_type * int * c_expr * c_expr list
@@ -45,7 +45,7 @@ and c_tree_decl = {
 } 
 
 and c_block = {
-    c_locals : var list;
+    c_locals : scope_var_decl list;
     c_statements: c_stmt list;
     c_block_id: int;
 }
@@ -53,11 +53,11 @@ and c_block = {
 type c_func = { 
     c_fname : string;
     c_ret_type : var_type;
-    c_formals : var list;
+    c_formals : scope_var_decl list;
     c_fblock : c_block;
 }
 
-type c_program = var list * c_func list
+type c_program = scope_var_decl list * c_func list
 
 (* structures the 'main' function *)
 let main_fdecl (f:c_func) =
@@ -73,7 +73,7 @@ let type_of_expr = function
   | C_Bool_Literal(b) -> Lrx_Atom(Lrx_Bool)
   | C_Binop(t,_,_,_) -> t
   | C_Unop(t,_,_) -> t 
-  | C_Id(t,_) -> t
+  | C_Id(t,_,_) -> t
   | C_Assign(t,_,_) -> t
   | C_Tree(t, d, _, _) -> 
     (match t with
@@ -208,27 +208,28 @@ and check_fun_call (name:string) (cl:c_expr list) env =
 
 let rec check_id_is_valid (id_name:string) env = 
      let decl = Symtab.symtab_find id_name env in
+     let id = Symtab.symtab_get_id id_name env in
      (match decl with 
-          SymTab_VarDecl(v) -> (snd_of_three v, fst_of_three v)
+          SymTab_VarDecl(v) -> (snd_of_three v, fst_of_three v, id)
         | _ -> raise (Failure("symbol " ^ id_name ^ " is not a variable")))
 
 and extract_l_value (l:c_expr) env =
     match l with
-    | C_Id(t,s) -> s
+    | C_Id(t,s,_) -> s
     | C_Binop(t,l,o,r) -> extract_l_value l env 
     | C_Unop(t,l,o) -> extract_l_value l env
     | _ -> raise (Failure ("Cannot dereference expression without id"))
 
 and check_l_value (l:expr) env =
     match l with
-     | Id(s) -> let (t, e) = check_id_is_valid s env in
-          C_Id(t,e)
+     | Id(s) -> let (t, e, id) = check_id_is_valid s env in
+          C_Id(t,e, id)
      | _ -> let ce = (check_expr l env) in
             match ce with 
             | C_Binop(_,_,op,_) -> 
               (if op = Child then
               (let s = (extract_l_value ce env) in 
-              let (t, e) = check_id_is_valid s env in
+              let (t, e, _) = check_id_is_valid s env in
               ignore t; ignore e; ce)
               else raise (Failure ("Left hand side of assignment operator is improper type")))
             | C_Unop(_,_,op) -> 
@@ -272,8 +273,8 @@ and check_expr (e:expr) env =
      | Bool_Literal(b) -> C_Bool_Literal(b)
      | Tree(e, el) -> let (t, d, e, el) = check_tree_literal_root_is_valid e el env in 
           C_Tree(t, d, e, el)
-     | Id(s) -> let (t, e) = check_id_is_valid s env in
-          C_Id(t,e)
+     | Id(s) -> let (t, e, id) = check_id_is_valid s env in
+          C_Id(t,e, id)
      | Binop(e1, op, e2) ->
        let (c1, c2) = (check_expr e1 env, check_expr e2 env) in
         check_binop c1 c2 op (* returns C_Binop *)
@@ -378,7 +379,9 @@ and check_main_exists (f:c_func list) =
 and check_is_vardecls (vars: var list) env =
     match vars with
         [] -> []
-      | head :: tail -> let decl = Symtab.symtab_find (fst head) env in
+      | head :: tail -> 
+      let decl = Symtab.symtab_find (fst head) env in
+      let id = Symtab.symtab_get_id (fst head) env in 
         match decl with 
         	 SymTab_FuncDecl(f) -> raise(Failure("symbol is not a variable"))
 	       | SymTab_VarDecl(v) -> 
@@ -388,9 +391,9 @@ and check_is_vardecls (vars: var list) env =
                 let checked_degree = check_expr t.degree env in
                 let type_of_degree = type_of_expr checked_degree in
                 (match type_of_degree with
-                    Lrx_Atom(Lrx_Int) -> (fst_of_three v, snd_of_three v) :: check_is_vardecls tail env
+                    Lrx_Atom(Lrx_Int) -> (fst_of_three v, snd_of_three v, id) :: check_is_vardecls tail env
                   | _ -> raise (Failure ("Tree degree must be of type int")))
-             | Lrx_Atom(a) -> (fst_of_three v, snd_of_three v) :: check_is_vardecls tail env
+             | Lrx_Atom(a) -> (fst_of_three v, snd_of_three v, id) :: check_is_vardecls tail env
 
 
 (* 
