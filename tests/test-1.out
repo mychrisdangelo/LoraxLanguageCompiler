@@ -1,5 +1,5 @@
 #include "lrxlib.h"
-int a0;
+int a_0;
 
 int main();
 int chris(int);
@@ -7,12 +7,14 @@ int chris(int);
 int main()
 {
 int __tmp_int_1 = 0;
+
 return __tmp_int_1;
 
 }
-int chris(int d1)
+int chris(int d_1)
 {
 int __tmp_int_0 = 0;
+
 return __tmp_int_0;
 
 }
