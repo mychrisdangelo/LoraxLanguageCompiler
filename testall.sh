@@ -122,9 +122,10 @@ Check() {
 
     generatedfiles=""
 
-    generatedfiles="$generatedfiles ${basename}.i.out" &&
-    Run "$lorax" "-i" "<" $1 ">" ${basename}.i.out &&
-    Compare ${basename}.i.out ${reffile}.out ${basename}.i.diff
+    # old from microc - interpreter
+    # generatedfiles="$generatedfiles ${basename}.i.out" &&
+    # Run "$lorax" "-i" "<" $1 ">" ${basename}.i.out &&
+    # Compare ${basename}.i.out ${reffile}.out ${basename}.i.diff
 
     generatedfiles="$generatedfiles ${basename}.c.out" &&
     Run "$lorax" "-c" "<" $1 ">" ${basename}.c.out &&

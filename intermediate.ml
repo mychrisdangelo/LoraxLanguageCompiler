@@ -35,10 +35,10 @@ let gen_tmp_var t =
   let x = tmp_reg_id.contents in 
   let prefix = 
   (match t with
-      Lrx_Atom(Lrx_Bool) -> "__ir_bool_" 
-    | Lrx_Atom(Lrx_Char) -> "__ir_char_"
-    | Lrx_Atom(Lrx_Int) -> "__ir_int_"
-    | Lrx_Atom(Lrx_Float) -> "__ir_float_"
+      Lrx_Atom(Lrx_Bool) -> "__tmp_bool_" 
+    | Lrx_Atom(Lrx_Char) -> "__tmp_char_"
+    | Lrx_Atom(Lrx_Int) -> "__tmp_int_"
+    | Lrx_Atom(Lrx_Float) -> "__tmp_float_"
     | _ -> raise(Failure("unsupported type"))) in
   tmp_reg_id := x + 1; (prefix, t, x)
 
@@ -219,9 +219,28 @@ let rec gen_ir_statement (s:c_stmt) =
   [] -> []
   | head :: tail -> gen_ir_func_header head :: gen_ir_funcs tail *)
 *)*)
+
+
+let gen_ir_default_ret (t: var_type) =
+  let tmp = gen_tmp_var t in
+    Ir_Decl(tmp) :: [Ir_Ret(tmp)]
+
+(*   Lrx_Atom(Lrx_Int) -> IntLiteral(0)
+  | Lrx_Atom(Lrx_Float) -> "0.0"
+  | Lrx_Atom(Lrx_Bool) -> "false"
+  | Lrx_Atom(Lrx_Char) -> "\'0\'"
+  | _ -> raise (Failure ("chris says (k)IMPOSSIBLE!")) *)
+
 let gen_ir_body (f: c_func) =
   let header = (f.c_ret_type, f.c_fname, f.c_formals) in
-  {ir_header = header; ir_vdecls = []; ir_stmts = []}
+  let default_ret = gen_ir_default_ret f.c_ret_type in
+  {ir_header = header; ir_vdecls = []; ir_stmts = [] @ default_ret}
+(* 
+let body = simplify_block f.c_body in
+  let vdecls = List.filter is_vdecl body in
+  let stmts = List.filter is_not_vdecl body in
+  args = f.c_formals; code = vdecls @ stmts} *)
+
 
 let rec gen_ir_fbodys (flist:c_func list) =
   match flist with
