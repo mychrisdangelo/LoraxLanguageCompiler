@@ -25,10 +25,10 @@ type ir_expr =
   | Ir_String_Literal of scope_var_decl * string
   | Ir_Char_Literal of scope_var_decl * char
   | Ir_Bool_Literal of scope_var_decl * bool
+  | Ir_Unop of scope_var_decl * uop * scope_var_decl
+  | Ir_Binop of scope_var_decl * op * scope_var_decl * scope_var_decl
 (*| Ir_Null_Literal
   | Ir_Id of inter_var_type * string
-  | Ir_Binop of inter_var_type * inter_expr * op * inter_expr
-  | Ir_Unop of inter_var_type * inter_expr * uop
   | Ir_Tree of inter_var_type * int * inter_expr * inter_expr list
   | Ir_Assign of inter_var_type * inter_expr * inter_expr
   | Ir_Call of inter_func_decl * inter_expr list
@@ -71,8 +71,8 @@ let is_not_decl (s:ir_stmt) =
 let gen_ir_default_ret (t: var_type) =
   let tmp = gen_tmp_var t in
     Ir_Decl(tmp) :: [Ir_Ret(tmp)]
-
-and gen_ir_expr (e:c_expr) =
+  
+let rec gen_ir_expr (e:c_expr) =
   match e with
   C_Int_Literal(i) ->
       let tmp = gen_tmp_var (Lrx_Atom(Lrx_Int)) in
@@ -86,14 +86,22 @@ and gen_ir_expr (e:c_expr) =
   | C_Bool_Literal(b) -> 
        let tmp = gen_tmp_var (Lrx_Atom(Lrx_Bool)) in
       ([Ir_Decl(tmp); Ir_Expr(Ir_Bool_Literal(tmp, b))], tmp)
+  | C_Unop(v, e, o) ->
+       let (s, r) = gen_ir_expr e in 
+       let tmp = gen_tmp_var v in
+       ([Ir_Decl(tmp)] @ s @ [Ir_Expr(Ir_Unop(tmp, o, r))], tmp)   
+  | C_Binop(v, e1, o, e2) -> 
+      let (s1, r1) = gen_ir_expr e1 in
+      let (s2, r2) = gen_ir_expr e2 in
+      let tmp = gen_tmp_var v in
+      ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
   | _ -> raise (Failure ("TEMP gen_ir_expr"))
 
-    (*| C_String_Literal(s) ->
+ (*
+     | C_String_Literal(s) ->
      | C_Tree(t, d, e, el) ->
      | C_Id(t, s) -> 
-     | C_Binop(t, e1, op, e2) ->
      | C_Assign(t, l, r) ->
-     | C_Unop(t, e, op) ->
      | C_Call(fd, el) -> 
      | C_Null_Literal ->
      | C_Noexpr -> 
