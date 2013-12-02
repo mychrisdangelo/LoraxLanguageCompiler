@@ -56,9 +56,9 @@ struct lrx_tree {
 
 };
 
-
+int _lrx_check_equals( struct lrx_tree *t1, struct lrx_tree *t2 );
 void _lrx_tree_memcpy( void *b1, void *b2, int size, lrx_primitives type );
-
+int set_tree( struct lrx_tree *t, const void *data_args, const int data_size );
 
 
 
@@ -102,7 +102,7 @@ struct lrx_tree *construct_tree( const int bfactor,  lrx_primitives type)
 */
 struct lrx_tree *get_subtree( struct lrx_tree *t, int index ) {
  
-   struct lrx_tree *temp = construct_tree( t->bfactor, t->type );
+  struct lrx_tree *temp = construct_tree( t->bfactor, t->type );
 
   int size = t->size - index;
 
@@ -110,23 +110,26 @@ struct lrx_tree *get_subtree( struct lrx_tree *t, int index ) {
   int typesize;
   switch(t->type) {
   case INT:
-    buffer = int16_t[size];
+    buffer = (int16_t *)malloc(sizeof(int16_t)*size);
     typesize = sizeof(int16_t);
     break;
   case CHAR: case BOOL: case STRING:
-    buffer = char[size];
+    buffer = (char *)malloc(sizeof(char)*size);
     typesize = sizeof(char);
     break;
   case FLOAT:
-    buffer = float[size];
+    buffer = (float *)malloc(sizeof(float)*size);
     typesize = sizeof(float);
     break;
   }
 
   _lrx_tree_memcpy( buffer, *(t->data)+(index*typesize), size, t->type);
   
-  set_tree( t, buffer, typesize );
+  set_tree( temp, buffer, typesize );
   
+  free(buffer);
+  
+  return temp;
 }
 
 
@@ -195,37 +198,28 @@ struct lrx_tree *tree_concat( struct lrx_tree *t1, struct lrx_tree *t2 ) {
    struct lrx_tree *temp = construct_tree( t1->bfactor, t1->type ); //initialize the new tree struct
    
  
-   void *buffer;
-   int typesize;
+  
    //the size of the new tree is determined by adding the heights of t1 and t2. This gaurantees all data will fit
    //todo: check this????
    int size =  (log2( t1->size ) / log2( t1->bfactor ) ) + (log2( t2->size ) / log2( t2->bfactor ) );
 
-   switch(t1->type) {
-
-   case INT:
-  
-     //int16_t temp_buff[size];
-     buffer = int16_t[size];
-     typesize = sizeof(int16_t);
-     break;
-     
-
-  case STRING: case BOOL: case CHAR:
-    //char temp_buff[size];
-    buffer = char[size];
+  void *buffer;
+  int typesize;
+  switch(t1->type) {
+  case INT:
+    buffer = (int16_t *)malloc(sizeof(int16_t)*size);
+    typesize = sizeof(int16_t);
+    break;
+  case CHAR: case BOOL: case STRING:
+    buffer = (char *)malloc(sizeof(char)*size);
     typesize = sizeof(char);
     break;
-    
-   case FLOAT:
-     //float temp_buff[size];
-     buffer = float[size];
-     typesize = sizeof(float);
-     break;
-
+  case FLOAT:
+    buffer = (float *)malloc(sizeof(float)*size);
+    typesize = sizeof(float);
+    break;
   }
 
-	
 
 
    _lrx_tree_memcpy( buffer, t1->data, t1->size, t1->type );
@@ -267,6 +261,7 @@ struct lrx_tree *tree_concat( struct lrx_tree *t1, struct lrx_tree *t2 ) {
   
   set_tree( temp, buffer, size );
   
+  free(buffer);
   return temp;
   
 }
