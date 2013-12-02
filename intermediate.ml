@@ -108,6 +108,7 @@ and gen_ir_stmt (s: c_stmt) =
        C_CodeBlock(b) -> gen_ir_block b
      | C_Return(e) -> let (s, r) = gen_ir_expr e in s @ [Ir_Ret(r)]
      | C_Expr(e) -> fst (gen_ir_expr e)
+     | _ ->raise (Failure ("TEMP gen_ir_stmt"))
 (*      | C_If(e, b1, b2) -> 
      | C_For(e1, e2, e3, b) -> 
      | C_While(e, b) -> 
