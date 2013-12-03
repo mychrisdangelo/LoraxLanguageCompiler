@@ -1,0 +1,58 @@
+#include "lrxlib.h"
+int main();
+
+int main()
+{
+int a_5 = 0;
+int b_5 = 0;
+char c_5 = '0';
+char __tmp_char_10 = '0';
+int __tmp_bool_8 = false;
+int __tmp_bool_5 = false;
+int __tmp_int_4 = 0;
+int __tmp_bool_7 = false;
+char __tmp_char_6 = '0';
+int __tmp_int_9 = 0;
+int __tmp_bool_3 = false;
+char __tmp_char_2 = '0';
+int __tmp_int_1 = 0;
+int __tmp_int_0 = 0;
+
+__tmp_char_10 = 'b';
+
+c_5 = __tmp_char_10;
+
+__tmp_int_4 = 1;
+
+__tmp_bool_5 = a_5 < __tmp_int_4;
+
+__tmp_char_6 = 'c';
+
+__tmp_bool_7 = c_5 != __tmp_char_6;
+
+__tmp_bool_8 = __tmp_bool_5 && __tmp_bool_7;
+
+if(__tmp_bool_8) goto __LABEL_2;
+goto __LABEL_3;
+__LABEL_2:
+__tmp_int_9 = 15;
+
+b_5 = __tmp_int_9;
+
+__LABEL_3:
+__tmp_char_2 = 'b';
+
+__tmp_bool_3 = c_5 == __tmp_char_2;
+
+if(__tmp_bool_3) goto __LABEL_0;
+goto __LABEL_1;
+__LABEL_0:
+a_5 = b_5;
+
+__LABEL_1:
+__tmp_int_1 = a_5 + b_5;
+
+return __tmp_int_1;
+return __tmp_int_0;
+
+}

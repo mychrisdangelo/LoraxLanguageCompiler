@@ -4,15 +4,13 @@ open Check
 let tmp_reg_id = ref 0
 let label_id = ref 0
 
+let string_of_tmp_var_type  = function
+    Lrx_Atom(t) -> string_of_atom_type t
+  | Lrx_Tree(t) -> "tree_datatype_" ^ string_of_atom_type t.datatype ^ "_degree_" ^ string_of_expr t.degree 
+
 let gen_tmp_var t =
   let x = tmp_reg_id.contents in 
-  let prefix = 
-  (match t with
-      Lrx_Atom(Lrx_Bool) -> "__tmp_bool" 
-    | Lrx_Atom(Lrx_Char) -> "__tmp_char"
-    | Lrx_Atom(Lrx_Int) -> "__tmp_int"
-    | Lrx_Atom(Lrx_Float) -> "__tmp_float"
-    | _ -> raise(Failure("unsupported type"))) in
+  let prefix = "__tmp_" ^ string_of_tmp_var_type t in 
   tmp_reg_id := x + 1; (prefix, t, x)
 
 let gen_tmp_label (s:unit) =
@@ -29,11 +27,10 @@ type ir_expr =
   | Ir_Binop of scope_var_decl * op * scope_var_decl * scope_var_decl
   | Ir_Id of scope_var_decl * scope_var_decl
   | Ir_Assign of scope_var_decl * scope_var_decl
-
-(*| Ir_Null_Literal
-  
-  | Ir_Tree of inter_var_type * int * inter_expr * inter_expr list
-  | Ir_Call of inter_func_decl * inter_expr list
+  | Ir_Tree_Literal of scope_var_decl * var_type * int * scope_var_decl * scope_var_decl list (* 4[3, 2[]]*)
+  | Ir_Call of scope_var_decl * scope_func_decl * scope_var_decl list
+(*
+  | Ir_Null_Literal
   | Ir_Noexpr *)
 
 type ir_stmt =
@@ -105,12 +102,26 @@ let rec gen_ir_expr (e:c_expr) =
       let (s1, r1) = gen_ir_expr l in
       let (s2, r2) = gen_ir_expr r in
       (s2 @ [Ir_Expr(Ir_Assign(r1, r2))], r2)
+  | C_Tree(t, d, e, el) -> 
+      let (s, r) = gen_ir_expr e in
+      let ir_el = List.map gen_ir_expr el in
+      let (sl, rl) = (List.fold_left (fun (sl_ir, rl_ir) (s_ir, r_ir) -> (sl_ir @ s_ir, rl_ir@[r_ir])) ([],[]) ir_el) in 
+      let i  =
+      (match t with
+      Lrx_Atom(a) -> a
+      |Lrx_Tree(t) -> raise(Failure("TEMP TREE INSIDE TREE ACTION ???"))) in 
+      let tmp = gen_tmp_var (Lrx_Tree({datatype = i; degree = Int_Literal(d)})) in
+      (Ir_Decl(tmp) :: s @ sl @ [Ir_Expr(Ir_Tree_Literal(tmp, t, d, r, rl))], tmp)
+  | C_Call(fd, el) ->
+      let (n, rt, args, s) = fd in 
+      let tmp = gen_tmp_var rt in
+      let ir_el = List.map gen_ir_expr el in 
+      let (sl, rl) = (List.fold_left (fun (sl_ir, rl_ir) (s_ir, r_ir) -> (sl_ir @ s_ir, rl_ir@[r_ir])) ([],[]) ir_el) in 
+      (Ir_Decl(tmp) :: sl @ [Ir_Expr(Ir_Call(tmp, fd, rl))], tmp)
   | _ -> raise (Failure ("TEMP gen_ir_expr"))
 
  (*
      | C_String_Literal(s) ->
-     | C_Tree(t, d, e, el) ->     
-     | C_Call(fd, el) -> 
      | C_Null_Literal ->
      | C_Noexpr -> 
  *)
@@ -138,7 +149,7 @@ and gen_ir_stmt (s: c_stmt) =
         let irb = gen_ir_block b in
         let startlabel = gen_tmp_label () in
         let endlabel = gen_tmp_label () in
-        [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ s3 @ irb @ [Ir_Label(endlabel)] @ s1 @ s2 @ [Ir_If(r2, startlabel)]
+        s1 @ [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ s3 @ irb @ [Ir_Label(endlabel)] @ s2 @ [Ir_If(r2, startlabel)]
      | C_While(e, b) -> 
         let (s, r) = gen_ir_expr e in 
         let irb = gen_ir_block b in
