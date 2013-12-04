@@ -16,7 +16,8 @@
 #include <string.h>
 #include <math.h>
 
-
+#define TRUE 1
+#define FALSE 0
 
 //enumeration constants for tree types. Mimics polymorphic property of trees
 typedef enum  {
@@ -78,6 +79,8 @@ struct lrx_tree *construct_tree( const int bfactor,  lrx_primitives type)
     printf("ERROR.");
   }
 
+  temp->data = (void *)malloc( sizeof(void *));
+
   temp->bfactor = bfactor;
 
   temp->type = type;
@@ -109,11 +112,15 @@ struct lrx_tree *get_subtree( struct lrx_tree *t, int index ) {
   void *buffer;
   int typesize;
   switch(t->type) {
+  case BOOL:
+    buffer = (short *)malloc(sizeof(short) * size);
+    typesize = sizeof(short);
+    break;
   case INT:
     buffer = (int16_t *)malloc(sizeof(int16_t)*size);
     typesize = sizeof(int16_t);
     break;
-  case CHAR: case BOOL: case STRING:
+  case CHAR: case STRING:
     buffer = (char *)malloc(sizeof(char)*size);
     typesize = sizeof(char);
     break;
@@ -152,17 +159,20 @@ void destroy_tree( struct lrx_tree *t ) {
  */
 int set_tree( struct lrx_tree *t, const void *data_args, const int data_size ) {
 
+
   switch(t->type) {
 
   case FLOAT:
-    *(t->data) = (float *)malloc( sizeof(float) * ( data_size));
+    *(t->data) =  (float *)malloc( sizeof(float) * ( data_size));
     break;
 	
   case INT: 
     *(t->data) = (int16_t *)malloc( sizeof(int16_t) * (data_size) );
     break;
-	
-  case BOOL: case CHAR: case STRING:
+  case BOOL:
+    *(t->data) = (short *)malloc( sizeof(short) * (data_size) );
+    break;
+  case CHAR: case STRING:
     *(t->data) = (char *)malloc( sizeof(char) * (data_size) );
     break;
 	
@@ -171,10 +181,9 @@ int set_tree( struct lrx_tree *t, const void *data_args, const int data_size ) {
   if( *(t->data) == NULL ) {
     printf("ERROR.");
   }
-  
-  if( memcpy( *(t->data), data_args, data_size ) == NULL ) {
-    return 1;
-  }
+ 
+  _lrx_tree_memcpy( *(t->data), (void *)data_args, data_size, t->type);
+
   
   t->size = data_size;
 
@@ -206,11 +215,15 @@ struct lrx_tree *tree_concat( struct lrx_tree *t1, struct lrx_tree *t2 ) {
   void *buffer;
   int typesize;
   switch(t1->type) {
+  case BOOL:
+    buffer = (short *)malloc(sizeof(short)*size);
+    typesize = sizeof(short);
+    break;
   case INT:
     buffer = (int16_t *)malloc(sizeof(int16_t)*size);
     typesize = sizeof(int16_t);
     break;
-  case CHAR: case BOOL: case STRING:
+  case CHAR: case STRING:
     buffer = (char *)malloc(sizeof(char)*size);
     typesize = sizeof(char);
     break;
@@ -274,15 +287,17 @@ void _lrx_tree_memcpy( void *buffer, void *data, const int size, lrx_primitives 
 	
   switch( type ) {
   case INT:
-    memcpy( (int *)buffer, (int *)data, size );
+    memcpy( (int16_t *)buffer, (int16_t *)data, size * sizeof(int16_t) );
     break;
-    
-  case BOOL: case STRING: case CHAR:
+  case BOOL:
+    memcpy( (short *)buffer, (short *)data, size * sizeof(short) );
+    break;
+  case STRING: case CHAR:
     memcpy( (char *)buffer, (char *)data, size );
     break;
     
   case FLOAT:
-    memcpy( (float *)buffer, (float *)data, size );
+    memcpy( (float *)buffer, (float *)data, size * sizeof(float) );
     break;
   }
 }
@@ -295,29 +310,59 @@ void _lrx_tree_memcpy( void *buffer, void *data, const int size, lrx_primitives 
  */
 void print_tree( struct lrx_tree *t) {
   char *fmt;
-  int step;
+  int i;
+  void *lrx_data = *(t->data);
   switch(t->type) {
-  case STRING: case CHAR: case BOOL:
+  case BOOL:
     fmt = "%s";
-    step = sizeof(char);
+    for( i = 0; i < t->size; i++ )
+      {
+	short temp = *((short *)lrx_data+i);
+	if( temp == TRUE ) {
+	  printf("TRUE");
+	} else {
+	  printf("FALSE");
+	}
+      }
+    break;
+  case STRING:
+    fmt = "%s";
+    char *temp = (char *)lrx_data;
+    printf( fmt, temp );
+    break;
+  case CHAR:
+    fmt = "%c";
+    for(i = 0; i < t->size; i++ )
+      {
+	char temp = *((char *)lrx_data+i);
+	printf( fmt, temp );
+      }
+
     break;
   case INT:
-    fmt = "%d";
-    step = sizeof(int);
+    fmt = "%hd";
+
+    for(i = 0; i < t->size; i++ )
+      {
+	int16_t temp = *((int16_t *)lrx_data+i);
+	printf( fmt, temp );
+      }
+
     break;
   case FLOAT:
     fmt = "%f";
-    step = sizeof(float);
+
+    for(i = 0; i < t->size; i++ )
+      {
+	float temp = *((float *)lrx_data+i);
+	printf( fmt, temp );
+      }
+
     break;
   default:
     printf("Error\n");
     break;
   }
-  int i;
-  for(i = 0; i < t->size; i += step)
-    {
-      printf( fmt, *(t->data)+i );
-    }
   
 }
 
@@ -369,16 +414,19 @@ int _lrx_check_equals( struct lrx_tree *t1, struct lrx_tree *t2 ) {
 	int equality = 1;
 	for( i = 0; i < t1->size; i++ ) {
 		switch(t1->type) {
-			case INT:
-				equality = *(((int16_t *)*(t1->data))+i) == *(((int16_t *)*(t2->data))+i);
-				break;
-			case CHAR: case STRING: case BOOL:
-				equality = *(((char *)*(t1->data))+i) == *(((char *)*(t2->data))+i);	
-				break;
-			case FLOAT:
-				equality = *(((float *)*(t1->data))+i) == *(((float *)*(t2->data))+i);
-				break;
-			}
+		case BOOL:
+		  equality = *(((short *)*(t1->data))+i) == *(((short *)*(t2->data))+i);
+		  break;
+		case INT:
+		  equality = *(((int16_t *)*(t1->data))+i) == *(((int16_t *)*(t2->data))+i);
+		  break;
+		case CHAR: case STRING:
+		  equality = *(((char *)*(t1->data))+i) == *(((char *)*(t2->data))+i);	
+		  break;
+		case FLOAT:
+		  equality = *(((float *)*(t1->data))+i) == *(((float *)*(t2->data))+i);
+		  break;
+		}
 	}
 	return equality;
 }
