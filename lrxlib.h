@@ -16,13 +16,10 @@
 #include <string.h>
 #include <math.h>
 
-<<<<<<< HEAD
+
 #define TRUE 1
 #define FALSE 0
-=======
-#define true = 1
-#define false = 0
->>>>>>> d19a23fd560c594ba5ea61d748f57f75bab9767b
+
 
 //enumeration constants for tree types. Mimics polymorphic property of trees
 typedef enum  {
