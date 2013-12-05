@@ -333,3 +333,33 @@ int _lrx_check_equals( struct lrx_tree *t1, struct lrx_tree *t2 ) {
 
 // DO_NOT_COMPILE_THIS_FILE_UNTIL_CG_TEAM_IS_READY
 #endif 
+
+
+
+
+
+
+
+
+/*
+ * Authors:
+ * Chris D'Angelo & Kira Whitehouse
+ */
+
+#include <stdio.h>
+
+#define false 0
+#define true !false
+
+int lrx_print_bool(int b) {
+  if (b) {
+    fprintf(stderr, "true");
+  } else {
+    fprintf(stderr, "false");
+  }
+}
+
+int lrx_print_tree(int b) {
+  // TODO: not implemented
+  return -1; 
+}
