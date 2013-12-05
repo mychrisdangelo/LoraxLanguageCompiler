@@ -3,67 +3,6 @@
  * Author: Chris D'Angelo
  */
 
-// resulting Abstact Syntax Tree
-//
-// program: Ast.program =
-//   ([],
-//    [{Ast.fname = "main"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int; formals = [];
-//      locals =
-//       [("t",
-//         Ast.Lrx_Tree {Ast.datatype = Ast.Lrx_Int; degree = Ast.Int_Literal 2})];
-//      body =
-//       [Ast.Expr
-//         (Ast.Assign (Ast.Id "t",
-//           Ast.Tree (Ast.Int_Literal 1,
-//            [Ast.Int_Literal 2; Ast.Int_Literal 3;
-//             Ast.Tree (Ast.Int_Literal 6,
-//              [Ast.Int_Literal 4; Ast.Int_Literal 5])])));
-//        Ast.If (Ast.Call ("dfs", [Ast.Id "t"; Ast.Int_Literal 3]),
-//         Ast.Block
-//          [Ast.Expr (Ast.Call ("print", [Ast.String_Literal "found it\\n"]))],
-//         Ast.Block
-//          [Ast.Expr
-//            (Ast.Call ("print", [Ast.String_Literal "it\\'s not there\\n"]))])]};
-//     {Ast.fname = "dfs"; ret_type = Ast.Lrx_Atom Ast.Lrx_Bool;
-//      formals =
-//       [("t",
-//         Ast.Lrx_Tree {Ast.datatype = Ast.Lrx_Int; degree = Ast.Int_Literal 2});
-//        ("val", Ast.Lrx_Atom Ast.Lrx_Int)];
-//      locals =
-//       [("child", Ast.Lrx_Atom Ast.Lrx_Int);
-//        ("match", Ast.Lrx_Atom Ast.Lrx_Bool)];
-//      body =
-//       [Ast.If (Ast.Binop (Ast.Id "t", Ast.Equal, Ast.Null_Literal),
-//         Ast.Block [Ast.Return (Ast.Bool_Literal false)], Ast.Block []);
-//        Ast.If (Ast.Unop (Ast.Id "t", Ast.At),
-//         Ast.Block [Ast.Return (Ast.Bool_Literal true)], Ast.Block []);
-//        Ast.For (Ast.Assign (Ast.Id "child", Ast.Int_Literal 0),
-//         Ast.Binop (Ast.Id "child", Ast.Less,
-//          Ast.Call ("degree", [Ast.Id "t"])),
-//         Ast.Assign (Ast.Id "child",
-//          Ast.Binop (Ast.Id "child", Ast.Add, Ast.Int_Literal 1)),
-//         Ast.Block
-//          [Ast.If
-//            (Ast.Binop (Ast.Binop (Ast.Id "t", Ast.Child, Ast.Id "child"),
-//              Ast.Neq, Ast.Null_Literal),
-//            Ast.Block
-//             [Ast.Expr
-//               (Ast.Assign (Ast.Id "match",
-//                 Ast.Binop
-//                  (Ast.Binop (Ast.Id "match", Ast.Or,
-//                    Ast.Binop
-//                     (Ast.Unop
-//                       (Ast.Binop (Ast.Id "t", Ast.Child, Ast.Id "child"),
-//                       Ast.At),
-//                     Ast.Equal, Ast.Id "val")),
-//                  Ast.Or,
-//                  Ast.Call ("dfs",
-//                   [Ast.Binop (Ast.Id "t", Ast.Child, Ast.Id "child");
-//                    Ast.Id "val"]))));
-//              Ast.If (Ast.Id "match", Ast.Block [Ast.Break], Ast.Block [])],
-//            Ast.Block [])]);
-//        Ast.Return (Ast.Id "match")]}])
-
 bool dfs(tree <int>t(2), int val) {
 	int child;
 	bool match;
