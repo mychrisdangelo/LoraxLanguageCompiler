@@ -3,32 +3,6 @@
  * Author: Chris D'Angelo
  */
 
-// resulting Abstract Syntax Tree
-//
-// program: Ast.program =
-//   ([],
-//    [{Ast.fname = "main"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int; formals = [];
-//      locals =
-//       [("s",
-//         Ast.Lrx_Tree
-//          {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 1});
-//        ("t",
-//         Ast.Lrx_Tree
-//          {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 1})];
-//      body =
-//       [Ast.Expr
-//         (Ast.Assign (Ast.Id "t",
-//           Ast.Tree (Ast.Char_Literal ',',
-//            [Ast.Tree (Ast.Char_Literal ' ',
-//              [Ast.Tree (Ast.Char_Literal 'w',
-//                [Ast.Tree (Ast.Char_Literal 'o',
-//                  [Ast.Tree (Ast.Char_Literal 'r',
-//                    [Ast.Tree (Ast.Char_Literal 'l', [Ast.Char_Literal 'd'])])])])])])));
-//        Ast.Expr
-//         (Ast.Call ("print",
-//           [Ast.Binop (Ast.Binop (Ast.Id "s", Ast.Add, Ast.Id "t"), Ast.Add,
-//             Ast.String_Literal "\\n")]))]}])
-
 int main() {
 	string s;
 	tree <char>t(1);
