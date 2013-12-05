@@ -2,7 +2,8 @@ int main()
 {
 	tree<int> c(1);
 	tree<int> d (2);
-	d%0;
+	int a;
+	-a;
 }
 
 
