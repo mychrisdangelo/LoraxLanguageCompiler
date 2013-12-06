@@ -1,5 +1,11 @@
 #!/bin/sh
 
+#
+# Author:
+# Chris D'Angelo
+# Special thanks Stephen Edward's MicroC which provided background knowledge.
+#
+
 lorax="./lorax"
 
 # Set time limit for all operations

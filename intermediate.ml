@@ -1,18 +1,24 @@
+(* 
+ * Authors:
+ * Chris D'Angelo
+ * Kira Whithouse
+ * Special thanks to Dara Hazeghi's strlang and Stephen Edward's MicroC
+ * which provided background knowledge.
+ *)
+
 open Ast
 open Check
 
 let tmp_reg_id = ref 0
 let label_id = ref 0
 
+let string_of_tmp_var_type  = function
+    Lrx_Atom(t) -> string_of_atom_type t
+  | Lrx_Tree(t) -> "tree_datatype_" ^ string_of_atom_type t.datatype ^ "_degree_" ^ string_of_expr t.degree 
+
 let gen_tmp_var t =
   let x = tmp_reg_id.contents in 
-  let prefix = 
-  (match t with
-      Lrx_Atom(Lrx_Bool) -> "__tmp_bool" 
-    | Lrx_Atom(Lrx_Char) -> "__tmp_char"
-    | Lrx_Atom(Lrx_Int) -> "__tmp_int"
-    | Lrx_Atom(Lrx_Float) -> "__tmp_float"
-    | _ -> raise(Failure("unsupported type"))) in
+  let prefix = "__tmp_" ^ string_of_tmp_var_type t in 
   tmp_reg_id := x + 1; (prefix, t, x)
 
 let gen_tmp_label (s:unit) =
@@ -25,19 +31,20 @@ type ir_expr =
   | Ir_String_Literal of scope_var_decl * string
   | Ir_Char_Literal of scope_var_decl * char
   | Ir_Bool_Literal of scope_var_decl * bool
-(*| Ir_Null_Literal
-  | Ir_Id of inter_var_type * string
-  | Ir_Binop of inter_var_type * inter_expr * op * inter_expr
-  | Ir_Unop of inter_var_type * inter_expr * uop
-  | Ir_Tree of inter_var_type * int * inter_expr * inter_expr list
-  | Ir_Assign of inter_var_type * inter_expr * inter_expr
-  | Ir_Call of inter_func_decl * inter_expr list
+  | Ir_Unop of scope_var_decl * uop * scope_var_decl
+  | Ir_Binop of scope_var_decl * op * scope_var_decl * scope_var_decl
+  | Ir_Id of scope_var_decl * scope_var_decl
+  | Ir_Assign of scope_var_decl * scope_var_decl
+  | Ir_Tree_Literal of scope_var_decl * var_type * int * scope_var_decl * scope_var_decl list (* 4[3, 2[]]*)
+  | Ir_Call of scope_var_decl * scope_func_decl * scope_var_decl list
+(*
+  | Ir_Null_Literal
   | Ir_Noexpr *)
 
 type ir_stmt =
-  (* | If of simple_var * string
+  | Ir_If of scope_var_decl * string
   | Ir_Jmp of string
-  | Ir_Label of string *)
+  | Ir_Label of string
   | Ir_Decl of scope_var_decl
   | Ir_Ret of scope_var_decl
   | Ir_Expr of ir_expr
@@ -71,8 +78,8 @@ let is_not_decl (s:ir_stmt) =
 let gen_ir_default_ret (t: var_type) =
   let tmp = gen_tmp_var t in
     Ir_Decl(tmp) :: [Ir_Ret(tmp)]
-
-and gen_ir_expr (e:c_expr) =
+  
+let rec gen_ir_expr (e:c_expr) =
   match e with
   C_Int_Literal(i) ->
       let tmp = gen_tmp_var (Lrx_Atom(Lrx_Int)) in
@@ -86,15 +93,50 @@ and gen_ir_expr (e:c_expr) =
   | C_Bool_Literal(b) -> 
        let tmp = gen_tmp_var (Lrx_Atom(Lrx_Bool)) in
       ([Ir_Decl(tmp); Ir_Expr(Ir_Bool_Literal(tmp, b))], tmp)
+  | C_Unop(v, e, o) ->
+       let (s, r) = gen_ir_expr e in
+       let t = type_of_expr e in  
+       (match t with 
+           Lrx_Tree(_) -> raise (Failure ("TEMP unop not implemented for tree pop/at"))
+         | _ -> let tmp = gen_tmp_var v in
+          ([Ir_Decl(tmp)] @ s @ [Ir_Expr(Ir_Unop(tmp, o, r))], tmp))
+  | C_Binop(v, e1, o, e2) -> 
+      let (s1, r1) = gen_ir_expr e1 in
+      let (s2, r2) = gen_ir_expr e2 in
+      let tmp = gen_tmp_var v in
+      (* check if binop contains tree on lhs *)
+      let t1 = type_of_expr e1 in
+        (match t1 with 
+            Lrx_Tree(_) -> raise (Failure("TEMP binop tree"))
+          | _ ->([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
+  | C_Id(t, s, i) ->
+      (* let tmp = gen_tmp_var t in 
+       ([Ir_Decl(tmp); Ir_Expr(Ir_Id(tmp, (s, t, i)))], tmp) *)
+      ([], (s, t, i))
+  | C_Assign(t, l, r) ->
+      let (s1, r1) = gen_ir_expr l in
+      let (s2, r2) = gen_ir_expr r in
+      (s2 @ [Ir_Expr(Ir_Assign(r1, r2))], r2)
+  | C_Tree(t, d, e, el) -> 
+      let (s, r) = gen_ir_expr e in
+      let ir_el = List.map gen_ir_expr el in
+      let (sl, rl) = (List.fold_left (fun (sl_ir, rl_ir) (s_ir, r_ir) -> (sl_ir @ s_ir, rl_ir@[r_ir])) ([],[]) ir_el) in 
+      let i  =
+      (match t with
+      Lrx_Atom(a) -> a
+      |Lrx_Tree(t) -> raise(Failure("TEMP TREE INSIDE TREE ACTION ???"))) in 
+      let tmp = gen_tmp_var (Lrx_Tree({datatype = i; degree = Int_Literal(d)})) in
+      (Ir_Decl(tmp) :: s @ sl @ [Ir_Expr(Ir_Tree_Literal(tmp, t, d, r, rl))], tmp)
+  | C_Call(fd, el) ->
+      let (n, rt, args, s) = fd in 
+      let tmp = gen_tmp_var rt in
+      let ir_el = List.map gen_ir_expr el in 
+      let (sl, rl) = (List.fold_left (fun (sl_ir, rl_ir) (s_ir, r_ir) -> (sl_ir @ s_ir, rl_ir@[r_ir])) ([],[]) ir_el) in 
+      (Ir_Decl(tmp) :: sl @ [Ir_Expr(Ir_Call(tmp, fd, rl))], tmp)
   | _ -> raise (Failure ("TEMP gen_ir_expr"))
 
-    (*| C_String_Literal(s) ->
-     | C_Tree(t, d, e, el) ->
-     | C_Id(t, s) -> 
-     | C_Binop(t, e1, op, e2) ->
-     | C_Assign(t, l, r) ->
-     | C_Unop(t, e, op) ->
-     | C_Call(fd, el) -> 
+ (*
+     | C_String_Literal(s) ->
      | C_Null_Literal ->
      | C_Noexpr -> 
  *)
@@ -108,10 +150,30 @@ and gen_ir_stmt (s: c_stmt) =
        C_CodeBlock(b) -> gen_ir_block b
      | C_Return(e) -> let (s, r) = gen_ir_expr e in s @ [Ir_Ret(r)]
      | C_Expr(e) -> fst (gen_ir_expr e)
-     | _ ->raise (Failure ("TEMP gen_ir_stmt"))
-(*      | C_If(e, b1, b2) -> 
+     | C_If(e, b1, b2) -> 
+          let (s, r) = gen_ir_expr e in 
+          let irb1 = gen_ir_block b1 in
+          let irb2 = gen_ir_block b2 in
+          let startlabel = gen_tmp_label () in
+          let endlabel = gen_tmp_label () in
+          s @ [Ir_If(r, startlabel)] @ irb2 @ [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb1 @ [Ir_Label(endlabel)]
      | C_For(e1, e2, e3, b) -> 
+        let (s1, r1) = gen_ir_expr e1 in 
+        let (s2, r2) = gen_ir_expr e2 in 
+        let (s3, r3) = gen_ir_expr e3 in 
+        let irb = gen_ir_block b in
+        let startlabel = gen_tmp_label () in
+        let endlabel = gen_tmp_label () in
+        s1 @ [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ s3 @ irb @ [Ir_Label(endlabel)] @ s2 @ [Ir_If(r2, startlabel)]
      | C_While(e, b) -> 
+        let (s, r) = gen_ir_expr e in 
+        let irb = gen_ir_block b in
+        let startlabel = gen_tmp_label () in
+        let endlabel = gen_tmp_label () in
+        [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb @ [Ir_Label(endlabel)] @ s @ [Ir_If(r, startlabel)]
+     | _ ->raise (Failure ("TEMP gen_ir_stmt"))
+(*      
+     
      | C_Continue ->
      | C_Break ->  *)
 

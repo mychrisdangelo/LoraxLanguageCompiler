@@ -1,0 +1,21 @@
+int main()
+{
+	int a;
+	int b;
+	char c;
+	c = 'b';
+	
+	if(a < 1 && c != 'c')
+	{
+		b = 15;
+	}
+
+	if(c == 'b'){
+		a = b;
+	}
+
+
+	return a + b;
+}
+
+

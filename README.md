@@ -7,8 +7,8 @@ Quick Start
 ```
 $ make
 $ echo "int main() { print("hello, world\n"); return 0; }" > hello.lrx
-$ ./lorax -c < hello.lrx > hello.cpp
-$ g++ -g -Wall hello.cpp
+$ ./lorax -c < hello.lrx > hello.c
+$ gcc -g -Wall hello.c
 $ ./a.out
 $ hello, world
 $
@@ -19,7 +19,6 @@ Compiler Flags
 * `-t` Print an alphabetical list of the symbol table created from source code.
 * `-s` Run Semantic Analysis on source code.
 * `-c` Compile source code. Output to standard out.
-* `-b` **Not Implemented**. Compiles to binary a.out.
 
 Running Tests
 =============

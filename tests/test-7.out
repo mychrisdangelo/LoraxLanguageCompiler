@@ -1,0 +1,40 @@
+#include "lrxlib.h"
+int main();
+
+int main()
+{
+int a_1 = 0;
+float b_1 = 0.0;
+bool c_1 = false;
+char d_1 = '\0';
+int __tmp_int_5 = 0;
+float __tmp_float_4 = 0.0;
+bool __tmp_bool_3 = false;
+char __tmp_char_2 = '\0';
+int __tmp_int_1 = 0;
+int __tmp_int_0 = 0;
+
+__tmp_int_5 = 1;
+
+a_1 = __tmp_int_5;
+
+__tmp_float_4 = 3.14;
+
+b_1 = __tmp_float_4;
+
+__tmp_bool_3 = true;
+
+c_1 = __tmp_bool_3;
+
+__tmp_char_2 = 'a';
+
+d_1 = __tmp_char_2;
+
+fprintf(stderr, "%d", a_1);
+fprintf(stderr, "%f", b_1);
+lrx_print_bool(c_1);
+fprintf(stderr, "%c", d_1);
+
+return __tmp_int_0;
+
+}

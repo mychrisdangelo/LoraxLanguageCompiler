@@ -1,0 +1,15 @@
+int main()
+{
+
+	int a;
+	float b;
+	bool c;
+	char d;
+	a = 1;
+	b = 3.14;
+	c = true;
+	d = 'a';
+	print(a, b, c, d);
+}
+
+

@@ -433,4 +433,3 @@ int _lrx_check_equals( struct lrx_tree *t1, struct lrx_tree *t2 ) {
 	return equality;
 }
 #endif
-

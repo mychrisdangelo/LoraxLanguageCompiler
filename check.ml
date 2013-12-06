@@ -1,7 +1,7 @@
 (* 
  * Authors:
  * Chris D'Angelo
- * Kira Whithouse
+ * Kira Whitehouse
  * Special thanks to Dara Hazeghi's strlang which provided background knowledge.
  *)
 

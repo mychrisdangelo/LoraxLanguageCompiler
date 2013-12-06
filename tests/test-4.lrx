@@ -1,0 +1,12 @@
+int main()
+{
+	int a;
+	int b;
+
+	b = 0;
+	for(a = 15; a < 20; a = a + 1)
+	{
+		b = b + 1;
+	}
+	return b;
+}
