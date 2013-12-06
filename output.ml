@@ -27,7 +27,7 @@ open Intermediate
 let c_of_var_type = function
 	 Lrx_Atom(Lrx_Int) -> "int"
 	| Lrx_Atom(Lrx_Float) -> "float"
-	| Lrx_Atom(Lrx_Bool) -> "int"
+	| Lrx_Atom(Lrx_Bool) -> "bool"
 	| Lrx_Atom(Lrx_Char) -> "char"
  	| Lrx_Tree(t) -> "struct *lrx_tree"
 
@@ -36,7 +36,7 @@ let c_of_var_def (v:scope_var_decl) =
 	 Lrx_Atom(Lrx_Int) -> "0"
 	| Lrx_Atom(Lrx_Float) -> "0.0"
 	| Lrx_Atom(Lrx_Bool) -> "false"
-	| Lrx_Atom(Lrx_Char) -> "\'0\'"
+	| Lrx_Atom(Lrx_Char) -> "\'\\0\'"
 	| Lrx_Tree(l) -> "construct_tree(" ^ string_of_expr l.degree ^ " , " ^ String.uppercase (string_of_atom_type l.datatype) ^ ")"
 
 let c_of_var_decl (v:scope_var_decl) =
