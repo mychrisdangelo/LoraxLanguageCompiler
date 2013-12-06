@@ -1,3 +1,11 @@
+(* 
+ * Authors:
+ * Chris D'Angelo
+ * Kira Whithouse
+ * Special thanks to Dara Hazeghi's strlang and Stephen Edward's MicroC
+ * which provided background knowledge.
+ *)
+
 open Ast
 open Check
 

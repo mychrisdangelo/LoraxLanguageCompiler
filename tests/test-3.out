@@ -13,7 +13,7 @@ __tmp_int_5 = 1;
 
 a_2 = __tmp_int_5;
 
-__tmp_int_4 = increment( int a_2 );
+__tmp_int_4 = increment( a_2 );
 
 a_2 = __tmp_int_4;
 

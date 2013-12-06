@@ -1,8 +1,6 @@
 (* 
  * Authors:
- * Doug Beinstock 
  * Chris D'Angelo
- * Zhaarn Maheswaran 
  *)
 
 { 

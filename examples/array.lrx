@@ -1,0 +1,84 @@
+/*
+ * Lorax Array Example
+ * Author: Zhaarn Maheswaran
+ */
+
+/* Adds element to the array at the specified index */
+int insert_array(tree <int>t(1), int index, int val) {
+	tree <int> a(1);
+	int i;
+	a = t;
+	if (a == null) {
+		return -1;
+	}
+	for (i = 0; i < index; i=i+1) {	
+		a = a%0;
+		if(a == null){
+			return -1; //invalid access
+		}
+	}
+	a@ = val;
+	return 0; 
+}
+
+/* Accesses the element in the specified index of the array */
+int access_array(tree<int>t(1), int index) {
+	tree <int> a(1);
+	int i;
+	a = t;
+	if (a == null) {
+		print("Invalid access");
+		return -1;
+	}
+	for (i = 0; i < index; i = i+1) {	
+		a = a%0;
+		if(a == null){
+			print("Invalid access");
+			return;
+		}
+	}
+	return a@;  
+}
+
+/* initializes an array */
+int init_array(tree <int> t (1), int size) {
+	tree <int> a(1);
+	int i;
+	a = t;
+	if(size < 1) {
+		return -1;
+	} 
+
+	for(i = 0; i < size; i=i+1)
+	{
+		a = 0[];
+		a = a%0;	
+	}
+	return 0;   
+}
+
+/* gets the size of an array */
+int size_array(tree <int> t(1)) {
+	int i;
+	tree <int> a (1);
+	a = t;
+	i = 0;
+	while( a != null) {
+		a = a%0;
+		i = i + 1;
+	}
+	return i; 
+}
+
+int main() {
+	tree <int>t(1);
+	int size;
+	int i;
+	size = 6;
+	init_array(t, size);
+	for (i = 0; i < size_array(t); i = i + 1) {
+		insert_array(t, i, i);
+		print(access_array(t, i));	
+	}
+	print(t); 
+}
