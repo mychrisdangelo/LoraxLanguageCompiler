@@ -1,23 +1,9 @@
 (* 
-
-let c_of_op = function
-	 Add -> "+"
-  | Sub -> "-"
-  | Mult -> "*"
-  | Div -> "/"
-  | Mod -> "%"
-  | Equal -> "=="
-  | Neq -> "!="
-  | Less -> "<"
-  | Leq -> "<="
-  | Greater -> ">"
-  | Geq -> ">="
-  | And -> "&&"
-  | Or -> "||"
-  
-let c_of_uop = function
-	Neg -> "-" | Not -> "!" | _ -> raise(Failure("internal error"))
-	
+ * Authors:
+ * Chris D'Angelo
+ * Kira Whithouse
+ * Special thanks to Dara Hazeghi's strlang and Stephen Edward's MicroC
+ * which provided background knowledge.
  *)
 
 open Ast

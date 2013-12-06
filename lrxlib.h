@@ -1,6 +1,8 @@
 /*
  * Authors:
- * Chris D'Angelo & Kira Whitehouse
+ * Kira Whitehouse
+ * Chris D'Angelo
+ * Doug Bienstock
  */
 
 #include <stdio.h>

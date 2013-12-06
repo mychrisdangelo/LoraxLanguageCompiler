@@ -10,7 +10,7 @@ int __tmp_int_6 = 0;
 int __tmp_int_5 = 0;
 int __tmp_int_4 = 0;
 int __tmp_int_3 = 0;
-int __tmp_bool_2 = false;
+bool __tmp_bool_2 = false;
 int __tmp_int_1 = 0;
 int __tmp_int_0 = 0;
 

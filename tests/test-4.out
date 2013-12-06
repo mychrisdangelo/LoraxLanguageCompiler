@@ -11,7 +11,7 @@ int __tmp_int_5 = 0;
 int __tmp_int_4 = 0;
 int __tmp_int_7 = 0;
 int __tmp_int_6 = 0;
-int __tmp_bool_3 = false;
+bool __tmp_bool_3 = false;
 int __tmp_int_2 = 0;
 int __tmp_int_0 = 0;
 

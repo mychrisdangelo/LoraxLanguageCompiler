@@ -5,12 +5,12 @@ int main()
 {
 int a_1 = 0;
 float b_1 = 0.0;
-int c_1 = false;
-char d_1 = '0';
+bool c_1 = false;
+char d_1 = '\0';
 int __tmp_int_5 = 0;
 float __tmp_float_4 = 0.0;
-int __tmp_bool_3 = false;
-char __tmp_char_2 = '0';
+bool __tmp_bool_3 = false;
+char __tmp_char_2 = '\0';
 int __tmp_int_1 = 0;
 int __tmp_int_0 = 0;
 
