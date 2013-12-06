@@ -49,29 +49,43 @@ int lrx_print_bool(bool b) {
 
 // TODO: the following functions are not implemented
 int lrx_print_tree(struct tree *t) {
+  //Occurs when tree is imbalanced (one child is instantiated and not the others)
   if(t == NULL){
-    fprintf(stderr, "this should be IMPOSSIBLE!");
-    return -1;
+    fprintf(stderr, "null");
+    return 0;
   }
 
   switch (t->datatype){
     case _INT_:
-      fprintf(stderr, "%d ", (int)(t->root.int_root));
-      
-      if(!t->leaf){
-        int i;
-        for(i = 0; i < t->degree; ++i){
-            //fprintf(stderr, "%d\n", t->children[i]->root.int_root);
-
-            lrx_print_tree(t->children[i]);
-            //fprintf(stderr, "recursive print\n");
-        }
-      }
+      fprintf(stderr, "%d", t->root.int_root);
       break;
-      default:
-      printf("default");
+
+    case _FLOAT_:
+      fprintf(stderr, "%f", t->root.float_root); 
+      break;
+
+    case _CHAR_:
+      fprintf(stderr, "%c", t->root.char_root); 
+      break;
+
+    case _BOOL_:
+      lrx_print_bool(t->root.float_root);
+      break;
 
   }
+  
+  if(!t->leaf){
+    int i;
+    fprintf(stderr, "[");
+    for(i = 0; i < t->degree; ++i){
+      lrx_print_tree(t->children[i]);
+      if(i != t->degree - 1){
+        fprintf(stderr, ",");
+      }
+    }
+    fprintf(stderr, "]");
+  }
+
   return 0;
 
 }
@@ -113,8 +127,6 @@ struct tree *lrx_declare_tree(Atom type, int deg){
 
         case _INT_:
           t->root.int_root = 0;
-          fprintf(stderr, "root: %d\n", t->root.int_root);
-
           break;
 
         case _FLOAT_:
@@ -135,8 +147,6 @@ struct tree *lrx_declare_tree(Atom type, int deg){
 struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **children)
 {
 
-   
-
     /* set root data */
     switch(t->datatype){
         case _BOOL_:
@@ -145,7 +155,6 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
 
         case _INT_:
           t->root.int_root = *((int *)root_data);
-          printf("define root: %d\n", t->root.int_root);
           break;
 
         case _FLOAT_:
@@ -166,7 +175,6 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
     for(i = 0; i < num_children; ++i)
         t->children[i] = children[i]; 
     t->leaf = false;  
-    fprintf(stderr, "we are no longer a leaf\n");
 
     return t;
 }
@@ -174,41 +182,49 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
 /* data = t@; */
 bool lrx_access_data_at_bool (struct tree *t)
 {
-  return false;
+    assert(t != NULL);
+    return t->root.bool_root;
 }
 int lrx_access_data_at_int (struct tree *t)
 {
-  return 0;
+    assert(t != NULL);
+    return t->root.int_root;
 }
 float lrx_access_data_at_float (struct tree *t)
 {
-  return 0.0;
+    assert(t != NULL);
+    return t->root.float_root;
 }
 char lrx_access_data_at_char (struct tree *t)
 {
-  return '\0';
+    assert(t != NULL);
+    return  t->root.char_root;
 }
 
 /* t@ = data */
-bool lrx_assign_data_at_bool (struct tree *t, int at)
+bool lrx_assign_data_at_bool (struct tree *t, const bool data)
 {
-  return false;
+    assert(t != NULL);
+    t->root.bool_root = data;
 }
-int lrx_assign_data_at_int (struct tree *t, int at)
+int lrx_assign_data_at_int (struct tree *t, const int data)
 {
-  return 0;
+    assert(t != NULL);
+    t->root.int_root = data;
 }
-float lrx_assign_data_at_float (struct tree *t, int at)
+float lrx_assign_data_at_float (struct tree *t, const float data)
 {
-  return 0.0;
+    assert(t != NULL);
+    t->root.float_root = data;
 }
-char lrx_assign_data_at_char (struct tree *t, int at)
+char lrx_assign_data_at_char (struct tree *t, const char data)
 {
-  return '\0';
+    assert(t != NULL);
+    t->root.char_root = data;
 }
 
 /* t1 = t2%0 */
-struct tree *lrx_access_child (struct tree *t, int child)
+struct tree *lrx_access_child (struct tree *t, const int child)
 {
   assert(child < t->degree);
   struct tree **children = t->children;
@@ -218,9 +234,30 @@ struct tree *lrx_access_child (struct tree *t, int child)
 /* t1 = t2%0 */
 struct tree *lrx_assign_tree (struct tree *t1, struct tree *t2)
 {
-  assert(t1->degree == t2->degree);
-  t1 = t2;
-  return t1;
+
+    assert(t1->degree == t2->degree);
+  
+    t1->root = t2->root;
+    t1->leaf = t2->leaf;
+    t1->children = t2->children;
+
+    return t1;
+}
+
+struct tree *lrx_assign_child(struct tree *t1, int child, struct tree *t2)
+{
+  /*here t1 is a leaf node*/
+  assert(child < t1->degree);
+
+  struct tree *access = lrx_access_child(t1, child);
+  if(access && t2) {
+    return lrx_assign_tree(access, t2);
+  }
+  else {
+    t1->children[child] = t2;
+    t1->leaf = false;
+    return t1;
+  }
 }
 
 
