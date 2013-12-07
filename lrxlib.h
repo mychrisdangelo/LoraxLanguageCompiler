@@ -97,7 +97,6 @@ int lrx_print_tree(struct tree *t) {
 void lrx_destroy_tree(struct tree *t)
 {
     if(t == NULL){
-        fprintf(stderr, "t is null?!?!");
         return;
     }
 
@@ -123,6 +122,7 @@ struct tree *lrx_declare_tree(Atom type, int deg){
     assert(t != NULL);
     t->degree = deg;
     t->datatype = type;
+
 
     switch(type){
         case _BOOL_:
@@ -237,42 +237,45 @@ struct tree *lrx_access_child (struct tree *t, const int child)
 }
 
 /* t1 = t2%0. Lhs is the tree pointer we need without dereference */
-struct tree *lrx_assign_tree_direct(struct tree *t1, struct tree *t2)
+struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs)
 {
+    assert((*lhs)->degree == (*rhs)->degree);
+    lrx_destroy_tree(*lhs);
+    *lhs = *rhs;
+/*
 
-    assert(t1->degree == t2->degree);
-
-    t1->root = t2->root;
-    t1->leaf = t2->leaf;
-    t1->children = t2->children;
-
-    return t1;
+    lhs->root = rhs->root;
+    lhs->leaf = rhs->leaf;
+    lhs->children = rhs->children;
+*/
+    return lhs;
 }
+
 /* t%0 = t1 
    tree<int> t(1);
    t%0
-
    tmp = t%0
 
 */
+   /*
 struct tree *lrx_assign_tree_with_dereference(struct tree *t1, int child, struct tree *t2)
 {
-    /*here t1 is a leaf node*/
+    //here t1 is a leaf node
     assert(child < t1->degree);
 
     struct tree *access = lrx_access_child(t1, child);
 
     if(access && t2) {
-        /* we are at an internal node */
+        we are at an internal node 
         return lrx_assign_tree_direct(access, t2);
     }
     else {
-        /* we are at a leaf node */
+        we are at a leaf node 
         t1->children[child] = t2;
         t1->leaf = false;
         return t1;
     }
-}
+}*/
 
 
 /* breadth first search 

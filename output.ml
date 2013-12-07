@@ -76,7 +76,12 @@ let rec c_of_expr = function
   	| Ir_Unop(v1, op, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ string_of_unop op
   	| Ir_Binop(v1, op, v2, v3) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3 
   	| Ir_Id(v1, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
-  	| Ir_Assign(v1, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
+  	| Ir_Assign(v1, v2) -> 
+  		let (_,t1,_) = v1 in 
+  		let (_,t2,_) = v2 in 
+  		(match (t1, t2) with 
+  		(Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(&" ^ c_of_var_name v1 ^ ", &" ^ c_of_var_name v2 ^ ")"
+  		| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2)
   	| Ir_Tree_Literal(v, root, children) -> "lrx_define_tree(" ^ c_of_var_name v ^ ", " ^
   	 	c_of_var_name root ^ ", " ^ c_of_var_name children ^ ")"
 	| Ir_Call(v1, v2, vl) ->
