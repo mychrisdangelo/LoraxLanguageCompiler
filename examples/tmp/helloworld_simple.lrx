@@ -1,0 +1,41 @@
+/*
+ * Lorax Hello World
+ * Author: Chris D'Angelo
+ */
+
+int main() {
+	tree <char>t(1);
+	t = 'h'['i'];
+	print(t + '\n');
+}
+
+
+/* anticipated c code */
+
+        tree *t;
+        t = lrx_declare_tree(_CHAR_, 1);
+
+        char tmp_i;
+        char *ptr_i;
+        struct tree *tmp_tree_i;
+        struct tree *children_i[1];
+
+        tmp_i = 'i';
+        ptr_i = &tmp_i;
+        children_i[0] = NULL;
+        tmp_tree_i = lrx_declare_tree(_CHAR_, 1);
+        lrx_define_tree(tmp_tree_i_, ptr_i, chilren_i);
+        
+        char tmp_h;
+        tmp_h = 'h';
+        char *ptr_h;
+        ptr_h = &tmp_h;
+        tree *tmp_tree_h;
+        tmp_tree_h = lrx_declare_tree(_CHAR_, 1);
+        struct tree *children_h[1];
+        children[0] = tmp_tree_i
+        lrx_define_tree(tmp_tree_h_, ptr_h, children_h);
+
+        lrx_assign_tree(t, tmp_tree_h);
+
+        lrx_print_tree(t);

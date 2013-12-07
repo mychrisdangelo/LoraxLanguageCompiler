@@ -15,7 +15,7 @@ let c_of_var_type = function
 	| Lrx_Atom(Lrx_Float) -> "float"
 	| Lrx_Atom(Lrx_Bool) -> "bool"
 	| Lrx_Atom(Lrx_Char) -> "char"
- 	| Lrx_Tree(t) -> "struct *lrx_tree"
+ 	| Lrx_Tree(t) -> "tree *"
 
 let c_of_var_def (v:scope_var_decl) = 
 	let (_ ,t, _) = v in match t with
@@ -23,11 +23,15 @@ let c_of_var_def (v:scope_var_decl) =
 	| Lrx_Atom(Lrx_Float) -> "0.0"
 	| Lrx_Atom(Lrx_Bool) -> "false"
 	| Lrx_Atom(Lrx_Char) -> "\'\\0\'"
-	| Lrx_Tree(l) -> "construct_tree(" ^ string_of_expr l.degree ^ " , " ^ String.uppercase (string_of_atom_type l.datatype) ^ ")"
+	| Lrx_Tree(l) -> "lrx_declare_tree(_" ^ String.uppercase (string_of_atom_type l.datatype) ^ "_, " ^ string_of_expr l.degree ^ ")"
 
 let c_of_var_decl (v:scope_var_decl) =
 	let (n,t,s) = v in 
 	 c_of_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
+
+let c_of_ptr_decl (v:scope_var_decl) =
+	let (n,t,s) = v in 
+	 c_of_var_type t ^ " *" ^ n ^ "_" ^ string_of_int s
 
 let c_of_var_decl_list = function
 	[] -> "" 
@@ -80,9 +84,14 @@ let rec c_of_expr = function
 		if (fst_of_four v2) = "print" then (c_of_print_call vl)
 		else c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )"
 
+let c_of_ref (r:scope_var_decl) =
+	let (n ,t, s) = r in 
+	"&" ^ n ^ "_" ^ string_of_int s
+
 let c_of_stmt (v:ir_stmt) =
 	match v with 
 	 Ir_Decl(d) -> c_of_var_decl d ^ " = " ^ c_of_var_def d ^ ";"
+	| Ir_Ptr(p, r) -> c_of_ptr_decl p ^ " = " ^ c_of_ref r ^ ";"
   	| Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"
    	| Ir_Expr(e) -> c_of_expr e ^ ";\n"
    	| Ir_If(v, s) -> "if(" ^ c_of_var_name v ^ ") goto " ^ s ^ "" ^ ";"

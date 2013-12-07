@@ -1,47 +1,6 @@
 int main()
 {
-	tree <int> t1(1);
-	tree <int> t2(1);
-	t1 = 4[5];
-}
-
-/*
-t1 = construct_tree();
-temp_literal_tree = construct_tree();
-
-temp_int = 0;
-temp = lrx_access_child(t1, temp_int);
-lrx_assign_tree(temp, t2);
-*/
-
-
-int print_chris_style(tree<int> t (2))
-{
-	
-}
-
-int main()
-{
-	
-	tree<int> t(2);
-	t = 4[5, 6];
-	t%0%0 = 7[];
-	print_chris_style(t);
-
-	t = def;
-	declar some things
-	tmp = 4[5[7[], 6]
-	t4
-	45
-	t6
-	t456
-	t
-
-	t->tmp;
-	print(t);
-
-	clean out from point x
-
-
+	tree <char>t(1);
+	'a'['b'['d', 'e'], 'c'];
 }
 
