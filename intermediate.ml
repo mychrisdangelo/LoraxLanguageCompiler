@@ -35,7 +35,7 @@ type ir_expr =
   | Ir_Binop of scope_var_decl * op * scope_var_decl * scope_var_decl
   | Ir_Id of scope_var_decl * scope_var_decl
   | Ir_Assign of scope_var_decl * scope_var_decl
-  | Ir_Tree_Literal of scope_var_decl * var_type * int * scope_var_decl * scope_var_decl list (* 4[3, 2[]]*)
+  | Ir_Tree_Literal of scope_var_decl * scope_var_decl * scope_var_decl (* 4[3, 2[]]*)
   | Ir_Call of scope_var_decl * scope_func_decl * scope_var_decl list
 (*
   | Ir_Null_Literal
@@ -48,6 +48,10 @@ type ir_stmt =
   | Ir_Decl of scope_var_decl
   | Ir_Ret of scope_var_decl
   | Ir_Expr of ir_expr
+  | Ir_Ptr of scope_var_decl * scope_var_decl
+  | Ir_Leaf of scope_var_decl * int
+  | Ir_Internal of scope_var_decl * int * scope_var_decl
+  | Ir_Child_Array of scope_var_decl * int
 
 type ir_func = {
   ir_header: var_type * string * scope_var_decl list;
@@ -78,6 +82,51 @@ let is_not_decl (s:ir_stmt) =
 let gen_ir_default_ret (t: var_type) =
   let tmp = gen_tmp_var t in
     Ir_Decl(tmp) :: [Ir_Ret(tmp)]
+
+let gen_tmp_leaf child tree_type tree_degree =
+  let tmp_root_data = gen_tmp_var tree_type in
+  let d = (match tree_type with
+      Lrx_Atom(a) -> a
+      | Lrx_Tree(t) -> raise(Failure("tree type ?!?!?!?!"))) in 
+  let tmp_leaf_children = gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) in  
+  let tmp_leaf_root = gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) in  
+  ([Ir_Ptr(tmp_root_data, child); Ir_Leaf(tmp_leaf_children, tree_degree); Ir_Decl(tmp_leaf_root); 
+  Ir_Expr(Ir_Tree_Literal(tmp_leaf_root, tmp_root_data, tmp_leaf_children))], tmp_leaf_root)
+
+let rec gen_tmp_leaves children tree_type tree_degree =
+  match children with 
+  [] -> []
+ | head :: tail -> gen_tmp_leaf head tree_type tree_degree :: gen_tmp_leaves tail tree_type tree_degree
+
+let is_atom t =
+   let (_, t2, _) = t in
+   match t2 with
+      Lrx_Tree(_) -> false
+    | _ -> true
+
+let is_tree t = 
+    not (is_atom t)
+
+let gen_tmp_internal child tree_type child_number child_array =
+  [Ir_Internal(child_array, child_number, child)]
+
+let rec gen_tmp_internals children tree_type array_access child_array = 
+ match children with 
+  [] -> []
+ | head :: tail -> gen_tmp_internal head tree_type array_access child_array @ gen_tmp_internals tail tree_type (array_access + 1) child_array
+
+let gen_tmp_tree tree_type tree_degree root children_list tmp_tree =
+  let atom_children = List.filter is_atom children_list in 
+  let tree_children = List.filter is_tree children_list in 
+  let leaves = gen_tmp_leaves atom_children tree_type tree_degree in 
+  let (decls, tmp_atoms) = (List.fold_left (fun (a, b) (c, d) -> ((c @ a), (d :: b))) ([],[]) leaves) in
+  let d = (match tree_type with
+      Lrx_Atom(a) -> a
+      | Lrx_Tree(t) -> raise(Failure("tree type ?!?!?!?!"))) in 
+  let child_array = gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) in  
+  let internals = gen_tmp_internals (tree_children @ tmp_atoms) tree_type 0 child_array in
+  let tmp_root_ptr = gen_tmp_var tree_type in
+  decls @ [Ir_Child_Array(child_array, tree_degree)] @ internals @ [Ir_Ptr(tmp_root_ptr, root)] @ [Ir_Expr(Ir_Tree_Literal(tmp_tree, tmp_root_ptr, child_array))]
   
 let rec gen_ir_expr (e:c_expr) =
   match e with
@@ -126,7 +175,8 @@ let rec gen_ir_expr (e:c_expr) =
       Lrx_Atom(a) -> a
       |Lrx_Tree(t) -> raise(Failure("TEMP TREE INSIDE TREE ACTION ???"))) in 
       let tmp = gen_tmp_var (Lrx_Tree({datatype = i; degree = Int_Literal(d)})) in
-      (Ir_Decl(tmp) :: s @ sl @ [Ir_Expr(Ir_Tree_Literal(tmp, t, d, r, rl))], tmp)
+      let tmp_tree =  gen_tmp_tree t d r rl tmp in 
+      (Ir_Decl(tmp) :: sl @ s @ tmp_tree, tmp)
   | C_Call(fd, el) ->
       let (n, rt, args, s) = fd in 
       let tmp = gen_tmp_var rt in
@@ -140,6 +190,8 @@ let rec gen_ir_expr (e:c_expr) =
      | C_Null_Literal ->
      | C_Noexpr -> 
  *)
+
+
 
 let rec gen_ir_block (b: c_block) =
   let decls = List.map (fun e -> Ir_Decl(e)) b.c_locals in

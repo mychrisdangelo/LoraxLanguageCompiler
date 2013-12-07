@@ -15,7 +15,7 @@ let c_of_var_type = function
 	| Lrx_Atom(Lrx_Float) -> "float"
 	| Lrx_Atom(Lrx_Bool) -> "bool"
 	| Lrx_Atom(Lrx_Char) -> "char"
- 	| Lrx_Tree(t) -> "struct *lrx_tree"
+ 	| Lrx_Tree(t) -> "tree *"
 
 let c_of_var_def (v:scope_var_decl) = 
 	let (_ ,t, _) = v in match t with
@@ -23,11 +23,15 @@ let c_of_var_def (v:scope_var_decl) =
 	| Lrx_Atom(Lrx_Float) -> "0.0"
 	| Lrx_Atom(Lrx_Bool) -> "false"
 	| Lrx_Atom(Lrx_Char) -> "\'\\0\'"
-	| Lrx_Tree(l) -> "construct_tree(" ^ string_of_expr l.degree ^ " , " ^ String.uppercase (string_of_atom_type l.datatype) ^ ")"
+	| Lrx_Tree(l) -> "lrx_declare_tree(_" ^ String.uppercase (string_of_atom_type l.datatype) ^ "_, " ^ string_of_expr l.degree ^ ")"
 
 let c_of_var_decl (v:scope_var_decl) =
 	let (n,t,s) = v in 
 	 c_of_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
+
+let c_of_ptr_decl (v:scope_var_decl) =
+	let (n,t,s) = v in 
+	 c_of_var_type t ^ " *" ^ n ^ "_" ^ string_of_int s
 
 let c_of_var_decl_list = function
 	[] -> "" 
@@ -72,17 +76,34 @@ let rec c_of_expr = function
   	| Ir_Unop(v1, op, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ string_of_unop op
   	| Ir_Binop(v1, op, v2, v3) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3 
   	| Ir_Id(v1, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
-  	| Ir_Assign(v1, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
-  	| Ir_Tree_Literal(v, t, i, d, dl) -> c_of_var_name v ^ " =  __generate_tree_literal(" ^
-  	 	string_of_var_type t ^ ", " ^ string_of_int i ^ ", " ^ c_of_var_name d ^ "," ^ 
-  	 	(String.concat (",") (List.map c_of_var_name dl)) ^ ")"
+  	| Ir_Assign(v1, v2) -> 
+  		let (_,t1,_) = v1 in 
+  		let (_,t2,_) = v2 in 
+  		(match (t1, t2) with 
+  		(Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(&" ^ c_of_var_name v1 ^ ", &" ^ c_of_var_name v2 ^ ")"
+  		| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2)
+  	| Ir_Tree_Literal(v, root, children) -> "lrx_define_tree(" ^ c_of_var_name v ^ ", " ^
+  	 	c_of_var_name root ^ ", " ^ c_of_var_name children ^ ")"
 	| Ir_Call(v1, v2, vl) ->
 		if (fst_of_four v2) = "print" then (c_of_print_call vl)
 		else c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )"
 
+let c_of_ref (r:scope_var_decl) =
+	let (n ,t, s) = r in 
+	"&" ^ n ^ "_" ^ string_of_int s
+
+let rec c_of_leaf (n:string) (d:int) = 
+	if d < 0 then "" else
+	n ^ "[" ^ string_of_int d ^ "] = NULL;\n" ^ c_of_leaf n (d - 1)
+
 let c_of_stmt (v:ir_stmt) =
 	match v with 
 	 Ir_Decl(d) -> c_of_var_decl d ^ " = " ^ c_of_var_def d ^ ";"
+	| Ir_Leaf(p, d) -> c_of_var_decl p ^ "[" ^ string_of_int d ^ "];\n" ^
+		c_of_leaf (c_of_var_name p) (d - 1) 
+    | Ir_Child_Array(d, s) -> c_of_var_decl d ^ "[" ^ string_of_int s ^ "];"
+	| Ir_Internal(a, c, t) -> c_of_var_name a ^ "[" ^ string_of_int c ^ "] = " ^ c_of_var_name t ^ ";"
+	| Ir_Ptr(p, r) -> c_of_ptr_decl p ^ " = " ^ c_of_ref r ^ ";"
   	| Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"
    	| Ir_Expr(e) -> c_of_expr e ^ ";\n"
    	| Ir_If(v, s) -> "if(" ^ c_of_var_name v ^ ") goto " ^ s ^ "" ^ ";"
