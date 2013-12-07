@@ -264,7 +264,7 @@ struct tree *lrx_assign_tree_with_dereference(struct tree *t1, int child, struct
 
     if(access && t2) {
         /* we are at an internal node */
-        return lrx_assign_direct(access, t2);
+        return lrx_assign_tree_direct(access, t2);
     }
     else {
         /* we are at a leaf node */
@@ -275,7 +275,7 @@ struct tree *lrx_assign_tree_with_dereference(struct tree *t1, int child, struct
 }
 
 
-/* breadth first search */
+/* breadth first search 
 struct tree *lrx_add_trees(struct tree *t1, struct tree*t2)
 {
   struct tree *t;
@@ -291,7 +291,7 @@ struct tree *lrx_get_root(struct tree *t)
 {
 
 }
-
+*/
 /*
 ???
 empty function??

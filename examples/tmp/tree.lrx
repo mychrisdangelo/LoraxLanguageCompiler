@@ -1,6 +1,6 @@
 int main()
 {
-	tree <char>t(1);
-	'h'['i'];
+	tree <char>t(2);
+	'h'['i'['j', 'o'], 'k'];
+	print(t);
 }
-
