@@ -49,6 +49,7 @@ type ir_stmt =
   | Ir_Ret of scope_var_decl
   | Ir_Expr of ir_expr
   | Ir_Ptr of scope_var_decl * scope_var_decl
+  | Ir_Leaf of scope_var_decl * int
 
 type ir_func = {
   ir_header: var_type * string * scope_var_decl list;
@@ -81,13 +82,17 @@ let gen_ir_default_ret (t: var_type) =
     Ir_Decl(tmp) :: [Ir_Ret(tmp)]
 
 let gen_tmp_leaf child tree_type tree_degree =
-  let tmp = gen_tmp_var tree_type in
-  Ir_Ptr(tmp, child)
+  let tmp_root_data = gen_tmp_var tree_type in
+  let d = (match tree_type with
+      Lrx_Atom(a) -> a
+      | Lrx_Tree(t) -> raise(Failure("tree type ?!?!?!?!"))) in 
+  let tmp_leaf = gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) in  
+  [Ir_Ptr(tmp_root_data, child); Ir_Leaf(tmp_leaf, tree_degree)]
 
 let rec gen_tmp_leaves children tree_type tree_degree =
   match children with 
   [] -> []
- | head :: tail -> gen_tmp_leaf head tree_type tree_degree :: gen_tmp_leaves tail tree_type tree_degree
+ | head :: tail -> gen_tmp_leaf head tree_type tree_degree @ gen_tmp_leaves tail tree_type tree_degree
 
 let gen_tmp_tree tree_type tree_degree root children_list =
   let leaves = gen_tmp_leaves children_list tree_type tree_degree in 

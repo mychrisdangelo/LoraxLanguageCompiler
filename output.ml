@@ -91,6 +91,7 @@ let c_of_ref (r:scope_var_decl) =
 let c_of_stmt (v:ir_stmt) =
 	match v with 
 	 Ir_Decl(d) -> c_of_var_decl d ^ " = " ^ c_of_var_def d ^ ";"
+	| Ir_Leaf(p, d) -> c_of_var_decl p ^ "[" ^ string_of_int d ^ "];" 
 	| Ir_Ptr(p, r) -> c_of_ptr_decl p ^ " = " ^ c_of_ref r ^ ";"
   	| Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"
    	| Ir_Expr(e) -> c_of_expr e ^ ";\n"
