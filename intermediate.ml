@@ -110,10 +110,10 @@ let is_tree t =
 let gen_tmp_internal child tree_type child_number child_array =
   [Ir_Internal(child_array, child_number, child)]
 
-let rec gen_tmp_internals children tree_type tree_degree child_array = 
+let rec gen_tmp_internals children tree_type array_access child_array = 
  match children with 
   [] -> []
- | head :: tail -> gen_tmp_internal head tree_type (tree_degree - 1) child_array @ gen_tmp_internals tail tree_type (tree_degree - 1) child_array
+ | head :: tail -> gen_tmp_internal head tree_type array_access child_array @ gen_tmp_internals tail tree_type (array_access + 1) child_array
 
 let gen_tmp_tree tree_type tree_degree root children_list tmp_tree =
   let atom_children = List.filter is_atom children_list in 
@@ -124,7 +124,7 @@ let gen_tmp_tree tree_type tree_degree root children_list tmp_tree =
       Lrx_Atom(a) -> a
       | Lrx_Tree(t) -> raise(Failure("tree type ?!?!?!?!"))) in 
   let child_array = gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) in  
-  let internals = gen_tmp_internals (tree_children @ tmp_atoms) tree_type tree_degree child_array in
+  let internals = gen_tmp_internals (tree_children @ tmp_atoms) tree_type 0 child_array in
   let tmp_root_ptr = gen_tmp_var tree_type in
   decls @ [Ir_Child_Array(child_array, tree_degree)] @ internals @ [Ir_Ptr(tmp_root_ptr, root)] @ [Ir_Expr(Ir_Tree_Literal(tmp_tree, tmp_root_ptr, child_array))]
   
