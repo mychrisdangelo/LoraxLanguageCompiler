@@ -75,7 +75,7 @@ int lrx_print_tree(struct tree *t) {
             break;
 
         case _BOOL_:
-            lrx_print_bool(t->root.float_root);
+            lrx_print_bool(t->root.bool_root);
             break;
 
     }
