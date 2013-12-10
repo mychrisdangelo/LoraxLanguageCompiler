@@ -13,6 +13,15 @@
 #define true !false
 
 typedef enum {
+	_GT_,
+	_GTE_,
+	_LT_,
+	_LTE_,
+	_EQ_,
+	_NEQ_,
+} Comparator;
+
+typedef enum {
     _BOOL_,
     _INT_,
     _FLOAT_,
@@ -334,6 +343,47 @@ struct tree *lrx_get_root(struct tree *t)
 	}
 	return lrx_get_root( t->parent );
 }
+
+//TODO: equals and not equals
+bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison ) {
+	int lhs_nodes = _lrx_count_nodes( lhs );
+	int rhs_nodes = _lrx_count_nodes( rhs );
+	int value;
+	
+	switch(comparison) {
+	case _LT_:
+		value = lhs_nodes < rhs_nodes;
+		break;
+	case _LTE_:
+		value = lhs_nodes <= rhs_nodes;
+		break;
+	case _GT_:
+		value = lhs_nodes > rhs_nodes;
+		break;
+	case _GTE_:
+		value = lhs_nodes >= rhs_nodes;
+		break;
+	}
+	
+	return value;	
+}
+
+int _lrx_count_nodes( struct tree *t ) {
+	int count;
+	int i;
+	if( t == NULL ) {
+		return 0;
+	}
+	if( t->leaf) {
+		return 1;
+	}
+	for( i = 0; i < t->degree; i++ ) {
+		count += _lrx_count_nodes( t->children[i] );
+	}
+	return count;
+}
+	
+		
 
 /*
 ???
