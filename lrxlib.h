@@ -300,11 +300,33 @@ struct tree *lrx_add_trees(struct tree *t1, struct tree*t2)
 
 }
 
+
+*  MUTATOR
+*  goes to t's parent and sets its entry in t->children to NULL
+*  sets t->parent to NULL
+*  returns t
+*  simply returns t if t is a root
+*/
 struct tree *lrx_pop_tree(struct tree *t)
 {
-
+	if( t-> parent == NULL ) {
+		return t;
+	}
+	
+	struct tree *parent = t->parent;
+	int i;
+	for( i = 0; i < parent->degree; i++ ) {
+		if( parent->children[i] == t ) {
+			parent->children[i] = NULL;
+			break;
+		}
+	}
+	
+	t->parent = NULL;
+	return t;
 }
-*/
+
+
 struct tree *lrx_get_root(struct tree *t)
 {
 	if( t->parent == NULL ) {
