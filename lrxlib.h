@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdint.h>
 #define false 0
 #define true !false
 
@@ -15,14 +16,15 @@ typedef enum {
     _BOOL_,
     _INT_,
     _FLOAT_,
-    _CHAR_
+    _CHAR_,
+    _STRING_
 } Atom;
 
 typedef int bool;
 
 typedef union Root {
     char char_root;
-    int int_root;
+    int16_t int_root;
     bool bool_root;
     float float_root;
 } Root;
@@ -68,7 +70,7 @@ int lrx_print_tree(struct tree *t) {
             fprintf(stderr, "%f", t->root.float_root); 
             break;
 
-        case _CHAR_:
+        case _CHAR_: case _STRING_:
             fprintf(stderr, "%c", t->root.char_root); 
             break;
 
@@ -80,14 +82,20 @@ int lrx_print_tree(struct tree *t) {
 
     if(!t->leaf){
         int i;
-        fprintf(stderr, "[");
+        if( t->datatype != _STRING_ )  {
+            fprintf(stderr, "[");
+        }
         for(i = 0; i < t->degree; ++i){
-            lrx_print_tree(t->children[i]);
-            if(i != t->degree - 1){
+        	if( t->children[i] != NULL ) {
+	            lrx_print_tree(t->children[i]);
+	        }
+            if (t->datatype != _STRING_ && i != t->degree - 1){
                 fprintf(stderr, ",");
             }
         }
-        fprintf(stderr, "]");
+        if( t->datatype != _STRING_ ) {
+           fprintf(stderr, "]");
+    	}
     }
 
     return 0;
@@ -137,7 +145,7 @@ struct tree *lrx_declare_tree(Atom type, int deg){
             t->root.float_root = 0.0;
             break;
 
-        case _CHAR_:
+        case _CHAR_: case _STRING_:
             t->root.char_root = '\0';
             break;
     }
@@ -145,6 +153,7 @@ struct tree *lrx_declare_tree(Atom type, int deg){
 
     t->leaf = true;
     t->children = (struct tree **)malloc(sizeof(struct tree *) * t->degree);
+    t->parent = NULL;
     return t;
 }
 
@@ -165,7 +174,7 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
             t->root.float_root = *((float *)root_data);
             break;
 
-        case _CHAR_:
+        case _CHAR_: case _STRING_:
             t->root.char_root = *((char *)root_data);
             break;
     }
@@ -176,8 +185,11 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
     /* set pointers to children */
     int num_children = t->degree;
     int i;
-    for(i = 0; i < num_children; ++i)
-        t->children[i] = children[i]; 
+    for(i = 0; i < num_children; ++i) {
+    	struct tree *temp = children[i];
+    	temp->parent = t;	
+        t->children[i] = temp; 
+	}
     t->leaf = false;  
 
     return t;
@@ -189,11 +201,14 @@ bool lrx_access_data_at_bool (struct tree *t)
     assert(t != NULL);
     return t->root.bool_root;
 }
+
+
 int lrx_access_data_at_int (struct tree *t)
 {
     assert(t != NULL);
     return t->root.int_root;
 }
+
 float lrx_access_data_at_float (struct tree *t)
 {
     assert(t != NULL);
@@ -289,12 +304,15 @@ struct tree *lrx_pop_tree(struct tree *t)
 {
 
 }
-
+*/
 struct tree *lrx_get_root(struct tree *t)
 {
-
+	if( t->parent == NULL ) {
+		return t;
+	}
+	return lrx_get_root( t->parent );
 }
-*/
+
 /*
 ???
 empty function??
