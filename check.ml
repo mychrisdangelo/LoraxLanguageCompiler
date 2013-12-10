@@ -134,7 +134,7 @@ let check_binop (c1:c_expr) (c2:c_expr) (op:op) =
               Add -> if l1.datatype = l2.datatype then C_Binop(Lrx_Tree(l1), c1, op, c2)
               else raise (Failure ("Cannot add type " ^ string_of_var_type t1 ^ " with type " ^ string_of_var_type t2))
             | (Equal | Neq) -> if l1.datatype = l2.datatype then C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2) 
-              else ((print_string ("Warning: comparison of " ^ string_of_var_type t1 ^ " with type " ^ string_of_var_type t2))
+              else ((prerr_string ("Warning: comparison of " ^ string_of_var_type t1 ^ " with type " ^ string_of_var_type t2))
                 ; C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2))
             | (Less | Greater | Leq | Geq) -> C_Binop(Lrx_Atom(Lrx_Bool), c1, op, c2)
             | _ -> binop_error t1 t2 op)
