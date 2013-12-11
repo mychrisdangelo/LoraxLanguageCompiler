@@ -95,9 +95,8 @@ int lrx_print_tree(struct tree *t) {
             fprintf(stdout, "[");
         }
         for(i = 0; i < t->degree; ++i){
-        	if( t->children[i] != NULL ) {
-	            lrx_print_tree(t->children[i]);
-	        }
+	        lrx_print_tree(t->children[i]);
+	        
             if (t->datatype != _STRING_ && i != t->degree - 1){
                 fprintf(stdout, ",");
             }
@@ -196,7 +195,9 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
     int i;
     for(i = 0; i < num_children; ++i) {
     	struct tree *temp = children[i];
-    	temp->parent = t;	
+        if (temp){
+    	   temp->parent = t;	
+        }
         t->children[i] = temp; 
 	}
     t->leaf = false;  
