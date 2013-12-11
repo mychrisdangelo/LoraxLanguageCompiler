@@ -234,7 +234,7 @@ and gen_ir_stmt (s: c_stmt) =
         let irb = gen_ir_block b in
         let startlabel = gen_tmp_label () in
         let endlabel = gen_tmp_label () in
-        s1 @ [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ s3 @ irb @ [Ir_Label(endlabel)] @ s2 @ [Ir_If(r2, startlabel)]
+        s1 @ [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb @ s3 @ [Ir_Label(endlabel)] @ s2 @ [Ir_If(r2, startlabel)]
      | C_While(e, b) -> 
         let (s, r) = gen_ir_expr e in 
         let irb = gen_ir_block b in
