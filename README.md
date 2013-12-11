@@ -7,8 +7,7 @@ Quick Start
 ```
 $ make
 $ echo "int main() { print("hello, world\n"); return 0; }" > hello.lrx
-$ ./lorax -c < hello.lrx > hello.c
-$ gcc -g -Wall hello.c
+$ ./lorax -b hello.lrx
 $ ./a.out
 $ hello, world
 $
@@ -18,7 +17,8 @@ Compiler Flags
 * `-a` Print the Abstract Syntax Tree digested source code.
 * `-t` Print an alphabetical list of the symbol table created from source code.
 * `-s` Run Semantic Analysis on source code.
-* `-c` Compile source code. Output to standard out.
+* `-c` Compile source code to target c language. Default to stdout, or written to filename present in third command line argument.
+* `-b` Compile source code to binary ouput. By default to a.out, or the filename present in third command line argument.
 
 Running Tests
 =============
