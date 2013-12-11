@@ -8,7 +8,9 @@
 open Unix
 
 let c_compiler = "gcc"
-let c_flags = "-g -Wall"
+let c_warnings = "-g"
+let c_debug = "-Wall"
+let c_includes = "-I"
 
 type action = Ast | Symtab | SAnalysis | Compile | Binary | Help
 
@@ -66,7 +68,7 @@ let _ =
                      let exec_file_name = if Array.length Sys.argv == 3 then "a.out" else Sys.argv.(3) in
                      let out = open_out tmp_c_file in
                      output_string out compiled_program; close_out out;
-                     execvp c_compiler [|c_compiler; c_flags ^ " -I" ^ (get_compiler_path Sys.argv.(0)); tmp_c_file; "-o"; exec_file_name|]
+                    execvp c_compiler [|c_compiler; c_warnings; c_debug; c_includes ^ (get_compiler_path Sys.argv.(0)); tmp_c_file; "-o"; exec_file_name|] 
         | Help -> print_endline (usage Sys.argv.(0)) (* impossible case *)
       )
  

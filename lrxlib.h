@@ -209,22 +209,22 @@ char lrx_access_data_at_char (struct tree *t)
 bool lrx_assign_data_at_bool (struct tree *t, const bool data)
 {
     assert(t != NULL);
-    t->root.bool_root = data;
+    return t->root.bool_root = data;
 }
 int lrx_assign_data_at_int (struct tree *t, const int data)
 {
     assert(t != NULL);
-    t->root.int_root = data;
+    return t->root.int_root = data;
 }
 float lrx_assign_data_at_float (struct tree *t, const float data)
 {
     assert(t != NULL);
-    t->root.float_root = data;
+    return t->root.float_root = data;
 }
 char lrx_assign_data_at_char (struct tree *t, const char data)
 {
     assert(t != NULL);
-    t->root.char_root = data;
+    return t->root.char_root = data;
 }
 
 /* t1 = t2%0 */
