@@ -30,10 +30,10 @@ __tmp_char_2 = 'a';
 
 d_1 = __tmp_char_2;
 
-fprintf(stderr, "%d", a_1);
-fprintf(stderr, "%f", b_1);
+fprintf(stdout, "%d", a_1);
+fprintf(stdout, "%f", b_1);
 lrx_print_bool(c_1);
-fprintf(stderr, "%c", d_1);
+fprintf(stdout, "%c", d_1);
 
 return __tmp_int_0;
 

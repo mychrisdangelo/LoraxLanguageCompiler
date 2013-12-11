@@ -8,7 +8,7 @@
 open Unix
 
 let c_compiler = "gcc"
-let c_warnings = "-g"
+let c_warnings = "-w"
 let c_debug = "-Wall"
 let c_includes = "-I"
 
@@ -64,7 +64,7 @@ let _ =
                      let checked = Check.check_program program env in
                      let inter_pgrm = Intermediate.intermediate_rep_program checked in
                      let compiled_program = Output.c_of_inter_pgrm inter_pgrm in
-                     let tmp_c_file = Sys.argv.(2) ^ ".tmp.c" in
+                     let tmp_c_file = Sys.argv.(2) ^ "_lrxtmp.c" in
                      let exec_file_name = if Array.length Sys.argv == 3 then "a.out" else Sys.argv.(3) in
                      let out = open_out tmp_c_file in
                      output_string out compiled_program; close_out out;

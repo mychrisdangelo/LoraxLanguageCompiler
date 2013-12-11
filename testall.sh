@@ -7,6 +7,7 @@
 #
 
 lorax="./lorax"
+binaryoutput="./a.out"
 
 # Set time limit for all operations
 ulimit -t 30
@@ -69,7 +70,7 @@ CheckParser() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.a.out" &&
-    Run "$lorax" "-a" "<" $1 ">" ${basename}.a.out &&
+    Run "$lorax" "-a" $1 ">" ${basename}.a.out &&
     Compare ${basename}.a.out ${reffile}.out ${basename}.a.diff
 
     if [ $error -eq 0 ] ; then
@@ -99,7 +100,7 @@ CheckSemanticAnalysis() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.s.out" &&
-    Run "$lorax" "-s" "<" $1 ">" ${basename}.s.out &&
+    Run "$lorax" "-s" $1 ">" ${basename}.s.out &&
     Compare ${basename}.s.out ${reffile}.out ${basename}.s.diff
 
     if [ $error -eq 0 ] ; then
@@ -134,8 +135,50 @@ Check() {
     # Compare ${basename}.i.out ${reffile}.out ${basename}.i.diff
 
     generatedfiles="$generatedfiles ${basename}.c.out" &&
-    Run "$lorax" "-c" "<" $1 ">" ${basename}.c.out &&
+    Run "$lorax" "-c" $1 ">" ${basename}.c.out &&
     Compare ${basename}.c.out ${reffile}.out ${basename}.c.diff
+
+    # Report the status and clean up the generated files
+
+    if [ $error -eq 0 ] ; then
+    if [ $keep -eq 0 ] ; then
+        rm -f $generatedfiles
+    fi
+    echo "OK"
+    echo "###### SUCCESS" 1>&2
+    else
+    echo "###### FAILED" 1>&2
+    globalerror=$error
+    fi
+}
+
+TestRunningProgram() {
+    error=0
+    basename=`echo $1 | sed 's/.*\\///
+                             s/.lrx//'`
+    reffile=`echo $1 | sed 's/.lrx$//'`
+    basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
+
+    echo -n "$basename..."
+
+    echo 1>&2
+    echo "###### Testing $basename" 1>&2
+
+    generatedfiles=""
+    tmpfiles=""
+
+    # old from microc - interpreter
+    # generatedfiles="$generatedfiles ${basename}.i.out" &&
+    # Run "$lorax" "-i" "<" $1 ">" ${basename}.i.out &&
+    # Compare ${basename}.i.out ${reffile}.out ${basename}.i.diff
+
+    generatedfiles="$generatedfiles ${basename}.b.out" &&
+    tmpfiles="$tmpfiles tests/${basename}.lrx_lrxtmp.c a.out" &&
+    Run "$lorax" "-b" $1 &&
+    Run "$binaryoutput" ">" ${basename}.b.out &&
+    Compare ${basename}.b.out ${reffile}.out ${basename}.b.diff
+    
+    rm -f $tmpfiles
 
     # Report the status and clean up the generated files
 
@@ -179,6 +222,9 @@ do
         ;;
     *test-sa*)
         CheckSemanticAnalysis $file 2>> $globallog
+        ;;
+    *test-full*)
+        TestRunningProgram $file 2>> $globallog
         ;;
 	*test-*)
 	    Check $file 2>> $globallog

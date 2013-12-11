@@ -44,9 +44,9 @@ typedef struct tree{
 
 int lrx_print_bool(bool b) {
     if (b) {
-        fprintf(stderr, "true");
+        fprintf(stdout, "true");
     } else {
-        fprintf(stderr, "false");
+        fprintf(stdout, "false");
     }
     return 0;
 }
@@ -55,21 +55,21 @@ int lrx_print_bool(bool b) {
 int lrx_print_tree(struct tree *t) {
     //Occurs when tree is imbalanced (one child is instantiated and not the others)
     if(t == NULL){
-        fprintf(stderr, "null");
+        fprintf(stdout, "null");
         return 0;
     }
 
     switch (t->datatype){
         case _INT_:
-            fprintf(stderr, "%d", t->root.int_root);
+            fprintf(stdout, "%d", t->root.int_root);
             break;
 
         case _FLOAT_:
-            fprintf(stderr, "%f", t->root.float_root); 
+            fprintf(stdout, "%f", t->root.float_root); 
             break;
 
         case _CHAR_:
-            fprintf(stderr, "%c", t->root.char_root); 
+            fprintf(stdout, "%c", t->root.char_root); 
             break;
 
         case _BOOL_:
@@ -80,14 +80,14 @@ int lrx_print_tree(struct tree *t) {
 
     if(!t->leaf){
         int i;
-        fprintf(stderr, "[");
+        fprintf(stdout, "[");
         for(i = 0; i < t->degree; ++i){
             lrx_print_tree(t->children[i]);
             if(i != t->degree - 1){
-                fprintf(stderr, ",");
+                fprintf(stdout, ",");
             }
         }
-        fprintf(stderr, "]");
+        fprintf(stdout, "]");
     }
 
     return 0;
