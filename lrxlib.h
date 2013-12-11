@@ -55,9 +55,9 @@ typedef struct tree{
 
 int lrx_print_bool(bool b) {
     if (b) {
-        fprintf(stderr, "true");
+        fprintf(stdout, "true");
     } else {
-        fprintf(stderr, "false");
+        fprintf(stdout, "false");
     }
     return 0;
 }
@@ -66,21 +66,21 @@ int lrx_print_bool(bool b) {
 int lrx_print_tree(struct tree *t) {
     //Occurs when tree is imbalanced (one child is instantiated and not the others)
     if(t == NULL){
-        fprintf(stderr, "null");
+        fprintf(stdout, "null");
         return 0;
     }
 
     switch (t->datatype){
         case _INT_:
-            fprintf(stderr, "%d", t->root.int_root);
+            fprintf(stdout, "%d", t->root.int_root);
             break;
 
         case _FLOAT_:
-            fprintf(stderr, "%f", t->root.float_root); 
+            fprintf(stdout, "%f", t->root.float_root); 
             break;
 
         case _CHAR_: case _STRING_:
-            fprintf(stderr, "%c", t->root.char_root); 
+            fprintf(stdout, "%c", t->root.char_root); 
             break;
 
         case _BOOL_:
@@ -91,19 +91,27 @@ int lrx_print_tree(struct tree *t) {
 
     if(!t->leaf){
         int i;
+        fprintf(stdout, "[");
+        for(i = 0; i < t->degree; ++i){
+            lrx_print_tree(t->children[i]);
+            if(i != t->degree - 1){
+                fprintf(stdout, ",");
+            }
+        }
+        fprintf(stdout, "]");
         if( t->datatype != _STRING_ )  {
-            fprintf(stderr, "[");
+            fprintf(stdout, "[");
         }
         for(i = 0; i < t->degree; ++i){
         	if( t->children[i] != NULL ) {
 	            lrx_print_tree(t->children[i]);
 	        }
             if (t->datatype != _STRING_ && i != t->degree - 1){
-                fprintf(stderr, ",");
+                fprintf(stdout, ",");
             }
         }
         if( t->datatype != _STRING_ ) {
-           fprintf(stderr, "]");
+           fprintf(stdout, "]");
     	}
     }
 
@@ -233,22 +241,22 @@ char lrx_access_data_at_char (struct tree *t)
 bool lrx_assign_data_at_bool (struct tree *t, const bool data)
 {
     assert(t != NULL);
-    t->root.bool_root = data;
+    return t->root.bool_root = data;
 }
 int lrx_assign_data_at_int (struct tree *t, const int data)
 {
     assert(t != NULL);
-    t->root.int_root = data;
+    return t->root.int_root = data;
 }
 float lrx_assign_data_at_float (struct tree *t, const float data)
 {
     assert(t != NULL);
-    t->root.float_root = data;
+    return t->root.float_root = data;
 }
 char lrx_assign_data_at_char (struct tree *t, const char data)
 {
     assert(t != NULL);
-    t->root.char_root = data;
+    return t->root.char_root = data;
 }
 
 /* t1 = t2%0 */

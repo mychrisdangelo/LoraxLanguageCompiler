@@ -57,9 +57,9 @@ let c_of_print_var (arg :scope_var_decl) =
 	let (n ,t, s) = arg in 
 	let name = n ^ "_" ^ string_of_int s in
 	(match t with
-		Lrx_Atom(Lrx_Int) -> "fprintf(stderr, \"%d\", " ^ name ^ ")"  
-	  | Lrx_Atom(Lrx_Float) -> "fprintf(stderr, \"%f\", " ^ name ^ ")"
-	  | Lrx_Atom(Lrx_Char) -> "fprintf(stderr, \"%c\", " ^ name ^ ")"
+		Lrx_Atom(Lrx_Int) -> "fprintf(stdout, \"%d\", " ^ name ^ ")"  
+	  | Lrx_Atom(Lrx_Float) -> "fprintf(stdout, \"%f\", " ^ name ^ ")"
+	  | Lrx_Atom(Lrx_Char) -> "fprintf(stdout, \"%c\", " ^ name ^ ")"
 	  | Lrx_Atom(Lrx_Bool) -> "lrx_print_bool(" ^ name ^ ")"
 	  | Lrx_Tree(l) -> "lrx_print_tree(" ^ name ^ ")")
 

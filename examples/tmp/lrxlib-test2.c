@@ -31,34 +31,34 @@ int main(int argc, char **argv)
         children[1] = t3;
         lrx_define_tree(t4, m, children);
 
-        fprintf(stderr, "Here is a tree 7[5[3,4], 6]\n");
+        fprintf(stdout, "Here is a tree 7[5[3,4], 6]\n");
         lrx_print_tree(t4);
-        fprintf(stderr, "\n\n");
+        fprintf(stdout, "\n\n");
 
 
         /*try accessing a child*/
         struct tree *child = lrx_access_child(t4, 0);
-        fprintf(stderr, "Here is the 0th child of the above tree.\n");
+        fprintf(stdout, "Here is the 0th child of the above tree.\n");
         lrx_print_tree(child);
-        fprintf(stderr, "\n\n");
+        fprintf(stdout, "\n\n");
 
         /*try assigning a child*/
-        fprintf(stderr, "Assign a tree 15[] as 6's child.\n");
+        fprintf(stdout, "Assign a tree 15[] as 6's child.\n");
         child = lrx_access_child(t4, 1);
         lrx_assign_child(child,0,t5);
         lrx_print_tree(t4);
-        fprintf(stderr, "\n\n");
+        fprintf(stdout, "\n\n");
 
         /*tree accessing data*/
-        fprintf(stderr, "Accessing data at tree's root\n");
+        fprintf(stdout, "Accessing data at tree's root\n");
         int z = lrx_access_data_at_int(t4); 
-        fprintf(stderr, "%d\n\n", z);
+        fprintf(stdout, "%d\n\n", z);
 
         /*try assigning data*/
-        fprintf(stderr, "Change the original tree's root from 7 to 100.\n");
+        fprintf(stdout, "Change the original tree's root from 7 to 100.\n");
         lrx_assign_data_at_int(t4, 100);
         lrx_print_tree(t4);
-        fprintf(stderr, "\n\n");
+        fprintf(stdout, "\n\n");
 
 
 
