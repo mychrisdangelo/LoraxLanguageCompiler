@@ -8,7 +8,7 @@
 OBJS = ast.cmo symtab.cmo check.cmo intermediate.cmo output.cmo parser.cmo scanner.cmo lorax.cmo
 
 lorax : $(OBJS)
-	ocamlc -o lorax -g $(OBJS)
+	ocamlc -o lorax -g unix.cma $(OBJS)
 
 .PHONY : test
 test : lorax testall.sh
