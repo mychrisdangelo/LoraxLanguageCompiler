@@ -79,13 +79,8 @@ int lrx_print_tree(struct tree *t) {
             fprintf(stdout, "%f", t->root.float_root); 
             break;
 
-<<<<<<< HEAD
-        case _CHAR_:
-            fprintf(stdout, "%c", t->root.char_root); 
-=======
         case _CHAR_: case _STRING_:
-            fprintf(stderr, "%c", t->root.char_root); 
->>>>>>> master
+            fprintf(stdout, "%c", t->root.char_root); 
             break;
 
         case _BOOL_:
@@ -96,7 +91,6 @@ int lrx_print_tree(struct tree *t) {
 
     if(!t->leaf){
         int i;
-<<<<<<< HEAD
         fprintf(stdout, "[");
         for(i = 0; i < t->degree; ++i){
             lrx_print_tree(t->children[i]);
@@ -105,22 +99,20 @@ int lrx_print_tree(struct tree *t) {
             }
         }
         fprintf(stdout, "]");
-=======
         if( t->datatype != _STRING_ )  {
-            fprintf(stderr, "[");
+            fprintf(stdout, "[");
         }
         for(i = 0; i < t->degree; ++i){
         	if( t->children[i] != NULL ) {
 	            lrx_print_tree(t->children[i]);
 	        }
             if (t->datatype != _STRING_ && i != t->degree - 1){
-                fprintf(stderr, ",");
+                fprintf(stdout, ",");
             }
         }
         if( t->datatype != _STRING_ ) {
-           fprintf(stderr, "]");
+           fprintf(stdout, "]");
     	}
->>>>>>> master
     }
 
     return 0;
