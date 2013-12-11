@@ -9,6 +9,7 @@
 open Ast
 open Check
 
+
 let tmp_reg_id = ref 0
 let label_id = ref 0
 
@@ -127,7 +128,18 @@ let gen_tmp_tree tree_type tree_degree root children_list tmp_tree =
   let internals = gen_tmp_internals (tree_children @ tmp_atoms) tree_type 0 child_array in
   let tmp_root_ptr = gen_tmp_var tree_type in
   decls @ [Ir_Child_Array(child_array, tree_degree)] @ internals @ [Ir_Ptr(tmp_root_ptr, root)] @ [Ir_Expr(Ir_Tree_Literal(tmp_tree, tmp_root_ptr, child_array))]
-  
+
+let rec char_list_to_c_tree cl =
+    match cl with
+       [t] -> C_Tree(Lrx_Atom(Lrx_Char), 1, C_Char_Literal(t), []) 
+     | h :: t -> C_Tree(Lrx_Atom(Lrx_Char), 1, C_Char_Literal(h), [(char_list_to_c_tree t)])
+     | _ -> raise (Failure "Cannot create an empty string literal")
+
+let string_to_char_list s =
+  let rec exp i l =
+    if i < 0 then l else exp (i - 1) (s.[i] :: l) in
+  exp (String.length s - 1) []
+
 let rec gen_ir_expr (e:c_expr) =
   match e with
   C_Int_Literal(i) ->
@@ -183,10 +195,11 @@ let rec gen_ir_expr (e:c_expr) =
       let ir_el = List.map gen_ir_expr el in 
       let (sl, rl) = (List.fold_left (fun (sl_ir, rl_ir) (s_ir, r_ir) -> (sl_ir @ s_ir, rl_ir@[r_ir])) ([],[]) ir_el) in 
       (Ir_Decl(tmp) :: sl @ [Ir_Expr(Ir_Call(tmp, fd, rl))], tmp)
+  | C_String_Literal(s) -> let result = (char_list_to_c_tree (string_to_char_list s)) in
+      gen_ir_expr result
   | _ -> raise (Failure ("TEMP gen_ir_expr"))
 
  (*
-     | C_String_Literal(s) ->
      | C_Null_Literal ->
      | C_Noexpr -> 
  *)
