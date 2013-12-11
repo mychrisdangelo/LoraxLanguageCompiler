@@ -84,20 +84,9 @@ let gen_ir_default_ret (t: var_type) =
   let tmp = gen_tmp_var t in
     Ir_Decl(tmp) :: [Ir_Ret(tmp)]
 
-let gen_tmp_leaf child tree_type tree_degree =
-  let tmp_root_data = gen_tmp_var tree_type in
-  let d = (match tree_type with
-      Lrx_Atom(a) -> a
-      | Lrx_Tree(t) -> raise(Failure("tree type ?!?!?!?!"))) in 
-  let tmp_leaf_children = gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) in  
-  let tmp_leaf_root = gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) in  
-  ([Ir_Ptr(tmp_root_data, child); Ir_Leaf(tmp_leaf_children, tree_degree); Ir_Decl(tmp_leaf_root); 
-  Ir_Expr(Ir_Tree_Literal(tmp_leaf_root, tmp_root_data, tmp_leaf_children))], tmp_leaf_root)
 
-let rec gen_tmp_leaves children tree_type tree_degree =
-  match children with 
-  [] -> []
- | head :: tail -> gen_tmp_leaf head tree_type tree_degree :: gen_tmp_leaves tail tree_type tree_degree
+
+
 
 let is_atom t =
    let (_, t2, _) = t in
@@ -116,16 +105,32 @@ let rec gen_tmp_internals children tree_type array_access child_array =
   [] -> []
  | head :: tail -> gen_tmp_internal head tree_type array_access child_array @ gen_tmp_internals tail tree_type (array_access + 1) child_array
 
+let gen_tmp_child child tree_type tree_degree =
+  if (is_atom child) then 
+    let tmp_root_data = gen_tmp_var tree_type in
+    let d = (match tree_type with
+      Lrx_Atom(a) -> a
+      | Lrx_Tree(t) -> raise(Failure("tree type ?!?!?!?!"))) in 
+    let tmp_leaf_children = gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) in  
+    let tmp_leaf_root = gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) in  
+    ([Ir_Ptr(tmp_root_data, child); Ir_Leaf(tmp_leaf_children, tree_degree); Ir_Decl(tmp_leaf_root); 
+    Ir_Expr(Ir_Tree_Literal(tmp_leaf_root, tmp_root_data, tmp_leaf_children))], tmp_leaf_root)
+else
+    ([], child)
+
+let rec gen_tmp_children children tree_type tree_degree =
+  match children with 
+  [] -> []
+ | head :: tail -> gen_tmp_child head tree_type tree_degree :: gen_tmp_children tail tree_type tree_degree
+
 let gen_tmp_tree tree_type tree_degree root children_list tmp_tree =
-  let atom_children = List.filter is_atom children_list in 
-  let tree_children = List.filter is_tree children_list in 
-  let leaves = gen_tmp_leaves atom_children tree_type tree_degree in 
-  let (decls, tmp_atoms) = (List.fold_left (fun (a, b) (c, d) -> ((c @ a), (d :: b))) ([],[]) leaves) in
+  let children = gen_tmp_children children_list tree_type tree_degree in
+  let (decls, tmp_children) = (List.fold_left (fun (a, b) (c, d) -> ((c @ a), (d :: b))) ([],[]) (List.rev children)) in
   let d = (match tree_type with
       Lrx_Atom(a) -> a
       | Lrx_Tree(t) -> raise(Failure("tree type ?!?!?!?!"))) in 
   let child_array = gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) in  
-  let internals = gen_tmp_internals (tree_children @ tmp_atoms) tree_type 0 child_array in
+  let internals = gen_tmp_internals tmp_children tree_type 0 child_array in
   let tmp_root_ptr = gen_tmp_var tree_type in
   decls @ [Ir_Child_Array(child_array, tree_degree)] @ internals @ [Ir_Ptr(tmp_root_ptr, root)] @ [Ir_Expr(Ir_Tree_Literal(tmp_tree, tmp_root_ptr, child_array))]
 
