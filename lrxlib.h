@@ -91,14 +91,6 @@ int lrx_print_tree(struct tree *t) {
 
     if(!t->leaf){
         int i;
-        fprintf(stdout, "[");
-        for(i = 0; i < t->degree; ++i){
-            lrx_print_tree(t->children[i]);
-            if(i != t->degree - 1){
-                fprintf(stdout, ",");
-            }
-        }
-        fprintf(stdout, "]");
         if( t->datatype != _STRING_ )  {
             fprintf(stdout, "[");
         }
