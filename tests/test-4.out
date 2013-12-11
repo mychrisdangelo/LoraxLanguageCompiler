@@ -7,10 +7,10 @@ int a_2 = 0;
 int b_2 = 0;
 int __tmp_int_8 = 0;
 int __tmp_int_1 = 0;
-int __tmp_int_5 = 0;
-int __tmp_int_4 = 0;
 int __tmp_int_7 = 0;
 int __tmp_int_6 = 0;
+int __tmp_int_5 = 0;
+int __tmp_int_4 = 0;
 bool __tmp_bool_3 = false;
 int __tmp_int_2 = 0;
 int __tmp_int_0 = 0;
@@ -25,17 +25,17 @@ a_2 = __tmp_int_1;
 
 goto __LABEL_1;
 __LABEL_0:
-__tmp_int_4 = 1;
-
-__tmp_int_5 = a_2 + __tmp_int_4;
-
-a_2 = __tmp_int_5;
-
 __tmp_int_6 = 1;
 
 __tmp_int_7 = b_2 + __tmp_int_6;
 
 b_2 = __tmp_int_7;
+
+__tmp_int_4 = 1;
+
+__tmp_int_5 = a_2 + __tmp_int_4;
+
+a_2 = __tmp_int_5;
 
 __LABEL_1:
 __tmp_int_2 = 20;

@@ -62,7 +62,7 @@ fdecl:
 	       fblock = {locals = List.rev $7; statements = List.rev $8; block_id = inc_block_id ()} } }
 
 block:
-	LBRACE vdecl_list stmt_list RBRACE { {locals = List.rev $2; statements = List.rev $3; block_id = inc_block_id ()} }
+	LBRACE stmt_list RBRACE { {locals = []; statements = List.rev $2; block_id = inc_block_id ()} }
 
 
 formals_opt:

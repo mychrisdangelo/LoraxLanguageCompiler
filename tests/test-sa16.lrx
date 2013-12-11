@@ -1,13 +1,15 @@
 int main()
 {
 	bool b;
+	int a;
+	int c;
 	if(b)
 	{
-		int a;
+		b = true;
 	}
 
 	else{
-		int c;
+		c = 4;
 	}
 
 }

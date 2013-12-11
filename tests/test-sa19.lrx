@@ -9,7 +9,6 @@ int chris(int a, int c, int f)
 {
 	int d;
 	while(true) {
-		int a;
 		a = 4;
 	}
 	d = 5;
