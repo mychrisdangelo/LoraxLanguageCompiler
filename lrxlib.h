@@ -196,7 +196,9 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
     int i;
     for(i = 0; i < num_children; ++i) {
     	struct tree *temp = children[i];
-    	temp->parent = t;	
+        if (temp){
+    	   temp->parent = t;	
+        }
         t->children[i] = temp; 
 	}
     t->leaf = false;  
