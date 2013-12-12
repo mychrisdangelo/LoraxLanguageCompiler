@@ -80,7 +80,7 @@ int lrx_print_tree(struct tree *t) {
 
     switch (t->datatype){
         case _INT_:
-            fprintf(stdout, "%d", t->root.int_root);
+            fprintf(stdout, "%hd", t->root.int_root);
             break;
 
         case _FLOAT_:
@@ -166,7 +166,7 @@ struct tree *lrx_declare_tree(Atom type, int deg) {
             t->root.float_root = 0.0;
             break;
 
-        case _CHAR_: 
+        case _CHAR_: case _STRING_:
         	if( t->degree == 1 ) {
         		t->datatype = _STRING_;
         	}        
@@ -191,7 +191,7 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
             break;
 
         case _INT_:
-            t->root.int_root = *((int *)root_data);
+            t->root.int_root = *((int16_t *)root_data);
             break;
 
         case _FLOAT_:
@@ -230,7 +230,7 @@ bool lrx_access_data_at_bool (struct tree *t)
 }
 
 
-int lrx_access_data_at_int (struct tree *t)
+int16_t lrx_access_data_at_int (struct tree *t)
 {
     assert(t != NULL);
     return t->root.int_root;
@@ -253,7 +253,7 @@ bool lrx_assign_data_at_bool (struct tree *t, const bool data)
     assert(t != NULL);
     return t->root.bool_root = data;
 }
-int lrx_assign_data_at_int (struct tree *t, const int data)
+int lrx_assign_data_at_int (struct tree *t, const int16_t data)
 {
     assert(t != NULL);
     return t->root.int_root = data;
@@ -283,7 +283,8 @@ struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs)
 {
  	
     assert((*lhs)->degree == (*rhs)->degree);
-	//make sure lhs dne rhs
+    assert((*lhs) != (*rhs));
+
     lrx_destroy_tree(*lhs);
     *lhs = *rhs;
 /*
@@ -340,8 +341,27 @@ struct tree *lrx_add_trees(struct tree *t1, struct tree*t2)
 struct tree *lrx_pop_tree(struct tree *t)
 {
 	if( t-> parent == NULL ) {
-		//something weird going on here
-		return t;
+		//NOTE: the reference count of t will need to be decremented here.
+		struct tree *temp = lrx_declare_tree( t->datatype, t->degree );
+		switch(t->datatype) {
+		case _INT_:
+			lrx_define_tree( temp, &(t->root.int_root), t->children );
+			break;
+		case _BOOL_:
+			lrx_define_tree( temp, &(t->root.bool_root), t->children );
+			break;
+		case _FLOAT_:
+			lrx_define_tree( temp, &(t->root.float_root), t->children );
+			break;
+		case _CHAR_: case _STRING_:
+			lrx_define_tree( temp, &(t->root.char_root), t->children );
+			break;
+		}
+		
+		
+		t = NULL;
+		return temp;
+		
 	}
 	
 	struct tree *parent = t->parent;
@@ -369,6 +389,25 @@ struct tree *lrx_get_root(struct tree *t)
 struct tree *lrx_get_parent( struct tree *t ) {
 	return t->parent;
 }
+
+int _lrx_count_nodes( struct tree *t ) {
+	int count = 0;
+	int i;
+	if( t == NULL ) {
+		return 0;
+	}
+	if( t->leaf) {
+		return 1;
+	}
+	count += 1;
+	for( i = 0; i < t->degree; i++ ) {
+		count +=  _lrx_count_nodes( t->children[i] );
+	}
+	return count;
+}
+	
+		
+		
 //TODO: equals and not equals
 bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison ) {
 	int lhs_nodes = _lrx_count_nodes( lhs );
@@ -385,6 +424,7 @@ bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison
     #endif
 	
 	switch(comparison) {
+
     	case _LT_:
     		value = lhs_nodes < rhs_nodes;
     		break;
@@ -399,58 +439,18 @@ bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison
     		break;
     	case _EQ_:
     	case _NEQ_:
-            // TODO
+     
             assert(0);
             break;
+
 	}
 	
 	return value;	
 }
 
-int _lrx_equality( struct tree *t1, struct tree *t2 ) {
-	int equality = 1;
-	if( t1->degree != t2->degree || t1->datatype != t2->datatype ) {
-		return !equality;
-	} 
-	Atom type = t1->datatype;
-	
-	switch(type) {
-		case _BOOL_:
-			equality = t1->root.bool_root == t2->root.bool_root;
-			break;
-		case _INT_:
-			equality = t1->root.int_root == t2->root.int_root;
-			break;
-		case _FLOAT_:
-			equality = t1->root.float_root == t2->root.float_root;
-			break;
-		case _CHAR_: 
-        case _STRING_:
-			equality = t1->root.char_root == t2->root.char_root;
-			break;
-	}
-	if( !equality ) {
-		return equality;
-	}
-	
 
-}
-int _lrx_count_nodes( struct tree *t ) {
-	int count;
-	int i;
-	if( t == NULL ) {
-		return 0;
-	}
-	if( t->leaf) {
-		return 1;
-	}
-	for( i = 0; i < t->degree; i++ ) {
-		count += _lrx_count_nodes( t->children[i] );
-	}
-	return count;
-}
-	
-		
+
+
 
 /*
 ???
