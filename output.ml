@@ -11,7 +11,7 @@ open Check
 open Intermediate
 
 let c_of_var_type = function
-	 Lrx_Atom(Lrx_Int) -> "int"
+	  Lrx_Atom(Lrx_Int) -> "int"
 	| Lrx_Atom(Lrx_Float) -> "float"
 	| Lrx_Atom(Lrx_Bool) -> "bool"
 	| Lrx_Atom(Lrx_Char) -> "char"
@@ -19,7 +19,7 @@ let c_of_var_type = function
 
 let c_of_var_def (v:scope_var_decl) = 
 	let (_ ,t, _) = v in match t with
-	 Lrx_Atom(Lrx_Int) -> "0"
+	  Lrx_Atom(Lrx_Int) -> "0"
 	| Lrx_Atom(Lrx_Float) -> "0.0"
 	| Lrx_Atom(Lrx_Bool) -> "false"
 	| Lrx_Atom(Lrx_Char) -> "\'\\0\'"
@@ -34,7 +34,7 @@ let c_of_ptr_decl (v:scope_var_decl) =
 	 c_of_var_type t ^ " *" ^ n ^ "_" ^ string_of_int s
 
 let c_of_var_decl_list = function
-	[] -> "" 
+	  [] -> "" 
 	| vars -> (String.concat (";\n") (List.map c_of_var_decl vars)) ^ ";\n\n"
 	
 let c_of_func_actual (v:scope_var_decl) =
@@ -42,11 +42,11 @@ let c_of_func_actual (v:scope_var_decl) =
 	n ^ "_" ^ string_of_int s	
 
 let c_of_func_decl_args = function
-	[] -> ""
+	  [] -> ""
 	| args -> String.concat (", ") (List.map c_of_func_actual args)
 
 let c_of_func_def_formals = function
-	[] -> ""
+	  [] -> ""
 	| args -> String.concat (", ") (List.map c_of_var_decl args)
 
 let c_of_var_name (v:scope_var_decl) = 
@@ -64,7 +64,7 @@ let c_of_print_var (arg :scope_var_decl) =
 	  | Lrx_Tree(l) -> "lrx_print_tree(" ^ name ^ ")")
 
 let c_of_print_call = function
-	 [] -> ""
+	  [] -> ""
 	| print_args -> String.concat (";\n") (List.map c_of_print_var print_args)
 
 let unescape_char c =
@@ -76,7 +76,7 @@ let unescape_char c =
 	 | _ -> String.make 1 c
 
 let rec c_of_expr = function
-  	Ir_Int_Literal(v, i) -> c_of_var_name v ^ " = " ^ string_of_int i
+  	  Ir_Int_Literal(v, i) -> c_of_var_name v ^ " = " ^ string_of_int i
   	| Ir_Float_Literal(v, f) ->  c_of_var_name v ^ " = " ^ string_of_float f
   	| Ir_String_Literal(v, s) -> c_of_var_name v ^ " = " ^ s (* unescape not required for string. lexer stores raw chars *)
   	| Ir_Char_Literal(v, c) -> c_of_var_name v ^ " = " ^ "\'" ^ unescape_char c ^ "\'"
@@ -88,8 +88,9 @@ let rec c_of_expr = function
   		let (_,t1,_) = v1 in 
   		let (_,t2,_) = v2 in 
   		(match (t1, t2) with 
-  		(Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(&" ^ c_of_var_name v1 ^ ", &" ^ c_of_var_name v2 ^ ")"
-  		| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2)
+  			(Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(&" ^ c_of_var_name v1 ^ ", &" ^ c_of_var_name v2 ^ ")"
+  		  | (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
+  		  | _ -> raise (Failure "Tree cannot be assigned to atom type."))
   	| Ir_Tree_Literal(v, root, children) -> "lrx_define_tree(" ^ c_of_var_name v ^ ", " ^
   	 	c_of_var_name root ^ ", " ^ c_of_var_name children ^ ")"
 	| Ir_Call(v1, v2, vl) ->
@@ -106,20 +107,20 @@ let rec c_of_leaf (n:string) (d:int) =
 
 let c_of_stmt (v:ir_stmt) =
 	match v with 
-	 Ir_Decl(d) -> c_of_var_decl d ^ " = " ^ c_of_var_def d ^ ";"
-	| Ir_Leaf(p, d) -> c_of_var_decl p ^ "[" ^ string_of_int d ^ "];\n" ^
-		c_of_leaf (c_of_var_name p) (d - 1) 
-    | Ir_Child_Array(d, s) -> c_of_var_decl d ^ "[" ^ string_of_int s ^ "];"
-	| Ir_Internal(a, c, t) -> c_of_var_name a ^ "[" ^ string_of_int c ^ "] = " ^ c_of_var_name t ^ ";"
-	| Ir_Ptr(p, r) -> c_of_ptr_decl p ^ " = " ^ c_of_ref r ^ ";"
-  	| Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"
-   	| Ir_Expr(e) -> c_of_expr e ^ ";\n"
-   	| Ir_If(v, s) -> "if(" ^ c_of_var_name v ^ ") goto " ^ s ^ "" ^ ";"
-   	| Ir_Jmp(s) -> "goto " ^ s ^ ";"
-   	| Ir_Label(s) -> s ^ ":"
+	   Ir_Decl(d) -> c_of_var_decl d ^ " = " ^ c_of_var_def d ^ ";"
+	 | Ir_Leaf(p, d) -> c_of_var_decl p ^ "[" ^ string_of_int d ^ "];\n" ^
+	   c_of_leaf (c_of_var_name p) (d - 1) 
+     | Ir_Child_Array(d, s) -> c_of_var_decl d ^ "[" ^ string_of_int s ^ "];"
+	 | Ir_Internal(a, c, t) -> c_of_var_name a ^ "[" ^ string_of_int c ^ "] = " ^ c_of_var_name t ^ ";"
+	 | Ir_Ptr(p, r) -> c_of_ptr_decl p ^ " = " ^ c_of_ref r ^ ";"
+  	 | Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"
+   	 | Ir_Expr(e) -> c_of_expr e ^ ";\n"
+   	 | Ir_If(v, s) -> "if(" ^ c_of_var_name v ^ ") goto " ^ s ^ "" ^ ";"
+   	 | Ir_Jmp(s) -> "goto " ^ s ^ ";"
+   	 | Ir_Label(s) -> s ^ ":"
 
 let c_of_stmt_list = function
-	[] -> ""
+	  [] -> ""
 	| stmts -> String.concat ("\n") (List.map c_of_stmt stmts) ^ "\n\n"
 
 let c_of_func (f: ir_func) =
@@ -128,11 +129,11 @@ let c_of_func (f: ir_func) =
 	c_of_stmt_list f.ir_vdecls ^ c_of_stmt_list f.ir_stmts ^ "}"
 
 let c_of_func_list = function
-	[] -> "" 
+	  [] -> "" 
 	| funcs -> String.concat ("\n") (List.map c_of_func funcs)
 
 let c_of_func_decl_formals = function
-    [] -> ""
+      [] -> ""
 	| formals -> String.concat (", ") (List.map c_of_var_type formals)
 
 let c_of_func_decl (f:ir_fheader) =
@@ -140,7 +141,7 @@ let c_of_func_decl (f:ir_fheader) =
 	"(" ^ (c_of_func_decl_formals f.ir_formals) ^ ");"
 
 let c_of_func_decl_list = function
-	[] -> ""
+	  [] -> ""
 	| fdecls -> String.concat ("\n") (List.map c_of_func_decl fdecls) ^ "\n\n"
 
 
