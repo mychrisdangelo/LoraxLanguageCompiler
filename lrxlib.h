@@ -98,6 +98,7 @@ int lrx_print_tree(struct tree *t) {
         }
         for(i = 0; i < t->degree; ++i){
 //        	if( t->children[i] == NULL && t->c
+            if (t->children[i] == NULL && t->degree == 1) break;
 	        lrx_print_tree(t->children[i]);
 	        
             if (t->datatype != _STRING_ && i != t->degree - 1){

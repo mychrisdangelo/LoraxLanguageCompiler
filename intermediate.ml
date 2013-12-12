@@ -84,10 +84,6 @@ let gen_ir_default_ret (t: var_type) =
   let tmp = gen_tmp_var t in
     Ir_Decl(tmp) :: [Ir_Ret(tmp)]
 
-
-
-
-
 let is_atom t =
    let (_, t2, _) = t in
    match t2 with
@@ -137,7 +133,20 @@ let gen_tmp_tree tree_type tree_degree root children_list tmp_tree =
 let rec char_list_to_c_tree cl =
     match cl with
        [t] -> C_Tree(Lrx_Atom(Lrx_Char), 1, C_Char_Literal(t), []) 
-     | h :: t -> C_Tree(Lrx_Atom(Lrx_Char), 1, C_Char_Literal(h), [(char_list_to_c_tree t)])
+     | h :: t -> 
+       if h = '\\' then
+          let h2 = (List.hd t) in
+          let escape_char = 
+          match h2 with
+             'n' -> '\n'
+           | 't' -> '\t'
+           | '\"' -> '\"'
+           | '\\' -> '\\'
+           | _ -> raise (Failure "Invalid escape sequence used in string literal") in
+          if (List.length (List.tl t)) = 0 then C_Tree(Lrx_Atom(Lrx_Char), 1, C_Char_Literal(escape_char), [])
+          else C_Tree(Lrx_Atom(Lrx_Char), 1, C_Char_Literal(escape_char), [(char_list_to_c_tree (List.tl t))])
+       else
+          C_Tree(Lrx_Atom(Lrx_Char), 1, C_Char_Literal(h), [(char_list_to_c_tree t)])
      | _ -> raise (Failure "Cannot create an empty string literal")
 
 let string_to_char_list s =
