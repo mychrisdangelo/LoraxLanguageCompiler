@@ -13,7 +13,7 @@
 #define false 0
 #define true !false
 
-#define LRXDEBUG
+// #define LRXDEBUG
 #ifdef LRXDEBUG
 #define LrxLog( ... ) fprintf(stderr, __VA_ARGS__ )
 #else
