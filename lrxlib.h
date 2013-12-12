@@ -80,7 +80,8 @@ int lrx_print_tree(struct tree *t) {
             fprintf(stdout, "%f", t->root.float_root); 
             break;
 
-        case _CHAR_: case _STRING_:
+        case _CHAR_: 
+        case _STRING_:
             fprintf(stdout, "%c", t->root.char_root); 
             break;
 
@@ -187,7 +188,8 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
             t->root.float_root = *((float *)root_data);
             break;
 
-        case _CHAR_: case _STRING_:
+        case _CHAR_: 
+        case _STRING_:
             t->root.char_root = *((char *)root_data);
             break;
     }
@@ -378,6 +380,9 @@ bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison
 		break;
 	case _EQ_:
 	case _NEQ_:
+        // TODO
+        assert(0);
+        break;
 		
 	}
 	
@@ -401,7 +406,8 @@ int _lrx_equality( struct tree *t1, struct tree *t2 ) {
 		case _FLOAT_:
 			equality = t1->root.float_root == t2->root.float_root;
 			break;
-		case _CHAR_: case _STRING:
+		case _CHAR_: 
+        case _STRING_:
 			equality = t1->root.char_root == t2->root.char_root;
 			break;
 	}
