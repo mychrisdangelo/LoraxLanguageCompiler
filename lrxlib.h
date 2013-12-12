@@ -374,10 +374,12 @@ bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison
 	int value;
 
     LrxLog("%d vs %d\n", lhs_nodes, rhs_nodes);
+    LrxLog("Comparator = %d\n", comparison);
     #ifdef LRXDEBUG
     lrx_print_tree(lhs);
     printf("\n");
     lrx_print_tree(rhs);
+    printf("\n");
     #endif
 	
 	switch(comparison) {
@@ -388,7 +390,6 @@ bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison
     		value = lhs_nodes <= rhs_nodes;
     		break;
     	case _GT_:
-
     		value = lhs_nodes > rhs_nodes;
     		break;
     	case _GTE_:

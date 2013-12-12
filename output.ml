@@ -75,6 +75,15 @@ let unescape_char c =
 	 | '\\' -> "\\\\"
 	 | _ -> String.make 1 c
 
+let c_of_tree_comparator = function
+	 Greater -> "_GT_"
+   | Less -> "_LT_"
+   | Leq -> "_LTE_"
+   | Geq -> "_GTE_"
+   | Equal -> "_EQ_"
+   | Neq -> "_NEQ_"
+   | _ -> raise (Failure "Not a valid tree comparator")
+
 let rec c_of_expr = function
   	  Ir_Int_Literal(v, i) -> c_of_var_name v ^ " = " ^ string_of_int i
   	| Ir_Float_Literal(v, f) ->  c_of_var_name v ^ " = " ^ string_of_float f
@@ -88,8 +97,9 @@ let rec c_of_expr = function
       (match (t1, t2) with
        	  (Lrx_Tree(_), Lrx_Tree(_)) ->
       	  (match op with
-      	     Greater -> c_of_var_name v1 ^ " = " ^ "lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^", _GT_)"
-       	   | (Less | Leq | Geq | Equal | Neq | Add) -> raise (Failure "TEMP Binop not currently implemented.")
+      	     (Less | Leq | Greater | Geq | Equal | Neq ) -> 
+      	     c_of_var_name v1 ^ " = " ^ "lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
+       	   | Add -> raise (Failure "TEMP Binop not currently implemented.")
       	   | _ -> raise (Failure "Operation not available between two tree types."))
       	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
       	| _ -> raise (Failure "TEMP need to think what case this is"))
