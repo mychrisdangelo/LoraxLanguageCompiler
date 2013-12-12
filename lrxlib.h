@@ -13,7 +13,7 @@
 #define false 0
 #define true !false
 
-// #define LRXDEBUG
+//#define LRXDEBUG
 #ifdef LRXDEBUG
 #define LrxLog( ... ) fprintf(stderr, __VA_ARGS__ )
 #else
@@ -73,6 +73,8 @@ int lrx_print_bool(bool b) {
 // TODO: the following functions are not implemented
 int lrx_print_tree(struct tree *t) {
     //Occurs when tree is imbalanced (one child is instantiated and not the others)
+    LrxLog("\nI am in print tree\n");
+
     if(t == NULL){
         fprintf(stdout, "null");
         return 0;
@@ -90,6 +92,7 @@ int lrx_print_tree(struct tree *t) {
         case _CHAR_: 
         case _STRING_:
             fprintf(stdout, "%c", t->root.char_root); 
+            LrxLog("%c", t->root.char_root);
             break;
 
         case _BOOL_:
@@ -105,6 +108,7 @@ int lrx_print_tree(struct tree *t) {
         }
         for(i = 0; i < t->degree; ++i){
 //        	if( t->children[i] == NULL && t->c
+            LrxLog("iter: %d\n", i);
             if (t->children[i] == NULL && t->degree == 1 && (t->datatype == _CHAR_ || t->datatype == _STRING_)) {
                 break;
             }
@@ -168,6 +172,7 @@ struct tree *lrx_declare_tree(Atom type, int deg) {
 
         case _CHAR_: case _STRING_:
         	if( t->degree == 1 ) {
+                LrxLog("Declare string\n");
         		t->datatype = _STRING_;
         	}        
             t->root.char_root = '\0';
@@ -201,8 +206,11 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
         case _CHAR_: 
         case _STRING_:
             t->root.char_root = *((char *)root_data);
+            LrxLog("Define string\n");
             break;
     }
+
+   LrxLog("We are in define string!\n");
 
     if(children == NULL)
         return t;
@@ -211,11 +219,12 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
     int num_children = t->degree;
     int i;
     for(i = 0; i < num_children; ++i) {
-    	struct tree *temp = children[i];
-        if (temp){
-    	   temp->parent = t;	
+        LrxLog("Iter i: %d\n", i);
+
+        if(children[i] != NULL){
+            children[i]->parent = t;
+            t->children[i] = children[i];
         }
-        t->children[i] = temp; 
 	}
     t->leaf = false;  
 
