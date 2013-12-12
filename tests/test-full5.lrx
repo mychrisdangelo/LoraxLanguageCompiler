@@ -1,0 +1,65 @@
+int main()
+{
+	int i;
+	float j;
+	char k;
+	bool l;
+	i = 1;
+	j = 2.0;
+	k = 'a';
+	l = true;
+
+	if(i == 1)
+	{
+		print(1);
+	}
+	else
+	{
+		print(0);
+	}
+
+	if(j == 2.0)
+	{
+		print(2);
+	}
+	else
+	{
+		print(0);
+	}
+
+	if(k == 'a')
+	{
+		print(3);
+	}
+	else
+	{
+		print(0);
+	} 
+	
+	if(l == true)
+	{
+		print(4);
+	}
+	else
+	{
+		print(0);
+	}
+
+	if(i == 1)
+	{
+		print(5);
+	}
+
+	if(i == 2)
+	{
+		print(0);
+	}
+	else
+	{
+		print(6);
+	}
+	return 0;
+}
+
+
+
