@@ -104,9 +104,10 @@ int lrx_print_tree(struct tree *t) {
             fprintf(stdout, "[");
         }
         for(i = 0; i < t->degree; ++i){
-
-            if (t->children[i] == NULL && t->degree == 1) break;
-
+//        	if( t->children[i] == NULL && t->c
+            if (t->children[i] == NULL && t->degree == 1 && (t->datatype == _CHAR_ || t->datatype == _STRING_)) {
+                break;
+            }
 	        lrx_print_tree(t->children[i]);
 	        
             if (t->datatype != _STRING_ && i != t->degree - 1){
@@ -414,10 +415,12 @@ bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison
 	int value;
 
     LrxLog("%d vs %d\n", lhs_nodes, rhs_nodes);
+    LrxLog("Comparator = %d\n", comparison);
     #ifdef LRXDEBUG
     lrx_print_tree(lhs);
     printf("\n");
     lrx_print_tree(rhs);
+    printf("\n");
     #endif
 	
 	switch(comparison) {
