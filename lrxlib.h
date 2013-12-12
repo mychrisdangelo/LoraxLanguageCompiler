@@ -390,7 +390,7 @@ struct tree *lrx_get_parent( struct tree *t ) {
 }
 
 int _lrx_count_nodes( struct tree *t ) {
-	int count;
+	int count = 0;
 	int i;
 	if( t == NULL ) {
 		return 0;
@@ -398,8 +398,9 @@ int _lrx_count_nodes( struct tree *t ) {
 	if( t->leaf) {
 		return 1;
 	}
+	//count += 1;
 	for( i = 0; i < t->degree; i++ ) {
-		count += _lrx_count_nodes( t->children[i] );
+		count += 1 + _lrx_count_nodes( t->children[i] );
 	}
 	return count;
 }
