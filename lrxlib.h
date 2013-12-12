@@ -13,6 +13,13 @@
 #define false 0
 #define true !false
 
+#define LRXDEBUG
+#ifdef LRXDEBUG
+#define LrxLog( ... ) fprintf(stderr, __VA_ARGS__ )
+#else
+#define LrxLog( ... )
+#endif
+
 typedef enum {
 	_GT_,
 	_GTE_,
@@ -134,7 +141,7 @@ void lrx_destroy_tree(struct tree *t)
     free(t);
 }
 
-struct tree *lrx_declare_tree(Atom type, int deg){
+struct tree *lrx_declare_tree(Atom type, int deg) {
 
     assert(deg > 0);
 
@@ -365,26 +372,33 @@ bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison
 	int lhs_nodes = _lrx_count_nodes( lhs );
 	int rhs_nodes = _lrx_count_nodes( rhs );
 	int value;
+
+    LrxLog("%d vs %d\n", lhs_nodes, rhs_nodes);
+    #ifdef LRXDEBUG
+    lrx_print_tree(lhs);
+    printf("\n");
+    lrx_print_tree(rhs);
+    #endif
 	
 	switch(comparison) {
-	case _LT_:
-		value = lhs_nodes < rhs_nodes;
-		break;
-	case _LTE_:
-		value = lhs_nodes <= rhs_nodes;
-		break;
-	case _GT_:
-		value = lhs_nodes > rhs_nodes;
-		break;
-	case _GTE_:
-		value = lhs_nodes >= rhs_nodes;
-		break;
-	case _EQ_:
-	case _NEQ_:
-        // TODO
-        assert(0);
-        break;
-		
+    	case _LT_:
+    		value = lhs_nodes < rhs_nodes;
+    		break;
+    	case _LTE_:
+    		value = lhs_nodes <= rhs_nodes;
+    		break;
+    	case _GT_:
+
+    		value = lhs_nodes > rhs_nodes;
+    		break;
+    	case _GTE_:
+    		value = lhs_nodes >= rhs_nodes;
+    		break;
+    	case _EQ_:
+    	case _NEQ_:
+            // TODO
+            assert(0);
+            break;
 	}
 	
 	return value;	

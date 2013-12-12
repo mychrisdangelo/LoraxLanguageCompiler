@@ -88,7 +88,7 @@ let rec c_of_expr = function
       (match (t1, t2) with
        	  (Lrx_Tree(_), Lrx_Tree(_)) ->
       	  (match op with
-      	     Greater -> raise (Failure "TEMP Greater not yet implemented.")
+      	     Greater -> c_of_var_name v1 ^ " = " ^ "lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^", _GT_)"
        	   | (Less | Leq | Geq | Equal | Neq | Add) -> raise (Failure "TEMP Binop not currently implemented.")
       	   | _ -> raise (Failure "Operation not available between two tree types."))
       	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
