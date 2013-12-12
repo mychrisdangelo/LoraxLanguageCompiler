@@ -405,7 +405,35 @@ int _lrx_count_nodes( struct tree *t ) {
 	return count;
 }
 	
-		
+int _lrx_check_equals( struct tree *lhs, struct tree *rhs ) {
+	int equals = 1;
+	if( lhs->datatype != rhs->datatype || lhs->degree != rhs->degree ) return !equals;
+
+	switch( lhs->datatype ) {
+		case _INT_:
+			equals = lhs->root.int_root == rhs->root.int_root;
+			break;
+		case _BOOL_:
+			equals = lhs->root.bool_root == rhs->root.bool_root;
+			break;
+		case _FLOAT_:
+			equals = lhs->root.float_root == rhs->root.float_root;
+			break;
+		case _CHAR_: case _STRING_:
+			equals = lhs->root.char_root == rhs->root.char_root;
+			break;
+	}
+	
+	if( !equals ) return equals;	
+	
+	int i;
+	for( i = 0; i < lhs->degree; i++ ) {
+		equals = _lrx_check_equals( lhs->children[i], rhs->children[i] );
+		if( !equals ) return equals;
+	}
+	
+	return equals;
+}
 		
 //TODO: equals and not equals
 bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison ) {
@@ -435,9 +463,10 @@ bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison
     		value = lhs_nodes >= rhs_nodes;
     		break;
     	case _EQ_:
+    		value = _lrx_check_equals( lhs, rhs );
+    		break;
     	case _NEQ_:
-     
-            assert(0);
+     		value = !_lrx_check_equals( lhs, rhs );            
             break;
 
 	}
