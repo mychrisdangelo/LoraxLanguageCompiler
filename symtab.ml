@@ -104,6 +104,7 @@ and symtab_add_funcs (funcs:func list) env =
 let add_builtins env =
     let env = symtab_add_decl "print" (SymTab_FuncDecl("print", Lrx_Atom(Lrx_Int), [], 0)) env in
     let env = symtab_add_decl "root" (SymTab_FuncDecl("root", Lrx_Atom(Lrx_Int), [], 0)) env in
+    let env = symtab_add_decl "parent" (SymTab_FuncDecl("parent", Lrx_Atom(Lrx_Int), [], 0)) env in
     symtab_add_decl "degree" (SymTab_FuncDecl("degree", Lrx_Atom(Lrx_Int), [], 0)) env
       
 (* 

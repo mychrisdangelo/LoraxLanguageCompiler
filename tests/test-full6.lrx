@@ -7,8 +7,10 @@ int main()
 	char e;
 	char f;
 	string s;
+	string s2;
 
 	s = "hello, world\n";
+	s2 = 'b'['y'['e'['\n']]];
 
 	a = '\t';
 	b = 'b';
@@ -19,4 +21,5 @@ int main()
 
 	print(a, b, c, d, e, f, '\n');
 	print(s);
+	print(s2);
 }
