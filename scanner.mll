@@ -6,6 +6,16 @@
 { 
 	open Parser 
 	exception LexError of string
+
+	let verify_escape s =
+		if String.length s = 1 then (String.get s 0)
+		else 
+		match s with
+		   "\\n" -> '\n'
+		 | "\\t" -> '\t'
+		 | "\\\"" -> '\"'
+		 | "\\\\" -> '\\'
+		 | c -> raise (Failure("unsupported character " ^ c))
 }
 
 (* Regular Definitions *)
@@ -67,7 +77,7 @@ rule token = parse
 | digit+ as lxm 				{ INT_LITERAL(int_of_string lxm) }
 | decimal as lxm 				{ FLOAT_LITERAL(float_of_string lxm) }
 | '\"' ([^'\"']* as lxm) '\"'   { STRING_LITERAL(lxm) }
-| '\'' (_ as lxm ) '\'' 		{ CHAR_LITERAL(lxm) }
+| '\'' ([^'\'']* as lxm ) '\'' 	{ CHAR_LITERAL((verify_escape lxm)) }
 | ("true" | "false") as lxm		{ BOOL_LITERAL(bool_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | eof { EOF }

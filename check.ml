@@ -190,7 +190,7 @@ and check_fun_call (name:string) (cl:c_expr list) env =
     let actuals = List.map type_of_expr cl in
       match name with
       | "print" -> C_Call((fname, ret_type, actuals, id), cl)
-      | ("degree" | "root") -> 
+      | ("degree" | "root" | "parent") -> 
           if ((List.length actuals) = 1) then
           let tree_arg = List.hd actuals in 
           match tree_arg with

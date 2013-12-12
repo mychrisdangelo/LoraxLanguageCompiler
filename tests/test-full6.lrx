@@ -1,0 +1,25 @@
+int main()
+{
+	char a;
+	char b;
+	char c;
+	char d;
+	char e;
+	char f;
+	string s;
+	string s2;
+
+	s = "hello, world\n";
+	s2 = 'b'['y'['e'['\n']]];
+
+	a = '\t';
+	b = 'b';
+	c = '\n';
+	d = 'd';
+	e = '\"';
+	f = '\\';
+
+	print(a, b, c, d, e, f, '\n');
+	print(s);
+	print(s2);
+}

@@ -13,6 +13,13 @@
 #define false 0
 #define true !false
 
+#define LRXDEBUG
+#ifdef LRXDEBUG
+#define LrxLog( ... ) fprintf(stderr, __VA_ARGS__ )
+#else
+#define LrxLog( ... )
+#endif
+
 typedef enum {
 	_GT_,
 	_GTE_,
@@ -80,7 +87,8 @@ int lrx_print_tree(struct tree *t) {
             fprintf(stdout, "%f", t->root.float_root); 
             break;
 
-        case _CHAR_: case _STRING_:
+        case _CHAR_: 
+        case _STRING_:
             fprintf(stdout, "%c", t->root.char_root); 
             break;
 
@@ -96,9 +104,9 @@ int lrx_print_tree(struct tree *t) {
             fprintf(stdout, "[");
         }
         for(i = 0; i < t->degree; ++i){
-        	if( t->children[i] == NULL && t->datatype == _STRING_ ) {
-				break;
-			}
+
+            if (t->children[i] == NULL && t->degree == 1) break;
+
 	        lrx_print_tree(t->children[i]);
 	        
             if (t->datatype != _STRING_ && i != t->degree - 1){
@@ -134,7 +142,7 @@ void lrx_destroy_tree(struct tree *t)
     free(t);
 }
 
-struct tree *lrx_declare_tree(Atom type, int deg){
+struct tree *lrx_declare_tree(Atom type, int deg) {
 
     assert(deg > 0);
 
@@ -189,7 +197,8 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
             t->root.float_root = *((float *)root_data);
             break;
 
-        case _CHAR_: case _STRING_:
+        case _CHAR_: 
+        case _STRING_:
             t->root.char_root = *((char *)root_data);
             break;
     }
@@ -402,27 +411,39 @@ bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison
 	int lhs_nodes = _lrx_count_nodes( lhs );
 	int rhs_nodes = _lrx_count_nodes( rhs );
 	int value;
+
+    LrxLog("%d vs %d\n", lhs_nodes, rhs_nodes);
+    #ifdef LRXDEBUG
+    lrx_print_tree(lhs);
+    printf("\n");
+    lrx_print_tree(rhs);
+    #endif
 	
 	switch(comparison) {
-	case _LT_:
-		value = lhs_nodes < rhs_nodes;
-		break;
-	case _LTE_:
-		value = lhs_nodes <= rhs_nodes;
-		break;
-	case _GT_:
-		value = lhs_nodes > rhs_nodes;
-		break;
-	case _GTE_:
-		value = lhs_nodes >= rhs_nodes;
-		break;
-	//case _EQ_:
-	//case _NEQ_:
-		
+
+    	case _LT_:
+    		value = lhs_nodes < rhs_nodes;
+    		break;
+    	case _LTE_:
+    		value = lhs_nodes <= rhs_nodes;
+    		break;
+    	case _GT_:
+    		value = lhs_nodes > rhs_nodes;
+    		break;
+    	case _GTE_:
+    		value = lhs_nodes >= rhs_nodes;
+    		break;
+    	case _EQ_:
+    	case _NEQ_:
+     
+            assert(0);
+            break;
+
 	}
 	
 	return value;	
 }
+
 
 
 
