@@ -82,15 +82,25 @@ let rec c_of_expr = function
   	| Ir_Char_Literal(v, c) -> c_of_var_name v ^ " = " ^ "\'" ^ unescape_char c ^ "\'"
   	| Ir_Bool_Literal(v, b) -> c_of_var_name v ^ " = " ^ string_of_bool b
   	| Ir_Unop(v1, op, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ string_of_unop op
-  	| Ir_Binop(v1, op, v2, v3) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3 
+  	| Ir_Binop(v1, op, v2, v3) -> 
+  	  let (_,t1,_) = v2 in
+      let (_,t2,_) = v3 in
+      (match (t1, t2) with
+       	  (Lrx_Tree(_), Lrx_Tree(_)) ->
+      	  (match op with
+      	     Greater -> raise (Failure "TEMP Greater not yet implemented.")
+       	   | (Less | Leq | Geq | Equal | Neq | Add) -> raise (Failure "TEMP Binop not currently implemented.")
+      	   | _ -> raise (Failure "Operation not available between two tree types."))
+      	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
+      	| _ -> raise (Failure "TEMP need to think what case this is"))
   	| Ir_Id(v1, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
   	| Ir_Assign(v1, v2) -> 
-  		let (_,t1,_) = v1 in 
-  		let (_,t2,_) = v2 in 
-  		(match (t1, t2) with 
-  			(Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(&" ^ c_of_var_name v1 ^ ", &" ^ c_of_var_name v2 ^ ")"
-  		  | (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
-  		  | _ -> raise (Failure "Tree cannot be assigned to atom type."))
+  	  let (_,t1,_) = v1 in 
+      let (_,t2,_) = v2 in 
+  	  (match (t1, t2) with 
+  		  (Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(&" ^ c_of_var_name v1 ^ ", &" ^ c_of_var_name v2 ^ ")"
+  		| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
+  		| _ -> raise (Failure "Tree cannot be assigned to atom type."))
   	| Ir_Tree_Literal(v, root, children) -> "lrx_define_tree(" ^ c_of_var_name v ^ ", " ^
   	 	c_of_var_name root ^ ", " ^ c_of_var_name children ^ ")"
 	| Ir_Call(v1, v2, vl) ->
