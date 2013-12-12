@@ -105,7 +105,9 @@ int lrx_print_tree(struct tree *t) {
         }
         for(i = 0; i < t->degree; ++i){
 //        	if( t->children[i] == NULL && t->c
-            if (t->children[i] == NULL && t->degree == 1) break;
+            if (t->children[i] == NULL && t->degree == 1 && (t->datatype == _CHAR_ || t->datatype == _STRING_)) {
+                break;
+            }
 	        lrx_print_tree(t->children[i]);
 	        
             if (t->datatype != _STRING_ && i != t->degree - 1){
