@@ -66,12 +66,20 @@ let c_of_print_var (arg :scope_var_decl) =
 let c_of_print_call = function
 	 [] -> ""
 	| print_args -> String.concat (";\n") (List.map c_of_print_var print_args)
- 
+
+let unescape_char c =
+	match c with 
+	   '\n' -> "\\n"
+	 | '\t' -> "\\t"
+	 | '\"' -> "\\\""
+	 | '\\' -> "\\\\"
+	 | _ -> String.make 1 c
+
 let rec c_of_expr = function
   	Ir_Int_Literal(v, i) -> c_of_var_name v ^ " = " ^ string_of_int i
   	| Ir_Float_Literal(v, f) ->  c_of_var_name v ^ " = " ^ string_of_float f
-  	| Ir_String_Literal(v, s) -> c_of_var_name v ^ " = " ^ s
-  	| Ir_Char_Literal(v, c) -> c_of_var_name v ^ " = " ^ "\'" ^ String.make 1 c ^ "\'"
+  	| Ir_String_Literal(v, s) -> c_of_var_name v ^ " = " ^ s (* unescape not required for string. lexer stores raw chars *)
+  	| Ir_Char_Literal(v, c) -> c_of_var_name v ^ " = " ^ "\'" ^ unescape_char c ^ "\'"
   	| Ir_Bool_Literal(v, b) -> c_of_var_name v ^ " = " ^ string_of_bool b
   	| Ir_Unop(v1, op, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ string_of_unop op
   	| Ir_Binop(v1, op, v2, v3) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3 
