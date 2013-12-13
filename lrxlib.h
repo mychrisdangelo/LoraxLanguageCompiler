@@ -20,8 +20,6 @@
 #define LrxLog( ... )
 #endif
 
-#define showme stderr
-
 typedef enum {
 	_GT_,
 	_GTE_,
@@ -80,24 +78,24 @@ int lrx_print_tree(struct tree *t) {
 
     //Occurs when tree is imbalanced (one child is instantiated and not the others)
     if(t == NULL){
-        fprintf(showme, "null");
+        fprintf(stdout, "null");
         return 0;
     }
 
     LrxLog("datatype: %d\n", t->datatype);
     switch (t->datatype){
         case _INT_:
-            fprintf(showme, "%hd", t->root.int_root);
+            fprintf(stdout, "%hd", t->root.int_root);
             LrxLog("%hd\n", t->root.int_root);
             break;
 
         case _FLOAT_:
-            fprintf(showme, "%f", t->root.float_root); 
+            fprintf(stdout, "%f", t->root.float_root); 
             break;
 
         case _CHAR_: 
         case _STRING_:
-            fprintf(showme, "%c", t->root.char_root); 
+            fprintf(stdout, "%c", t->root.char_root); 
             break;
 
         case _BOOL_:
@@ -109,7 +107,7 @@ int lrx_print_tree(struct tree *t) {
     if(!t->leaf){
         int i;
         if( t->datatype != _STRING_ )  {
-            fprintf(showme, "[");
+            fprintf(stdout, "[");
         }
         for(i = 0; i < t->degree; ++i){
 //        	if( t->children[i] == NULL && t->c
@@ -120,11 +118,11 @@ int lrx_print_tree(struct tree *t) {
 	        lrx_print_tree(t->children[i]);
 	        
             if (t->datatype != _STRING_ && i != t->degree - 1){
-                fprintf(showme, ",");
+                fprintf(stdout, ",");
             }
         }
         if( t->datatype != _STRING_ ) {
-           fprintf(showme, "]");
+           fprintf(stdout, "]");
     	}
     }
 

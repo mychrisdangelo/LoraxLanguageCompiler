@@ -27,7 +27,5 @@ int main()
 	print('\n', 1[2[],3[]] != t);
 	print('\n', "hello\n" == "hello\n");
 
-	print(t4 == null);
-
 
 }
