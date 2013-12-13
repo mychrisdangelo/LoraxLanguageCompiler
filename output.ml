@@ -93,7 +93,17 @@ let rec c_of_expr = function
   	| Ir_Float_Literal(v, f) ->  c_of_var_name v ^ " = " ^ string_of_float f
   	| Ir_Char_Literal(v, c) -> c_of_var_name v ^ " = " ^ "\'" ^ unescape_char c ^ "\'"
   	| Ir_Bool_Literal(v, b) -> c_of_var_name v ^ " = " ^ string_of_bool b
-  	| Ir_Unop(v1, op, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ string_of_unop op
+  	| Ir_Unop(v1, op, v2) -> 
+  	  (match op with
+  	  	 (Neg | Not) -> c_of_var_name v1 ^ " = " ^ string_of_unop op ^ c_of_var_name v2
+  	   | At -> let (_,t,_) = v1 in
+  	     (match t with
+  	         Lrx_Atom(Lrx_Int) -> c_of_var_name v1 ^ " = lrx_access_data_at_int(" ^ c_of_var_name v2 ^ ")"
+  	       | Lrx_Atom(Lrx_Float) -> c_of_var_name v1 ^ " = lrx_access_data_at_float(" ^ c_of_var_name v2 ^ ")"
+  	       | Lrx_Atom(Lrx_Char) -> c_of_var_name v1 ^ " = lrx_access_data_at_char(" ^ c_of_var_name v2 ^ ")"
+  	       | Lrx_Atom(Lrx_Bool) -> c_of_var_name v1 ^ " = lrx_access_data_at_bool(" ^ c_of_var_name v2 ^ ")"
+  	       | _ -> raise (Failure "Return type of access data member cannot be tree."))
+  	   | Pop -> raise (Failure "TEMP unop not implemented for tree pop. see intermediate first"))
   	| Ir_Binop(v1, op, v2, v3) -> 
   	  let (_,t1,_) = v2 in
       let (_,t2,_) = v3 in
@@ -113,10 +123,10 @@ let rec c_of_expr = function
       (match (t1, t2) with
        	  (Lrx_Tree(_), Lrx_Tree(_)) ->
       	  (match op with
-      	     (Less | Leq | Greater | Geq | Equal | Neq ) -> 
-      	     c_of_var_name v1 ^ " = lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
-       	   | Add -> c_of_var_name v1 ^ " = " ^ "lrx_add_trees(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
-      	   | _ -> raise (Failure "Operation not available between two tree types."))
+      	      (Less | Leq | Greater | Geq | Equal | Neq ) -> 
+      	      c_of_var_name v1 ^ " = lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
+       	    | Add -> c_of_var_name v1 ^ " = " ^ "lrx_add_trees(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
+      	    | _ -> raise (Failure "Operation not available between two tree types."))
       	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
       	| (Lrx_Tree(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = lrx_access_child( *" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ") /* Ir_Access_Umbilical */" 
       	| _ -> raise (Failure "TEMP need to think what case this is: tree == NULL"))
@@ -156,7 +166,7 @@ let c_of_stmt (v:ir_stmt) =
 	 | Ir_Leaf(p, d) -> c_of_var_decl p ^ "[" ^ string_of_int d ^ "]; /* Ir_Leaf */\n" ^
 	   c_of_leaf (c_of_var_name p) (d - 1) 
      | Ir_Child_Array(d, s) -> c_of_var_decl d ^ "[" ^ string_of_int s ^ "]; /* Ir_Child_Array */\n" ^
-     	c_of_leaf (c_of_var_name d) (s - 1) ^ "/* Filling with NULL preemptively */"
+       "/* Filling with NULL preemptively */\n" ^ c_of_leaf (c_of_var_name d) (s - 1)
 	 | Ir_Internal(a, c, t) -> c_of_var_name a ^ "[" ^ string_of_int c ^ "] = " ^ c_of_var_name t ^ "; /* Ir_Internal */"
 	 | Ir_Ptr(p, r) -> c_of_ptr_decl p ^ " = " ^ c_of_ref r ^ "; /* Ir_Ptr */"
   	 | Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"

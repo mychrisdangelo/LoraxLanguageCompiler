@@ -5,8 +5,8 @@ Compiler for Lorax, a language focused on making tree operations simple. Authors
 Quick Start
 ===============
 ```
-$ make
-$ echo "int main() { print("hello, world\n"); return 0; }" > hello.lrx
+$ cat hello.lrx
+$ int main() { print("hello, world\n"); }
 $ ./lorax -b hello.lrx
 $ ./a.out
 $ hello, world

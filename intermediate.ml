@@ -182,23 +182,21 @@ let rec gen_ir_expr (e:c_expr) =
      ([Ir_Decl(tmp); Ir_Expr(Ir_Bool_Literal(tmp, b))], tmp)
    | C_Unop(v, e, o) ->
      let (s, r) = gen_ir_expr e in
-     let t = type_of_expr e in  
-     (match t with 
-         Lrx_Tree(_) -> raise (Failure ("TEMP unop not implemented for tree pop/at"))
-       | _ -> let tmp = gen_tmp_var v in
-         ([Ir_Decl(tmp)] @ s @ [Ir_Expr(Ir_Unop(tmp, o, r))], tmp))
+     (match o with
+         Pop -> raise (Failure ("TEMP unop not implemented for tree pop. Work will need to be done to alloc a new kind of tmp"))
+       | _ -> let tmp = gen_tmp_var v in ([Ir_Decl(tmp)] @ s @ [Ir_Expr(Ir_Unop(tmp, o, r))], tmp))
    | C_Binop(v, e1, o, e2) -> 
      let (s1, r1) = gen_ir_expr e1 in
      let (s2, r2) = gen_ir_expr e2 in
      let tmp = gen_tmp_var v in
      if (contains_umbilical s1) then
-     (match o with 
-        Child -> ([Ir_Decl_Umbilical(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Access_Umbilical(tmp, o, r1, r2))], tmp)
-        | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
+       (match o with 
+           Child -> ([Ir_Decl_Umbilical(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Access_Umbilical(tmp, o, r1, r2))], tmp)
+         | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
      else
         (match o with 
-        Child -> ([Ir_Decl_Umbilical(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
-        | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
+            Child -> ([Ir_Decl_Umbilical(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
+          | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
      (* check if binop contains tree on lhs *)
    | C_Id(t, s, i) ->
      (* let tmp = gen_tmp_var t in 

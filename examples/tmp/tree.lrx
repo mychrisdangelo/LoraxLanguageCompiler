@@ -1,41 +1,10 @@
-// declaretree(t)
-// declaretree(s)
-
-// definetree(t)
-// defineTree(s)
-
-// t = final_tree;
-// s = final_tree;
-
-// t->children
-
-// a = access_tree(t, offset);
-// //t->children + offset TYPE struct tree **
-// assign_tree(a, s);
-// *a = s;
-
-
-// //rhs is null
-// //lhs is null
-// //something exists on both sides
-
-// struct child_accessed
-// --> child
-// --> offset
-// --> tree
-
 int main()
 {
 	tree <int> t(2);
-	tree <int> s(2);
 
-	t = 3[4[9[101, 102], 10], 5];
-	s = 6[7, 8];
+	t = 1[2[3, 4], 5];
 
-	t%0%0%1 = s;
-	print(t, '\n');
-	t = s;
-	print(t, '\n');
+	print(t%0);
 
 }
 
