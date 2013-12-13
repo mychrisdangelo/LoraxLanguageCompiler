@@ -4,10 +4,7 @@ Compiler for Lorax, a language focused on making tree operations simple. Authors
 
 Requirements
 ===========
-1. [OCaml](http://ocaml.org/)
-2. [Unix](http://www.ubuntu.com/)
-3. [gcc](http://gcc.gnu.org/)
-
+[OCaml](http://ocaml.org/), [Unix](http://www.ubuntu.com/), [gcc](http://gcc.gnu.org/)
 Quick Start
 ===============
 ```
