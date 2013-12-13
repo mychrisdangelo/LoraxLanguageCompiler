@@ -449,7 +449,12 @@ int _lrx_count_nodes( struct tree *t ) {
 	return count;
 }
 	
-int _lrx_check_equals( struct tree *lhs, struct tree *rhs ) {
+int _lrx_check_equals(struct tree *lhs, struct tree *rhs ) {
+    if(lhs == NULL && rhs == NULL)
+        return true;
+    if(lhs == NULL || rhs == NULL)
+        return false;
+
 	int equals = 1;
 	if( lhs->datatype != rhs->datatype || lhs->degree != rhs->degree ) return !equals;
 
@@ -463,7 +468,8 @@ int _lrx_check_equals( struct tree *lhs, struct tree *rhs ) {
 		case _FLOAT_:
 			equals = lhs->root.float_root == rhs->root.float_root;
 			break;
-		case _CHAR_: case _STRING_:
+		case _CHAR_: 
+        case _STRING_:
 			equals = lhs->root.char_root == rhs->root.char_root;
 			break;
 	}

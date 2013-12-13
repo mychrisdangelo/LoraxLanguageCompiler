@@ -1,8 +1,10 @@
 int main()
 {
+
 	tree <int>t(2);
 	tree <int>t2(2);
 	tree <int>t3(1);
+	tree <char>t4(1);
 	int a;
 	int c;
 	bool b;
@@ -19,4 +21,13 @@ int main()
 	print(t2 < t, '\n', t >= t2, '\n', t <= t3);
 
 	print('\n', t == t3);
+
+	print('\n', 2[3[]] == 2[3]);
+	print('\n', 2[3[]] == 2[3[]]);
+	print('\n', 1[2[],3[]] != t);
+	print('\n', "hello\n" == "hello\n");
+
+	print(t4 == null);
+
+
 }
