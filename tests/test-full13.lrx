@@ -1,7 +1,13 @@
 int main()
 {
 	tree <int>t(2);
+	tree <float>t2(2);
+	tree <bool>t3(2);
+	tree <char>t4(2);
 	t = 1[2, 3];
-	print(t@);
+	t2 = 1.0[2.0, 3.0];
+	t3 = true[true, false];
+	t4 = 'a'['b', 'c'];
+	print(t@, '\n', t2@, '\n', t3@, '\n', t4@);
 
 }
