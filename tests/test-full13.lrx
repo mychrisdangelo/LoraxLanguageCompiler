@@ -1,0 +1,7 @@
+int main()
+{
+	tree <int>t(2);
+	t = 1[2, 3];
+	print(t@);
+
+}

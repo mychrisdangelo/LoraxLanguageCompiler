@@ -94,8 +94,13 @@ let rec c_of_expr = function
   	| Ir_Char_Literal(v, c) -> c_of_var_name v ^ " = " ^ "\'" ^ unescape_char c ^ "\'"
   	| Ir_Bool_Literal(v, b) -> c_of_var_name v ^ " = " ^ string_of_bool b
   	| Ir_Unop(v1, op, v2) -> 
-  	  c_of_var_name v1 ^ " = " ^ string_of_unop op ^ c_of_var_name v2 
-
+  	  (match op with
+  	  	 (Neg | Not) -> c_of_var_name v1 ^ " = " ^ string_of_unop op ^ c_of_var_name v2
+  	   | At -> let (_,t,_) = v1 in
+  	     (match t with
+  	         Lrx_Atom(Lrx_Int) -> c_of_var_name v1 ^ " = lrx_access_data_at_bool(" ^ c_of_var_name v2 ^ ")"
+  	       | _ -> raise (Failure "TEMP data access to non-ints not implmented yet"))
+  	   | Pop -> raise (Failure "TEMP unop not implemented for tree pop. see intermediate first"))
   	| Ir_Binop(v1, op, v2, v3) -> 
   	  let (_,t1,_) = v2 in
       let (_,t2,_) = v3 in

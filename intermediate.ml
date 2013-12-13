@@ -182,11 +182,9 @@ let rec gen_ir_expr (e:c_expr) =
      ([Ir_Decl(tmp); Ir_Expr(Ir_Bool_Literal(tmp, b))], tmp)
    | C_Unop(v, e, o) ->
      let (s, r) = gen_ir_expr e in
-     let t = type_of_expr e in  
-     (match t with 
-         Lrx_Tree(_) -> raise (Failure ("TEMP unop not implemented for tree pop/at"))
-       | _ -> let tmp = gen_tmp_var v in
-         ([Ir_Decl(tmp)] @ s @ [Ir_Expr(Ir_Unop(tmp, o, r))], tmp))
+     (match o with
+         Pop -> raise (Failure ("TEMP unop not implemented for tree pop. Work will need to be done to alloc a new kind of tmp"))
+       | _ -> let tmp = gen_tmp_var v in ([Ir_Decl(tmp)] @ s @ [Ir_Expr(Ir_Unop(tmp, o, r))], tmp))
    | C_Binop(v, e1, o, e2) -> 
      let (s1, r1) = gen_ir_expr e1 in
      let (s2, r2) = gen_ir_expr e2 in
