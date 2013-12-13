@@ -29,6 +29,10 @@ let c_of_var_decl (v:scope_var_decl) =
 	let (n,t,s) = v in 
 	 c_of_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
 
+ let rec c_of_var_umbilical_decl (v:scope_var_decl) = 
+	let (n,t,s) = v in 
+	 c_of_var_type t ^ " **" ^ n ^ "_" ^ string_of_int s
+
 let c_of_ptr_decl (v:scope_var_decl) =
 	let (n,t,s) = v in 
 	 c_of_var_type t ^ " *" ^ n ^ "_" ^ string_of_int s
@@ -87,7 +91,6 @@ let c_of_tree_comparator = function
 let rec c_of_expr = function
   	  Ir_Int_Literal(v, i) -> c_of_var_name v ^ " = " ^ string_of_int i
   	| Ir_Float_Literal(v, f) ->  c_of_var_name v ^ " = " ^ string_of_float f
-  	| Ir_String_Literal(v, s) -> c_of_var_name v ^ " = " ^ s (* unescape not required for string. lexer stores raw chars *)
   	| Ir_Char_Literal(v, c) -> c_of_var_name v ^ " = " ^ "\'" ^ unescape_char c ^ "\'"
   	| Ir_Bool_Literal(v, b) -> c_of_var_name v ^ " = " ^ string_of_bool b
   	| Ir_Unop(v1, op, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ string_of_unop op
@@ -98,17 +101,38 @@ let rec c_of_expr = function
        	  (Lrx_Tree(_), Lrx_Tree(_)) ->
       	  (match op with
       	     (Less | Leq | Greater | Geq | Equal | Neq ) -> 
-      	     c_of_var_name v1 ^ " = " ^ "lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
+      	     c_of_var_name v1 ^ " = lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
        	   | Add -> c_of_var_name v1 ^ " = " ^ "lrx_add_trees(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
       	   | _ -> raise (Failure "Operation not available between two tree types."))
       	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
-      	| _ -> raise (Failure "TEMP need to think what case this is"))
+      	| (Lrx_Tree(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = lrx_access_child( &" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
+      	| _ -> raise (Failure "TEMP need to think what case this is: tree == NULL"))
+    | Ir_Access_Umbilical(v1, op, v2, v3) -> 
+  	  let (_,t1,_) = v2 in
+      let (_,t2,_) = v3 in
+      (match (t1, t2) with
+       	  (Lrx_Tree(_), Lrx_Tree(_)) ->
+      	  (match op with
+      	     (Less | Leq | Greater | Geq | Equal | Neq ) -> 
+      	     c_of_var_name v1 ^ " = lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
+       	   | Add -> c_of_var_name v1 ^ " = " ^ "lrx_add_trees(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
+      	   | _ -> raise (Failure "Operation not available between two tree types."))
+      	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
+      	| (Lrx_Tree(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = lrx_access_child( *" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ") /* Ir_Access_Umbilical */" 
+      	| _ -> raise (Failure "TEMP need to think what case this is: tree == NULL"))
   	| Ir_Id(v1, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
   	| Ir_Assign(v1, v2) -> 
   	  let (_,t1,_) = v1 in 
       let (_,t2,_) = v2 in 
   	  (match (t1, t2) with 
   		  (Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(&" ^ c_of_var_name v1 ^ ", &" ^ c_of_var_name v2 ^ ")"
+  		| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
+  		| _ -> raise (Failure "Tree cannot be assigned to atom type."))
+  	| Ir_Assign_Umbilical(v1, v2) -> 
+  	  let (_,t1,_) = v1 in 
+      let (_,t2,_) = v2 in 
+  	  (match (t1, t2) with 
+  		  (Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(*" ^ c_of_var_name v1 ^ ", &" ^ c_of_var_name v2 ^ ") /* Ir_Assign_Umbilical */"
   		| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
   		| _ -> raise (Failure "Tree cannot be assigned to atom type."))
   	| Ir_Tree_Literal(v, root, children) -> "lrx_define_tree(" ^ c_of_var_name v ^ ", " ^
@@ -123,16 +147,18 @@ let c_of_ref (r:scope_var_decl) =
 
 let rec c_of_leaf (n:string) (d:int) = 
 	if d < 0 then "" else
-	n ^ "[" ^ string_of_int d ^ "] = NULL;\n" ^ c_of_leaf n (d - 1)
+	n ^ "[" ^ string_of_int d ^ "] = NULL; /* c_of_leaf */\n" ^ c_of_leaf n (d - 1)
 
 let c_of_stmt (v:ir_stmt) =
 	match v with 
-	   Ir_Decl(d) -> c_of_var_decl d ^ " = " ^ c_of_var_def d ^ ";"
-	 | Ir_Leaf(p, d) -> c_of_var_decl p ^ "[" ^ string_of_int d ^ "];\n" ^
+	   Ir_Decl(d) -> c_of_var_decl d ^ " = " ^ c_of_var_def d ^ "; /* Ir_Decl */"
+	 | Ir_Decl_Umbilical(d) -> c_of_var_umbilical_decl d ^ " = NULL ; /* Ir_Decl_Umbilical */"
+	 | Ir_Leaf(p, d) -> c_of_var_decl p ^ "[" ^ string_of_int d ^ "]; /* Ir_Leaf */\n" ^
 	   c_of_leaf (c_of_var_name p) (d - 1) 
-     | Ir_Child_Array(d, s) -> c_of_var_decl d ^ "[" ^ string_of_int s ^ "];"
-	 | Ir_Internal(a, c, t) -> c_of_var_name a ^ "[" ^ string_of_int c ^ "] = " ^ c_of_var_name t ^ ";"
-	 | Ir_Ptr(p, r) -> c_of_ptr_decl p ^ " = " ^ c_of_ref r ^ ";"
+     | Ir_Child_Array(d, s) -> c_of_var_decl d ^ "[" ^ string_of_int s ^ "]; /* Ir_Child_Array */\n" ^
+     	c_of_leaf (c_of_var_name d) (s - 1) ^ "/* Filling with NULL preemptively */"
+	 | Ir_Internal(a, c, t) -> c_of_var_name a ^ "[" ^ string_of_int c ^ "] = " ^ c_of_var_name t ^ "; /* Ir_Internal */"
+	 | Ir_Ptr(p, r) -> c_of_ptr_decl p ^ " = " ^ c_of_ref r ^ "; /* Ir_Ptr */"
   	 | Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"
    	 | Ir_Expr(e) -> c_of_expr e ^ ";\n"
    	 | Ir_If(v, s) -> "if(" ^ c_of_var_name v ^ ") goto " ^ s ^ "" ^ ";"
