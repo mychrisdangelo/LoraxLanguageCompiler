@@ -7,7 +7,10 @@ int increment(int b)
 int main()
 {
 	int a;
-	a = 1;
+	print(a); // print 0
+	a = 1; 
+	print(a); // print 1
 	a = increment(a);
+	print(a); // print 2
 	return a;
 }

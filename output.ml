@@ -130,7 +130,8 @@ let c_of_stmt (v:ir_stmt) =
 	   Ir_Decl(d) -> c_of_var_decl d ^ " = " ^ c_of_var_def d ^ "; /* Ir_Decl */"
 	 | Ir_Leaf(p, d) -> c_of_var_decl p ^ "[" ^ string_of_int d ^ "]; /* Ir_Leaf */\n" ^
 	   c_of_leaf (c_of_var_name p) (d - 1) 
-     | Ir_Child_Array(d, s) -> c_of_var_decl d ^ "[" ^ string_of_int s ^ "]; /* Ir_Child_Array */"
+     | Ir_Child_Array(d, s) -> c_of_var_decl d ^ "[" ^ string_of_int s ^ "]; /* Ir_Child_Array */\n" ^
+     	c_of_leaf (c_of_var_name d) (s - 1) ^ "/* Filling with NULL preemptively */"
 	 | Ir_Internal(a, c, t) -> c_of_var_name a ^ "[" ^ string_of_int c ^ "] = " ^ c_of_var_name t ^ "; /* Ir_Internal */"
 	 | Ir_Ptr(p, r) -> c_of_ptr_decl p ^ " = " ^ c_of_ref r ^ "; /* Ir_Ptr */"
   	 | Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"

@@ -1,6 +1,6 @@
 int main()
 {
-	print(5[4[]]);
+	print("hello, world\n");
 
 
 
