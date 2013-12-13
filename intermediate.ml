@@ -192,13 +192,13 @@ let rec gen_ir_expr (e:c_expr) =
      let (s2, r2) = gen_ir_expr e2 in
      let tmp = gen_tmp_var v in
      if (contains_umbilical s1) then
-     (match o with 
-        Child -> ([Ir_Decl_Umbilical(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Access_Umbilical(tmp, o, r1, r2))], tmp)
-        | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
+       (match o with 
+           Child -> ([Ir_Decl_Umbilical(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Access_Umbilical(tmp, o, r1, r2))], tmp)
+         | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
      else
         (match o with 
-        Child -> ([Ir_Decl_Umbilical(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
-        | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
+            Child -> ([Ir_Decl_Umbilical(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
+          | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
      (* check if binop contains tree on lhs *)
    | C_Id(t, s, i) ->
      (* let tmp = gen_tmp_var t in 

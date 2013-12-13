@@ -93,7 +93,9 @@ let rec c_of_expr = function
   	| Ir_Float_Literal(v, f) ->  c_of_var_name v ^ " = " ^ string_of_float f
   	| Ir_Char_Literal(v, c) -> c_of_var_name v ^ " = " ^ "\'" ^ unescape_char c ^ "\'"
   	| Ir_Bool_Literal(v, b) -> c_of_var_name v ^ " = " ^ string_of_bool b
-  	| Ir_Unop(v1, op, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ string_of_unop op
+  	| Ir_Unop(v1, op, v2) -> 
+  	  c_of_var_name v1 ^ " = " ^ string_of_unop op ^ c_of_var_name v2 
+
   	| Ir_Binop(v1, op, v2, v3) -> 
   	  let (_,t1,_) = v2 in
       let (_,t2,_) = v3 in
@@ -113,10 +115,10 @@ let rec c_of_expr = function
       (match (t1, t2) with
        	  (Lrx_Tree(_), Lrx_Tree(_)) ->
       	  (match op with
-      	     (Less | Leq | Greater | Geq | Equal | Neq ) -> 
-      	     c_of_var_name v1 ^ " = lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
-       	   | Add -> c_of_var_name v1 ^ " = " ^ "lrx_add_trees(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
-      	   | _ -> raise (Failure "Operation not available between two tree types."))
+      	      (Less | Leq | Greater | Geq | Equal | Neq ) -> 
+      	      c_of_var_name v1 ^ " = lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
+       	    | Add -> c_of_var_name v1 ^ " = " ^ "lrx_add_trees(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
+      	    | _ -> raise (Failure "Operation not available between two tree types."))
       	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
       	| (Lrx_Tree(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = lrx_access_child( *" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ") /* Ir_Access_Umbilical */" 
       	| _ -> raise (Failure "TEMP need to think what case this is: tree == NULL"))
