@@ -323,14 +323,48 @@ struct tree *lrx_assign_tree_with_dereference(struct tree *t1, int child, struct
 }*/
 
 
-/* breadth first search 
+/** concatenation
+* appends t2 to the first available child sport in t1
+* if no such spot is available
+*/
 struct tree *lrx_add_trees(struct tree *t1, struct tree*t2)
 {
-  struct tree *t;
-
+  //base case
+  if( t1 == NULL ) {
+  	t1 = t2;
+  	return t1;
+  }  
+  
+  //otherwise, BFS
+  int qSize = t1->degree * t1->degree;
+  struct tree *q[ qSize ];
+  int front =0;
+  int back = 0;
+  q[ back ] = t1;
+  back =  (back+1) % qSize;
+  while( q[ front ] != NULL ) {
+  	struct tree *t = q[ front ];
+  	q[ front ] = NULL;
+  	front = (front+1) % qSize;
+  	int i;
+  	for( i = 0; i < t->degree; i++ ) {
+  		if( t->children[i] == NULL ) {
+  			if( t->leaf ) t->leaf = !t->leaf;
+  			t->children[i] = t2;
+  			return t1;
+  		}
+  		q[ back ] = t->children[i];
+  		back = (back+1) % qSize;
+  	}
+  }
+  return NULL;
 }
+  
+  
 
 
+
+/*
 *  MUTATOR
 *  goes to t's parent and sets its entry in t->children to NULL
 *  sets t->parent to NULL
