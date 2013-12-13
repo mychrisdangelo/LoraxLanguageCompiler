@@ -1,7 +1,5 @@
 int main()
 {
-	print(5[4[]]);
-
-
+	print("hello\n\nworld\n\n");
 
 }
