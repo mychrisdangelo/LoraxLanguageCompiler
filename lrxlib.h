@@ -332,14 +332,48 @@ struct tree *lrx_assign_tree_with_dereference(struct tree *t1, int child, struct
 }*/
 
 
-/* breadth first search 
+/** concatenation
+* appends t2 to the first available child sport in t1
+* if no such spot is available
+*/
 struct tree *lrx_add_trees(struct tree *t1, struct tree*t2)
 {
-  struct tree *t;
-
+  //base case
+  if( t1 == NULL ) {
+  	t1 = t2;
+  	return t1;
+  }  
+  
+  //otherwise, BFS
+  int qSize = t1->degree * t1->degree;
+  struct tree *q[ qSize ];
+  int front =0;
+  int back = 0;
+  q[ back ] = t1;
+  back =  (back+1) % qSize;
+  while( q[ front ] != NULL ) {
+  	struct tree *t = q[ front ];
+  	q[ front ] = NULL;
+  	front = (front+1) % qSize;
+  	int i;
+  	for( i = 0; i < t->degree; i++ ) {
+  		if( t->children[i] == NULL ) {
+  			if( t->leaf ) t->leaf = !t->leaf;
+  			t->children[i] = t2;
+  			return t1;
+  		}
+  		q[ back ] = t->children[i];
+  		back = (back+1) % qSize;
+  	}
+  }
+  return NULL;
 }
+  
+  
 
 
+
+/*
 *  MUTATOR
 *  goes to t's parent and sets its entry in t->children to NULL
 *  sets t->parent to NULL
@@ -415,7 +449,35 @@ int _lrx_count_nodes( struct tree *t ) {
 	return count;
 }
 	
-		
+int _lrx_check_equals( struct tree *lhs, struct tree *rhs ) {
+	int equals = 1;
+	if( lhs->datatype != rhs->datatype || lhs->degree != rhs->degree ) return !equals;
+
+	switch( lhs->datatype ) {
+		case _INT_:
+			equals = lhs->root.int_root == rhs->root.int_root;
+			break;
+		case _BOOL_:
+			equals = lhs->root.bool_root == rhs->root.bool_root;
+			break;
+		case _FLOAT_:
+			equals = lhs->root.float_root == rhs->root.float_root;
+			break;
+		case _CHAR_: case _STRING_:
+			equals = lhs->root.char_root == rhs->root.char_root;
+			break;
+	}
+	
+	if( !equals ) return equals;	
+	
+	int i;
+	for( i = 0; i < lhs->degree; i++ ) {
+		equals = _lrx_check_equals( lhs->children[i], rhs->children[i] );
+		if( !equals ) return equals;
+	}
+	
+	return equals;
+}
 		
 //TODO: equals and not equals
 bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison ) {
@@ -447,9 +509,10 @@ bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison
     		value = lhs_nodes >= rhs_nodes;
     		break;
     	case _EQ_:
+    		value = _lrx_check_equals( lhs, rhs );
+    		break;
     	case _NEQ_:
-     
-            assert(0);
+     		value = !_lrx_check_equals( lhs, rhs );            
             break;
 
 	}
