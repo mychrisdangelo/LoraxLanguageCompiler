@@ -1,0 +1,37 @@
+#include "lrxlib.h"
+int main();
+int increment(int);
+
+int main()
+{
+int a_2 = 0;
+int __tmp_int_5 = 0;
+int __tmp_int_4 = 0;
+int __tmp_int_3 = 0;
+
+__tmp_int_5 = 1;
+
+a_2 = __tmp_int_5;
+
+__tmp_int_4 = increment( a_2 );
+
+a_2 = __tmp_int_4;
+
+return a_2;
+return __tmp_int_3;
+
+}
+int increment(int b_1)
+{
+int __tmp_int_2 = 0;
+int __tmp_int_1 = 0;
+int __tmp_int_0 = 0;
+
+__tmp_int_1 = 1;
+
+__tmp_int_2 = b_1 + __tmp_int_1;
+
+return __tmp_int_2;
+return __tmp_int_0;
+
+}
