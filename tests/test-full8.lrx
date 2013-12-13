@@ -17,4 +17,6 @@ int main()
 	print(b);
 
 	print(t2 < t, '\n', t >= t2, '\n', t <= t3);
+
+	print('\n', t == t3);
 }
