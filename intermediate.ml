@@ -34,8 +34,10 @@ type ir_expr =
   | Ir_Bool_Literal of scope_var_decl * bool
   | Ir_Unop of scope_var_decl * uop * scope_var_decl
   | Ir_Binop of scope_var_decl * op * scope_var_decl * scope_var_decl
+  | Ir_Access_Umbilical of scope_var_decl * op * scope_var_decl * scope_var_decl
   | Ir_Id of scope_var_decl * scope_var_decl
   | Ir_Assign of scope_var_decl * scope_var_decl
+  | Ir_Assign_Umbilical of scope_var_decl * scope_var_decl
   | Ir_Tree_Literal of scope_var_decl * scope_var_decl * scope_var_decl (* 4[3, 2[]]*)
   | Ir_Call of scope_var_decl * scope_func_decl * scope_var_decl list
 (*
@@ -53,6 +55,7 @@ type ir_stmt =
   | Ir_Leaf of scope_var_decl * int
   | Ir_Internal of scope_var_decl * int * scope_var_decl
   | Ir_Child_Array of scope_var_decl * int
+  | Ir_Decl_Umbilical of scope_var_decl
 
 type ir_func = {
   ir_header: var_type * string * scope_var_decl list;
@@ -155,6 +158,14 @@ let string_to_char_list s =
   let rec exp i l = if i < 0 then l else exp (i - 1) (s.[i] :: l) in
   exp (String.length s - 1) []
 
+let rec contains_umbilical sl = 
+  match sl with
+  [] -> false
+  | h :: t -> 
+      (match h with 
+      Ir_Decl_Umbilical(_) -> true
+      | _ -> contains_umbilical t)
+
 let rec gen_ir_expr (e:c_expr) =
   match e with
      C_Int_Literal(i) ->
@@ -180,8 +191,15 @@ let rec gen_ir_expr (e:c_expr) =
      let (s1, r1) = gen_ir_expr e1 in
      let (s2, r2) = gen_ir_expr e2 in
      let tmp = gen_tmp_var v in
+     if (contains_umbilical s1) then
+     (match o with 
+        Child -> ([Ir_Decl_Umbilical(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Access_Umbilical(tmp, o, r1, r2))], tmp)
+        | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
+     else
+        (match o with 
+        Child -> ([Ir_Decl_Umbilical(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
+        | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
      (* check if binop contains tree on lhs *)
-     ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
    | C_Id(t, s, i) ->
      (* let tmp = gen_tmp_var t in 
      ([Ir_Decl(tmp); Ir_Expr(Ir_Id(tmp, (s, t, i)))], tmp) *)
@@ -189,7 +207,8 @@ let rec gen_ir_expr (e:c_expr) =
    | C_Assign(t, l, r) ->
      let (s1, r1) = gen_ir_expr l in
      let (s2, r2) = gen_ir_expr r in
-     (s2 @ [Ir_Expr(Ir_Assign(r1, r2))], r2)
+     if (contains_umbilical s1) then (s1 @ s2 @ [Ir_Expr(Ir_Assign_Umbilical(r1, r2))], r2)
+     else (s1 @ s2 @ [Ir_Expr(Ir_Assign(r1, r2))], r2)
    | C_Tree(t, d, e, el) -> 
      let (s, r) = gen_ir_expr e in
      let ir_el = List.map gen_ir_expr el in

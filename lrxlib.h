@@ -20,6 +20,8 @@
 #define LrxLog( ... )
 #endif
 
+#define showme stderr
+
 typedef enum {
 	_GT_,
 	_GTE_,
@@ -59,6 +61,8 @@ typedef struct tree{
 
     /* leaf == childless */
     bool leaf;
+    /* isNull == has been declared but not defined */ 
+    bool is_null;
 } tree;
 
 int lrx_print_bool(bool b) {
@@ -72,27 +76,28 @@ int lrx_print_bool(bool b) {
 
 // TODO: the following functions are not implemented
 int lrx_print_tree(struct tree *t) {
-    //Occurs when tree is imbalanced (one child is instantiated and not the others)
-    LrxLog("\nI am in print tree\n");
+    LrxLog("I am in print tree.\n");
 
+    //Occurs when tree is imbalanced (one child is instantiated and not the others)
     if(t == NULL){
-        fprintf(stdout, "null");
+        fprintf(showme, "null");
         return 0;
     }
 
+    LrxLog("datatype: %d\n", t->datatype);
     switch (t->datatype){
         case _INT_:
-            fprintf(stdout, "%hd", t->root.int_root);
+            fprintf(showme, "%hd", t->root.int_root);
+            LrxLog("%hd\n", t->root.int_root);
             break;
 
         case _FLOAT_:
-            fprintf(stdout, "%f", t->root.float_root); 
+            fprintf(showme, "%f", t->root.float_root); 
             break;
 
         case _CHAR_: 
         case _STRING_:
-            fprintf(stdout, "%c", t->root.char_root); 
-            LrxLog("%c", t->root.char_root);
+            fprintf(showme, "%c", t->root.char_root); 
             break;
 
         case _BOOL_:
@@ -104,22 +109,22 @@ int lrx_print_tree(struct tree *t) {
     if(!t->leaf){
         int i;
         if( t->datatype != _STRING_ )  {
-            fprintf(stdout, "[");
+            fprintf(showme, "[");
         }
         for(i = 0; i < t->degree; ++i){
 //        	if( t->children[i] == NULL && t->c
-            LrxLog("iter: %d\n", i);
+            LrxLog("print iter: %d\n", i);
             if (t->children[i] == NULL && t->degree == 1 && (t->datatype == _CHAR_ || t->datatype == _STRING_)) {
                 break;
             }
 	        lrx_print_tree(t->children[i]);
 	        
             if (t->datatype != _STRING_ && i != t->degree - 1){
-                fprintf(stdout, ",");
+                fprintf(showme, ",");
             }
         }
         if( t->datatype != _STRING_ ) {
-           fprintf(stdout, "]");
+           fprintf(showme, "]");
     	}
     }
 
@@ -179,7 +184,7 @@ struct tree *lrx_declare_tree(Atom type, int deg) {
             break;
     }
 
-
+    t->is_null = true;
     t->leaf = true;
     t->children = (struct tree **)malloc(sizeof(struct tree *) * t->degree);
     t->parent = NULL;
@@ -206,11 +211,10 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
         case _CHAR_: 
         case _STRING_:
             t->root.char_root = *((char *)root_data);
-            LrxLog("Define string\n");
             break;
     }
 
-   LrxLog("We are in define string!\n");
+    t->is_null = false;
 
     if(children == NULL)
         return t;
@@ -279,24 +283,30 @@ char lrx_assign_data_at_char (struct tree *t, const char data)
 }
 
 /* t1 = t2%0 */
-struct tree *lrx_access_child (struct tree *t, const int child)
+struct tree ***lrx_access_child (struct tree **t, const int child)
 {
-    assert(t);
-    assert(child < t->degree);
-    struct tree **children = t->children;
-    return *(children + child);
+    assert(*t);
+    assert(child < (*t)->degree);
+    /* ptr to the parent's ptr to it's children */
+    struct tree **children_ptr = ((*t)->children + child);
+    struct tree ***p = &children_ptr;
+    return p;
 }
 
 /* t1 = t2. Lhs is the tree pointer we need without dereference */
 struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs)
 {
- 	
-    assert((*lhs)->degree == (*rhs)->degree);
-    assert((*lhs) != (*rhs));
+// 	if(*rhs == NULL)
 
-    lrx_destroy_tree(*lhs);
+    assert((*lhs)->degree == (*rhs)->degree);
+    if(*lhs == *rhs)
+        return lhs;
+
+    //lrx_destroy_tree(*lhs);
     *lhs = *rhs;
+    
 /*
+
 
     lhs->root = rhs->root;
     lhs->leaf = rhs->leaf;
@@ -320,17 +330,17 @@ struct tree *lrx_assign_tree_with_dereference(struct tree *t1, int child, struct
     struct tree *access = lrx_access_child(t1, child);
 
     if(access && t2) {
-        we are at an internal node 
+      //  we are at an internal node 
         return lrx_assign_tree_direct(access, t2);
     }
     else {
-        we are at a leaf node 
+     //   we are at a leaf node 
         t1->children[child] = t2;
         t1->leaf = false;
         return t1;
     }
-}*/
-
+}
+*/
 
 /** concatenation
 * appends t2 to the first available child sport in t1

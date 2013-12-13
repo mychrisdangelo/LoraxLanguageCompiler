@@ -29,6 +29,10 @@ let c_of_var_decl (v:scope_var_decl) =
 	let (n,t,s) = v in 
 	 c_of_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
 
+ let rec c_of_var_umbilical_decl (v:scope_var_decl) = 
+	let (n,t,s) = v in 
+	 c_of_var_type t ^ " **" ^ n ^ "_" ^ string_of_int s
+
 let c_of_ptr_decl (v:scope_var_decl) =
 	let (n,t,s) = v in 
 	 c_of_var_type t ^ " *" ^ n ^ "_" ^ string_of_int s
@@ -97,17 +101,38 @@ let rec c_of_expr = function
        	  (Lrx_Tree(_), Lrx_Tree(_)) ->
       	  (match op with
       	     (Less | Leq | Greater | Geq | Equal | Neq ) -> 
-      	     c_of_var_name v1 ^ " = " ^ "lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
+      	     c_of_var_name v1 ^ " = lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
        	   | Add -> c_of_var_name v1 ^ " = " ^ "lrx_add_trees(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
       	   | _ -> raise (Failure "Operation not available between two tree types."))
       	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
-      	| _ -> raise (Failure "TEMP need to think what case this is"))
+      	| (Lrx_Tree(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = lrx_access_child( &" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
+      	| _ -> raise (Failure "TEMP need to think what case this is: tree == NULL"))
+    | Ir_Access_Umbilical(v1, op, v2, v3) -> 
+  	  let (_,t1,_) = v2 in
+      let (_,t2,_) = v3 in
+      (match (t1, t2) with
+       	  (Lrx_Tree(_), Lrx_Tree(_)) ->
+      	  (match op with
+      	     (Less | Leq | Greater | Geq | Equal | Neq ) -> 
+      	     c_of_var_name v1 ^ " = lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
+       	   | Add -> c_of_var_name v1 ^ " = " ^ "lrx_add_trees(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
+      	   | _ -> raise (Failure "Operation not available between two tree types."))
+      	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
+      	| (Lrx_Tree(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = lrx_access_child( *" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ") /* Ir_Access_Umbilical */" 
+      	| _ -> raise (Failure "TEMP need to think what case this is: tree == NULL"))
   	| Ir_Id(v1, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
   	| Ir_Assign(v1, v2) -> 
   	  let (_,t1,_) = v1 in 
       let (_,t2,_) = v2 in 
   	  (match (t1, t2) with 
   		  (Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(&" ^ c_of_var_name v1 ^ ", &" ^ c_of_var_name v2 ^ ")"
+  		| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
+  		| _ -> raise (Failure "Tree cannot be assigned to atom type."))
+  	| Ir_Assign_Umbilical(v1, v2) -> 
+  	  let (_,t1,_) = v1 in 
+      let (_,t2,_) = v2 in 
+  	  (match (t1, t2) with 
+  		  (Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(*" ^ c_of_var_name v1 ^ ", &" ^ c_of_var_name v2 ^ ") /* Ir_Assign_Umbilical */"
   		| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
   		| _ -> raise (Failure "Tree cannot be assigned to atom type."))
   	| Ir_Tree_Literal(v, root, children) -> "lrx_define_tree(" ^ c_of_var_name v ^ ", " ^
@@ -127,6 +152,7 @@ let rec c_of_leaf (n:string) (d:int) =
 let c_of_stmt (v:ir_stmt) =
 	match v with 
 	   Ir_Decl(d) -> c_of_var_decl d ^ " = " ^ c_of_var_def d ^ "; /* Ir_Decl */"
+	 | Ir_Decl_Umbilical(d) -> c_of_var_umbilical_decl d ^ " = NULL ; /* Ir_Decl_Umbilical */"
 	 | Ir_Leaf(p, d) -> c_of_var_decl p ^ "[" ^ string_of_int d ^ "]; /* Ir_Leaf */\n" ^
 	   c_of_leaf (c_of_var_name p) (d - 1) 
      | Ir_Child_Array(d, s) -> c_of_var_decl d ^ "[" ^ string_of_int s ^ "]; /* Ir_Child_Array */\n" ^
