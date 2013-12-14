@@ -140,7 +140,7 @@ let rec c_of_expr = function
       	     c_of_var_name v1 ^ " = lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
        	   | Add -> c_of_var_name v1 ^ " = " ^ "lrx_add_trees(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
       	   | _ -> raise (Failure "Operation not available between two tree types."))
-      	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
+      	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_arg v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_arg v3
       	| (Lrx_Tree(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = lrx_access_child(" ^ c_of_var_arg v2 ^ ", " ^ c_of_var_name v3 ^ ")"
       	| _ -> raise (Failure "TEMP need to think what case this is: tree == NULL"))
    (* | Ir_Access_Umbilical(v1, op, v2, v3) -> 
@@ -174,8 +174,13 @@ let rec c_of_expr = function
   	| Ir_Tree_Literal(v, root, children) -> "lrx_define_tree(" ^ c_of_var_name v ^ ", " ^
   	 	c_of_var_name root ^ ", " ^ c_of_var_name children ^ ")"
 	| Ir_Call(v1, v2, vl) ->
-		if (fst_of_four v2) = "print" then (c_of_print_call vl)
-		else c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )"
+    let func_name = fst_of_four v2 in
+    (match func_name with
+        "print" -> (c_of_print_call vl)
+      | "degree" -> c_of_var_name v1 ^ " = " ^ "lrx_get_degree(" ^ c_of_func_decl_args vl ^ ")"
+      | _ -> c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )")
+(* 		if (fst_of_four v2) = "print" then (c_of_print_call vl)
+		else c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )" *)
 
 let c_of_ref (r:ir_var_decl) =
 	let (n ,t, s,u) = r in 
@@ -194,13 +199,14 @@ let c_of_stmt (v:ir_stmt) =
      | Ir_Child_Array(d, s) -> c_of_var_decl d ^ "[" ^ string_of_int s ^ "]; /* Ir_Child_Array */\n" ^
        "/* Filling with NULL preemptively */\n" ^ c_of_leaf (c_of_var_name d) (s - 1)
 	 | Ir_Internal(a, c, t) -> c_of_var_name a ^ "[" ^ string_of_int c ^ "] = " ^ c_of_var_name t ^ "; /* Ir_Internal */"
-	 | Ir_Ptr(p, r) -> c_of_ptr_decl p ^ " = " ^ c_of_ref r ^ "; /* Ir_Ptr */"
+	 | Ir_Ptr(p, r) -> c_of_var_name p ^ " = " ^ c_of_ref r ^ "; /* Ir_Ptr */"
    | Ir_At_Ptr(p) -> c_of_ptr_decl p ^ " = NULL; /* Ir_At_Ptr */" 
-  	 | Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"
-   	 | Ir_Expr(e) -> c_of_expr e ^ ";\n"
+   | Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"
+	 | Ir_Expr(e) -> c_of_expr e ^ ";\n"
    	 | Ir_If(v, s) -> "if(" ^ c_of_var_name v ^ ") goto " ^ s ^ "" ^ ";"
    	 | Ir_Jmp(s) -> "goto " ^ s ^ ";"
    	 | Ir_Label(s) -> s ^ ":"
+   | Ir_Tree_Destroy(d) -> "lrx_destroy_tree(" ^ c_of_var_name d ^ ");"
 
 let c_of_stmt_list = function
 	  [] -> ""
