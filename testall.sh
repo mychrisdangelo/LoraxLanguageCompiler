@@ -50,7 +50,7 @@ Compare() {
 Run() {
     echo $* 1>&2
     eval $* || { 
-        if [[ $5 != fail* ]]; then
+        if [[ $5 != *fail* ]]; then
 	       SignalError "$1 failed on $*"
 	       return 1
         fi
@@ -252,7 +252,7 @@ if [ $# -ge 1 ]
 then
     files=$@
 else
-    files="tests/fail-*.lrx tests/test-*.lrx"
+    files="tests/test-*.lrx"
 fi
 
 for file in $files
@@ -267,11 +267,11 @@ do
     *test-full*)
         TestRunningProgram $file 2>> $globallog
         ;;
+    *test-fail*)
+        CheckFail $file 2>> $globallog
+        ;;
 	*test-*)
 	    Check $file 2>> $globallog
-	    ;;
-	*fail-*)
-	    CheckFail $file 2>> $globallog
 	    ;;
 	*)
 	    echo "unknown file type $file"
