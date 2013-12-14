@@ -1,0 +1,21 @@
+/* Test all statement forms 
+	Modified from Stephen Edwards' MicroC
+*/
+
+int foo(bool a, int b) {
+  int i;
+  if (a) {
+    return b + 3;
+  }
+  else {
+    for (i = 0 ; i < 5 ; i = i + 1) {
+       b = b + 5;
+    }
+  }
+  return b;  
+}
+
+int main() {
+  print(foo(true,42));
+  print(foo(false,37));
+}
