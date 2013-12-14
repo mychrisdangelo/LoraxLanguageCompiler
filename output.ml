@@ -59,7 +59,8 @@ let c_of_var_decl_list = function
 	
 let c_of_func_actual (v:ir_var_decl) =
 	let(n,t,s,u) = v in 
-	n ^ "_" ^ string_of_int s	
+  let prefix = if u = 1 then "*" else "" in 
+	prefix ^ n ^ "_" ^ string_of_int s	
 
 let c_of_func_decl_args = function
 	  [] -> ""
