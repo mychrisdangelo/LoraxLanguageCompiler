@@ -1,0 +1,14 @@
+int main()
+{
+	tree <int>t(2);
+	tree <int>t2(2);
+	t = 1[2, 3[4, 5]];
+	t2 = 0[1, 2];
+	print("should print 3[4, 5] = ", parent(t%1%0), "\n");
+	print("should print null = ", parent(1[2, 3]), "\n");
+	print("should print 1[2, 3[4, 5] = ", parent(parent(t%1%0)), "\n");
+	t2%0 = parent(parent(t%1%0));
+	print("should print 0[1[2, 3[4, 5], null] = ", t2, "\n");
+	// will cause assertion failure
+	// print("what is this printing? ", parent(parent(t)), "\n");
+}

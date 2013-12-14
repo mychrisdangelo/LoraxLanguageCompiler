@@ -55,7 +55,7 @@ type ir_stmt =
   | Ir_Label of string
   | Ir_Decl of ir_var_decl
   | Ir_Tree_Destroy of ir_var_decl
-  | Ir_Ret of ir_var_decl
+  | Ir_Ret of ir_var_decl * string * string
   | Ir_Expr of ir_expr
   | Ir_Ptr of ir_var_decl * ir_var_decl
   | Ir_At_Ptr of ir_var_decl
@@ -68,6 +68,7 @@ type ir_func = {
   ir_header: var_type * string * scope_var_decl list;
   ir_vdecls: ir_stmt list;
   ir_stmts: ir_stmt list;
+  ir_destroys: ir_stmt list;
 }
 
 type ir_fheader = {
@@ -101,9 +102,9 @@ let is_not_decl (s:ir_stmt) =
 
 let gen_ir_default_ret (t: var_type) =
   let tmp = (gen_tmp_var t 0) in
-  Ir_Decl(tmp) :: [Ir_Ret(tmp)]
-
-
+  let start_cleanup = gen_tmp_label () in 
+  let end_cleanup = gen_tmp_label () in 
+  [Ir_Decl(tmp); Ir_Ret(tmp, start_cleanup, end_cleanup)]
 
 let is_atom t =
    let (_, t2, _, _) = t in
@@ -244,8 +245,12 @@ let rec gen_ir_expr (e:c_expr) =
      ([Ir_Decl(tmp); Ir_Tree_Destroy(tmp)] @ sl @ s @ tmp_tree, tmp)
    | C_Call(fd, el) ->
      let (n, rt, args, s) = fd in 
-     let tmp = gen_tmp_var rt 0 in
      let ir_el = List.map gen_ir_expr el in 
+     let tmp = 
+     (match n with 
+         ("parent" | "root") -> gen_tmp_var rt 1
+       | _ -> gen_tmp_var rt 0) 
+     in
      let (sl, rl) = (List.fold_left (fun (sl_ir, rl_ir) (s_ir, r_ir) -> (sl_ir @ s_ir, rl_ir@[r_ir])) ([],[]) ir_el) in 
      (Ir_Decl(tmp) :: sl @ [Ir_Expr(Ir_Call(tmp, fd, rl))], tmp)
    | C_String_Literal(s) -> let result = (char_list_to_c_tree (string_to_char_list s)) in
@@ -275,7 +280,11 @@ let rec gen_ir_block (b: c_block) =
 and gen_ir_stmt (s: c_stmt) =
      match s with
         C_CodeBlock(b) -> gen_ir_block b
-      | C_Return(e) -> let (s, r) = gen_ir_expr e in s @ [Ir_Ret(r)]
+      | C_Return(e) -> 
+      let (s, r) = gen_ir_expr e in 
+      let start_cleanup = gen_tmp_label () in 
+      let end_cleanup = gen_tmp_label () in 
+      s @ [Ir_Ret(r, start_cleanup, end_cleanup)]
       | C_Expr(e) -> fst (gen_ir_expr e)
       | C_If(e, b1, b2) -> 
         let (s, r) = gen_ir_expr e in 
@@ -317,7 +326,7 @@ and gen_ir_body (f: c_func) =
   let stmts = List.filter is_not_decl body in
   let destroys = List.filter is_destroy stmts in
   let stmts = List.filter is_not_destroy stmts in 
-  {ir_header = header; ir_vdecls = decls; ir_stmts = stmts @ destroys}
+  {ir_header = header; ir_vdecls = decls; ir_stmts = stmts; ir_destroys = List.rev destroys}
 
 and gen_ir_fbodys (flist:c_func list) =
   match flist with

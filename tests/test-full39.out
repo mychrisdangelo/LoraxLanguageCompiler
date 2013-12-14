@@ -1,0 +1,4 @@
+should print 3[4, 5] = 3[4[null,null],5[null,null]]
+should print null = null
+should print 1[2, 3[4, 5] = 1[2[null,null],3[4[null,null],5[null,null]]]
+should print 0[1[2, 3[4, 5], null] = 0[1[2[null,null],3[4[null,null],5[null,null]]],2[null,null]]

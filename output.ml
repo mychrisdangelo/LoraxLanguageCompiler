@@ -178,6 +178,8 @@ let rec c_of_expr = function
     (match func_name with
         "print" -> (c_of_print_call vl)
       | "degree" -> c_of_var_name v1 ^ " = " ^ "lrx_get_degree(" ^ c_of_func_decl_args vl ^ ")"
+      | "parent" -> c_of_var_name v1 ^ " = lrx_get_parent(" ^ c_of_var_arg (List.hd vl) ^ ")"
+      | "root" -> raise (Failure "TEMP parent function not implemented")
       | _ -> c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )")
 (* 		if (fst_of_four v2) = "print" then (c_of_print_call vl)
 		else c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )" *)
@@ -190,7 +192,7 @@ let rec c_of_leaf (n:string) (d:int) =
 	if d < 0 then "" else
 	n ^ "[" ^ string_of_int d ^ "] = NULL; /* c_of_leaf */\n" ^ c_of_leaf n (d - 1)
 
-let c_of_stmt (v:ir_stmt) =
+let c_of_stmt (v:ir_stmt) (cleanup:string) =
 	match v with 
 	   Ir_Decl(d) -> c_of_var_decl d ^ " = " ^ c_of_var_def d ^ "; /* Ir_Decl */"
 	 | Ir_Decl_Umbilical(d) -> c_of_var_umbilical_decl d ^ " = NULL ; /* Ir_Decl_Umbilical */"
@@ -201,21 +203,32 @@ let c_of_stmt (v:ir_stmt) =
 	 | Ir_Internal(a, c, t) -> c_of_var_name a ^ "[" ^ string_of_int c ^ "] = " ^ c_of_var_name t ^ "; /* Ir_Internal */"
 	 | Ir_Ptr(p, r) -> c_of_var_name p ^ " = " ^ c_of_ref r ^ "; /* Ir_Ptr */"
    | Ir_At_Ptr(p) -> c_of_ptr_decl p ^ " = NULL; /* Ir_At_Ptr */" 
-   | Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"
+   | Ir_Ret(v, s, e) -> "goto " ^ s ^ ";\n" ^ e ^ ":\nreturn " ^ c_of_var_name v ^ ";\n" ^ 
+      s ^ ":\n" ^ cleanup ^ "goto " ^ e ^ ";\n"
 	 | Ir_Expr(e) -> c_of_expr e ^ ";\n"
    	 | Ir_If(v, s) -> "if(" ^ c_of_var_name v ^ ") goto " ^ s ^ "" ^ ";"
    	 | Ir_Jmp(s) -> "goto " ^ s ^ ";"
    	 | Ir_Label(s) -> s ^ ":"
-   | Ir_Tree_Destroy(d) -> "lrx_destroy_tree(" ^ c_of_var_name d ^ ");"
+    | _ -> raise (Failure ("Ir_Tree_Destroy should be impossible here"))
+   
+let c_of_destroy (v:ir_stmt) =
+  match v with 
+  Ir_Tree_Destroy(d) -> "lrx_destroy_tree(" ^ c_of_var_name d ^ ");"
+  | _ -> raise (Failure ("only Ir_Tree_Destroy should be possible here"))
 
-let c_of_stmt_list = function
-	  [] -> ""
-	| stmts -> String.concat ("\n") (List.map c_of_stmt stmts) ^ "\n\n"
+let c_of_destroys destroys =
+  String.concat ("\n") (List.map c_of_destroy destroys) ^ "\n\n"
+
+let rec c_of_stmt_list stmts cleanup = 
+  match stmts with 
+	  [] -> []
+	| head :: tail ->  c_of_stmt head cleanup :: c_of_stmt_list tail cleanup
 
 let c_of_func (f: ir_func) =
 	let (t, n, sl) = f.ir_header in 
+  let cleanup = c_of_destroys f.ir_destroys in
 	c_of_var_type t ^ " " ^ n ^ "(" ^ c_of_func_def_formals sl ^ ")\n{\n" ^
-	c_of_stmt_list f.ir_vdecls ^ c_of_stmt_list f.ir_stmts ^ "}"
+	String.concat "\n" (c_of_stmt_list f.ir_vdecls cleanup) ^ String.concat "\n" (c_of_stmt_list f.ir_stmts cleanup) ^ "}"
 
 let c_of_func_list = function
 	  [] -> "" 
