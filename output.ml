@@ -29,7 +29,7 @@ let c_of_var_def (v:ir_var_decl) =
 
 let c_of_var_decl (v:ir_var_decl) =
 	let (n,t,s,u) = v in 
-  let pointer_galaga = if u = 1 then "**" else "" in
+  let pointer_galaga = if u = 1 then "*" else "" in
 	 c_of_var_type t ^ pointer_galaga ^ " " ^ n ^ "_" ^ string_of_int s 
 
 let c_of_ir_var_decl (v:scope_var_decl) =
@@ -39,7 +39,7 @@ let c_of_ir_var_decl (v:scope_var_decl) =
 
  let rec c_of_var_umbilical_decl (v:ir_var_decl) = 
 	let (n,t,s,u) = v in 
-	 c_of_var_type t ^ " **" ^ n ^ "_" ^ string_of_int s
+	 c_of_var_type t ^ "*" ^ n ^ "_" ^ string_of_int s
 
 let c_of_ptr_decl (v:ir_var_decl) =
 	let (n,t,s,u) = v in 
@@ -73,7 +73,7 @@ let c_of_var_arg (v:ir_var_decl) =
 	let (n,t,s, u) = v in 
   let prefix =
   (match t with 
-    Lrx_Tree(_)-> if u = 1 then "*" else "&" 
+    Lrx_Tree(_)-> if u = 1 then "" else "&" 
     | Lrx_Atom(_) -> if u = 1 then "*" else "") in 
 	prefix ^ n ^ "_" ^ string_of_int s
 
@@ -89,7 +89,7 @@ let c_of_print_var (arg :ir_var_decl) =
 	  | Lrx_Atom(Lrx_Char) -> "fprintf(stdout, \"%c\", " ^ c_of_var_arg arg ^ ")"
 	  | Lrx_Atom(Lrx_Bool) -> "lrx_print_bool(" ^ c_of_var_arg arg ^ ")"
 	  | Lrx_Tree(l) -> 
-      let prefix = if u = 1 then "**" else "" in
+      let prefix = if u = 1 then "*" else "" in
       let name = n ^ "_" ^ string_of_int s in
       "lrx_print_tree(" ^ prefix ^ name ^ ")")
 
