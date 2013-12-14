@@ -54,6 +54,7 @@ type ir_stmt =
   | Ir_Jmp of string
   | Ir_Label of string
   | Ir_Decl of ir_var_decl
+  | Ir_Tree_Destroy of ir_var_decl
   | Ir_Ret of ir_var_decl
   | Ir_Expr of ir_expr
   | Ir_Ptr of ir_var_decl * ir_var_decl
@@ -81,6 +82,14 @@ type ir_program = {
   ir_bodies: ir_func list;
 }
 
+let is_destroy (s: ir_stmt) =
+  match s with
+     Ir_Tree_Destroy(_) -> true
+   | _ -> false
+
+let is_not_destroy (s:ir_stmt) =
+  not (is_destroy s)
+
 let is_decl (s: ir_stmt) =
   match s with
      Ir_Decl(_) -> true
@@ -93,6 +102,8 @@ let is_not_decl (s:ir_stmt) =
 let gen_ir_default_ret (t: var_type) =
   let tmp = (gen_tmp_var t 0) in
   Ir_Decl(tmp) :: [Ir_Ret(tmp)]
+
+
 
 let is_atom t =
    let (_, t2, _, _) = t in
@@ -124,6 +135,7 @@ let gen_tmp_child child tree_type tree_degree =
       Ir_Ptr(tmp_root_data, child); 
       Ir_Leaf(tmp_leaf_children, tree_degree); 
       Ir_Decl(tmp_leaf_root); 
+      Ir_Tree_Destroy(tmp_leaf_root);
       Ir_Expr(Ir_Tree_Literal(tmp_leaf_root, tmp_root_data, tmp_leaf_children))], tmp_leaf_root)
   else
     ([], child)
@@ -208,10 +220,12 @@ let rec gen_ir_expr (e:c_expr) =
             | _ -> gen_tmp_var v 0 ) 
      in ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
      (* check if binop contains tree on lhs *)
-   | C_Id(t, s, i) ->
+   | C_Id(t, s, i) -> ([], (s, t, i, 0))
+     (* (match t with 
+      Lrx_Tree(_)-> ([Ir_Tree_Destroy(s, t, i, 0)], (s, t, i, 0))
+      | _ -> ([], (s, t, i, 0))) *)
      (* let tmp = gen_tmp_var t in 
      ([Ir_Decl(tmp); Ir_Expr(Ir_Id(tmp, (s, t, i)))], tmp) *)
-     ([], (s, t, i, 0))
    | C_Assign(t, l, r) ->
      let (s1, r1) = gen_ir_expr l in
      let (s2, r2) = gen_ir_expr r in
@@ -227,7 +241,7 @@ let rec gen_ir_expr (e:c_expr) =
        | Lrx_Tree(t) -> raise (Failure "Tree type as tree data item. (Error 2)")) in 
      let tmp = (gen_tmp_var (Lrx_Tree({datatype = i; degree = Int_Literal(d)})) 0) in
      let tmp_tree =  gen_tmp_tree t d r rl tmp in 
-     (Ir_Decl(tmp) :: sl @ s @ tmp_tree, tmp)
+     ([Ir_Decl(tmp); Ir_Tree_Destroy(tmp)] @ sl @ s @ tmp_tree, tmp)
    | C_Call(fd, el) ->
      let (n, rt, args, s) = fd in 
      let tmp = gen_tmp_var rt 0 in
@@ -243,10 +257,19 @@ let rec gen_ir_expr (e:c_expr) =
      | C_Noexpr -> 
  *)
 
+let decl_and_destroy_local (v:scope_var_decl) =
+  let (n, t, s) = v in 
+  (match t with
+  Lrx_Tree(_) -> [Ir_Tree_Destroy(n, t, s, 0); Ir_Decl(n, t, s, 0)]
+  | _ -> [Ir_Decl(n, t, s, 0)])
 
+let rec decl_and_destroy_locals (vl:scope_var_decl list) =
+  match vl with
+  [] -> []
+  | head :: tail -> decl_and_destroy_local head @ decl_and_destroy_locals tail 
 
 let rec gen_ir_block (b: c_block) =
-  let decls = List.map (fun d -> let (d1, d2, d3) = d in Ir_Decl(d1, d2, d3, 0)) b.c_locals in
+  let decls = decl_and_destroy_locals b.c_locals in
   decls @ (gen_ir_stmtlist b.c_statements)
 
 and gen_ir_stmt (s: c_stmt) =
@@ -292,7 +315,9 @@ and gen_ir_body (f: c_func) =
   let body = gen_ir_block f.c_fblock @ default_ret in
   let decls = List.filter is_decl body in
   let stmts = List.filter is_not_decl body in
-  {ir_header = header; ir_vdecls = decls; ir_stmts = stmts}
+  let destroys = List.filter is_destroy stmts in
+  let stmts = List.filter is_not_destroy stmts in 
+  {ir_header = header; ir_vdecls = decls; ir_stmts = stmts @ destroys}
 
 and gen_ir_fbodys (flist:c_func list) =
   match flist with
