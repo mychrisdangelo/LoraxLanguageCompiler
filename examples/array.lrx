@@ -3,7 +3,7 @@
  * Author: Zhaarn Maheswaran
  */
 
-/* Adds element to the array at the specified index */
+/* Inserts an element into the array */
 int insert_array(tree <int>t(1), int index, int val) {
 	tree <int> a(1);
 	int i;
@@ -21,7 +21,7 @@ int insert_array(tree <int>t(1), int index, int val) {
 	return 0; 
 }
 
-/* Accesses the element in the specified index of the array */
+/* Accesses an element in the array */ 
 int access_array(tree<int>t(1), int index) {
 	tree <int> a(1);
 	int i;
@@ -34,13 +34,13 @@ int access_array(tree<int>t(1), int index) {
 		a = a%0;
 		if(a == null){
 			print("Invalid access");
-			return;
+			return -1;
 		}
 	}
 	return a@;  
 }
 
-/* initializes an array */
+/* Initializes an array */
 int init_array(tree <int> t (1), int size) {
 	tree <int> a(1);
 	int i;
@@ -57,7 +57,7 @@ int init_array(tree <int> t (1), int size) {
 	return 0;   
 }
 
-/* gets the size of an array */
+/* Gets the size of the array */
 int size_array(tree <int> t(1)) {
 	int i;
 	tree <int> a (1);
@@ -80,5 +80,5 @@ int main() {
 		insert_array(t, i, i);
 		print(access_array(t, i));	
 	}
-	print(t); 
+	print(t);  
 }
