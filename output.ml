@@ -140,7 +140,7 @@ let rec c_of_expr = function
       	     c_of_var_name v1 ^ " = lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
        	   | Add -> c_of_var_name v1 ^ " = " ^ "lrx_add_trees(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
       	   | _ -> raise (Failure "Operation not available between two tree types."))
-      	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
+      	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_arg v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_arg v3
       	| (Lrx_Tree(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = lrx_access_child(" ^ c_of_var_arg v2 ^ ", " ^ c_of_var_name v3 ^ ")"
       	| _ -> raise (Failure "TEMP need to think what case this is: tree == NULL"))
    (* | Ir_Access_Umbilical(v1, op, v2, v3) -> 
