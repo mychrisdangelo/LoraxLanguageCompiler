@@ -281,16 +281,12 @@ char lrx_assign_data_at_char (struct tree **t, const char data)
 }
 
 /* t1 = t2%0 */
-struct tree ***lrx_access_child (struct tree **t, const int child)
+struct tree **lrx_access_child (struct tree **t, const int child)
 {
-   
     assert(*t);
     assert(child < (*t)->degree);
     /* ptr to the parent's ptr to it's children */
-    struct tree **children_ptr = ((*t)->children + child);
-    struct tree ***p = &children_ptr;
-
-    return p;
+    return &((*t)->children[child]);
 }
 
 /* t1 = t2. Lhs is the tree pointer we need without dereference */
