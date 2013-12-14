@@ -1,0 +1,18 @@
+/* Test for variable assingment with global variables
+   Modified from Stephen Edwards' MicroC
+ */
+
+int a;
+
+int printxy(int x, int y) {
+  print(x);
+  print(y);
+}
+
+int main()
+{
+  int b;
+  a = 42;
+  b = 57;
+  printxy(a + b * 3, 77);
+}
