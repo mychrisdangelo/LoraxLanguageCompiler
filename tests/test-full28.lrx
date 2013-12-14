@@ -1,0 +1,9 @@
+
+int main()
+{
+	tree <char>t(2);
+	t = 'E'['F', 'G'];
+
+	print(t%0@ + ('B'-'A'));
+
+}

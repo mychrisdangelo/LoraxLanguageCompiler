@@ -1,0 +1,24 @@
+
+int main()
+{
+	tree <int> t(2);
+	tree <int> s(2);
+	tree <int> m(2);
+
+
+	t = 1[2[3, 4], 5];
+	s = 6[7[8,9], 10[]];
+	m = 44[55[],66];
+
+	 t%0%0@ = s@;	// t = 1[2[6, 4], 5];
+	 print("t=\n", t , "\ns=\n", s, "\n\n");
+	 t = s%0%0; 	//8[null, null]
+	 print("t=\n", t , "\ns=\n", s, "\n\n");
+	 t = s%0;  		//7[8,9]
+	 print("t=\n", t , "\ns=\n", s, "\n\n");
+	 t%1%0 = m;
+	 print("t=\n", t , "\ns=\n", s, "\n\n");
+	 t = s%0%0%0;
+	 print("t=\n", t , "\ns=\n", s, "\n\n");
+}
+

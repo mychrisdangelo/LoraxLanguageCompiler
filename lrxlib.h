@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 #include <stdint.h>
 #define false 0
 #define true !false
@@ -61,6 +62,8 @@ typedef struct tree{
     bool leaf;
     /* isNull == has been declared but not defined */ 
     bool is_null;
+    /* reference count (smart pointer) */
+    int *count;
 } tree;
 
 int lrx_print_bool(bool b) {
@@ -136,18 +139,26 @@ void lrx_destroy_tree(struct tree *t)
         return;
     }
 
-    if(t->leaf){
+    if(*(t->count) <= 1){
+
+        if(t->leaf){
+            free(t->children);
+            free(t->count);
+            free(t);
+            return;
+        }
+
+        int i;
+        for(i = 0; i < t->degree; ++i){
+            lrx_destroy_tree(t->children[i]);
+        }
         free(t->children);
+        free(t->count);
         free(t);
-        return;
     }
-
-    int i;
-    for(i = 0; i < t->degree; ++i)
-        lrx_destroy_tree(t->children[i]);
-
-    free(t->children);
-    free(t);
+    else{
+        *(t->count) -= 1;
+    }
 }
 
 struct tree *lrx_declare_tree(Atom type, int deg) {
@@ -155,10 +166,14 @@ struct tree *lrx_declare_tree(Atom type, int deg) {
     assert(deg > 0);
 
     struct tree *t = (struct tree *)malloc(sizeof(struct tree));
+    int *cnt = (int *)malloc(sizeof(int));
+
     assert(t != NULL);
+    assert(cnt != NULL);
+    *cnt = 1;
     t->degree = deg;
     t->datatype = type;
-
+    t->count = cnt;
 
     switch(type){
         case _BOOL_:
@@ -185,6 +200,7 @@ struct tree *lrx_declare_tree(Atom type, int deg) {
     t->is_null = true;
     t->leaf = true;
     t->children = (struct tree **)malloc(sizeof(struct tree *) * t->degree);
+    memset((t->children), 0, sizeof(struct tree*) * t->degree);
     t->parent = NULL;
     return t;
 }
@@ -292,18 +308,21 @@ struct tree **lrx_access_child (struct tree **t, const int child)
 /* t1 = t2. Lhs is the tree pointer we need without dereference */
 struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs)
 {
-// 	if(*rhs == NULL)
 
-
-    assert((*lhs)->degree == (*rhs)->degree);
-
-    if(lhs == rhs){
+    if(lhs == rhs)
         return lhs;
-    }
-
-    //lrx_destroy_tree(*lhs);
+    if(lhs && rhs && *rhs && *lhs)
+        assert((*lhs)->degree == (*rhs)->degree);
     
+    // if(!rhs || !*rhs)
+    //     fprintf(stderr, "rhs is null\n");
+    // if(!lhs || !*lhs)
+    //     fprintf(stderr, "lhs is null\n");
+
+    lrx_destroy_tree(*lhs);
     *lhs = *rhs;
+    if(*rhs)
+        *((*rhs)->count) += 1;
 /*
 
     lhs->root = rhs->root;
@@ -535,7 +554,10 @@ bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison
 }
 
 
-
+int lrx_get_degree(struct tree *t)
+{
+    return t->degree;
+}
 
 
 /*
