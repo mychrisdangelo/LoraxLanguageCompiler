@@ -147,7 +147,10 @@ let rec c_of_expr = function
       (match (t1, t2) with
        	  (Lrx_Tree(_), Lrx_Tree(_)) ->
           if u1 = 2 || u2 = 2 then
-             c_of_var_name v1 ^ " = (" ^ c_of_tree_null v2 ^ " == " ^ c_of_tree_null v3 ^ ")"
+            (match op with 
+              Equal -> c_of_var_name v1 ^ " = (" ^ c_of_tree_null v2 ^ " == " ^ c_of_tree_null v3 ^ ")"
+             | Neq -> c_of_var_name v1 ^ " = (" ^ c_of_tree_null v2 ^ " != " ^ c_of_tree_null v3 ^ ")"
+             | _ -> raise (Failure "Impossible null/tree binop null/tree") )
       	  else (match op with
       	     (Less | Leq | Greater | Geq | Equal | Neq ) -> 
       	     c_of_var_name v1 ^ " = lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"

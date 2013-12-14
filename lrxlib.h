@@ -135,12 +135,13 @@ int lrx_print_tree(struct tree *t) {
 
 void lrx_destroy_tree(struct tree *t)
 {
+    /*
     if(t == NULL){
         return;
     }
 
     if(*(t->count) <= 1){
-
+        
         if(t->leaf){
             free(t->children);
             free(t->count);
@@ -152,15 +153,15 @@ void lrx_destroy_tree(struct tree *t)
         for(i = 0; i < t->degree; ++i){
             lrx_destroy_tree(t->children[i]);
         }
-        /*
+        
         free(t->children);
         free(t->count);
         free(t);
-        */
+        
     }
     else{
         *(t->count) -= 1;
-    }
+    }*/
 }
 
 struct tree *lrx_declare_tree(Atom type, int deg) {
@@ -168,10 +169,10 @@ struct tree *lrx_declare_tree(Atom type, int deg) {
     assert(deg >= 0);
 
     struct tree *t = (struct tree *)malloc(sizeof(struct tree));
+    assert(t);
     int *cnt = (int *)malloc(sizeof(int));
+    assert(cnt);
 
-    assert(t != NULL);
-    assert(cnt != NULL);
     *cnt = 1;
     t->degree = deg;
     t->datatype = type;
@@ -202,6 +203,7 @@ struct tree *lrx_declare_tree(Atom type, int deg) {
     t->is_null = true;
     t->leaf = true;
     t->children = (struct tree **)malloc(sizeof(struct tree *) * t->degree);
+    assert(t->children);
     memset((t->children), 0, sizeof(struct tree*) * t->degree);
     t->parent = NULL;
     return t;
@@ -322,6 +324,7 @@ struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs)
                 children[i] = NULL;
             }
             (*rhs)->children = (struct tree **)malloc(sizeof(struct tree *) * lhs_degree);
+            assert((*rhs)->children);
             memset(((*rhs)->children), 0, sizeof(struct tree*) * lhs_degree);
         }
         assert((*lhs)->degree == (*rhs)->degree);
