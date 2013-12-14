@@ -194,7 +194,7 @@ let c_of_stmt (v:ir_stmt) =
      | Ir_Child_Array(d, s) -> c_of_var_decl d ^ "[" ^ string_of_int s ^ "]; /* Ir_Child_Array */\n" ^
        "/* Filling with NULL preemptively */\n" ^ c_of_leaf (c_of_var_name d) (s - 1)
 	 | Ir_Internal(a, c, t) -> c_of_var_name a ^ "[" ^ string_of_int c ^ "] = " ^ c_of_var_name t ^ "; /* Ir_Internal */"
-	 | Ir_Ptr(p, r) -> c_of_ptr_decl p ^ " = " ^ c_of_ref r ^ "; /* Ir_Ptr */"
+	 | Ir_Ptr(p, r) -> c_of_var_name p ^ " = " ^ c_of_ref r ^ "; /* Ir_Ptr */"
    | Ir_At_Ptr(p) -> c_of_ptr_decl p ^ " = NULL; /* Ir_At_Ptr */" 
   	 | Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"
    	 | Ir_Expr(e) -> c_of_expr e ^ ";\n"

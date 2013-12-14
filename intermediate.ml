@@ -84,6 +84,7 @@ type ir_program = {
 let is_decl (s: ir_stmt) =
   match s with
      Ir_Decl(_) -> true
+   | Ir_At_Ptr(_) -> true
    | _ -> false
 
 let is_not_decl (s:ir_stmt) =
@@ -119,7 +120,8 @@ let gen_tmp_child child tree_type tree_degree =
       | Lrx_Tree(t) -> raise(Failure "Tree type as tree data item. (Error 3)")) in 
     let tmp_leaf_children = (gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) 0) in  
     let tmp_leaf_root = (gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) 0) in  
-    ([Ir_Ptr(tmp_root_data, child); 
+    ([Ir_At_Ptr(tmp_root_data);
+      Ir_Ptr(tmp_root_data, child); 
       Ir_Leaf(tmp_leaf_children, tree_degree); 
       Ir_Decl(tmp_leaf_root); 
       Ir_Expr(Ir_Tree_Literal(tmp_leaf_root, tmp_root_data, tmp_leaf_children))], tmp_leaf_root)
@@ -141,7 +143,7 @@ let gen_tmp_tree tree_type tree_degree root children_list tmp_tree =
   let child_array = gen_tmp_var (Lrx_Tree({datatype = d; degree = Int_Literal(tree_degree)})) 0 in  
   let internals = gen_tmp_internals tmp_children tree_type 0 child_array in
   let tmp_root_ptr = gen_tmp_var tree_type 0 in
-  decls @ [Ir_Child_Array(child_array, tree_degree)] @ internals @ [Ir_Ptr(tmp_root_ptr, root)] @ [Ir_Expr(Ir_Tree_Literal(tmp_tree, tmp_root_ptr, child_array))]
+  decls @ [Ir_Child_Array(child_array, tree_degree)] @ internals @ [Ir_At_Ptr(tmp_root_ptr); Ir_Ptr(tmp_root_ptr, root)] @ [Ir_Expr(Ir_Tree_Literal(tmp_tree, tmp_root_ptr, child_array))]
 
 let rec char_list_to_c_tree cl =
     match cl with
