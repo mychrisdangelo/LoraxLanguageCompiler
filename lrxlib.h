@@ -459,6 +459,7 @@ struct tree *lrx_get_root(struct tree *t)
 }
 
 struct tree **lrx_get_parent( struct tree **t ) {
+    assert(t && *t);
 	return &((*t)->parent);
 }
 
