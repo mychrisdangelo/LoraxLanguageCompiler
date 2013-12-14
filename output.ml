@@ -174,8 +174,13 @@ let rec c_of_expr = function
   	| Ir_Tree_Literal(v, root, children) -> "lrx_define_tree(" ^ c_of_var_name v ^ ", " ^
   	 	c_of_var_name root ^ ", " ^ c_of_var_name children ^ ")"
 	| Ir_Call(v1, v2, vl) ->
-		if (fst_of_four v2) = "print" then (c_of_print_call vl)
-		else c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )"
+    let func_name = fst_of_four v2 in
+    (match func_name with
+        "print" -> (c_of_print_call vl)
+      | "degree" -> c_of_var_name v1 ^ " = " ^ "lrx_get_degree(" ^ c_of_func_decl_args vl ^ ")"
+      | _ -> c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )")
+(* 		if (fst_of_four v2) = "print" then (c_of_print_call vl)
+		else c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )" *)
 
 let c_of_ref (r:ir_var_decl) =
 	let (n ,t, s,u) = r in 
