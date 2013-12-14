@@ -17,55 +17,81 @@ let c_of_var_type = function
 	| Lrx_Atom(Lrx_Char) -> "char"
  	| Lrx_Tree(t) -> "tree *"
 
-let c_of_var_def (v:scope_var_decl) = 
-	let (_ ,t, _) = v in match t with
+let c_of_var_def (v:ir_var_decl) = 
+	let (_ ,t, _,u) = v in match t with
 	  Lrx_Atom(Lrx_Int) -> "0"
 	| Lrx_Atom(Lrx_Float) -> "0.0"
 	| Lrx_Atom(Lrx_Bool) -> "false"
 	| Lrx_Atom(Lrx_Char) -> "\'\\0\'"
-	| Lrx_Tree(l) -> "lrx_declare_tree(_" ^ String.uppercase (string_of_atom_type l.datatype) ^ "_, " ^ string_of_expr l.degree ^ ")"
+	| Lrx_Tree(l) -> 
+  if u = 1 then "NULL" else
+  "lrx_declare_tree(_" ^ String.uppercase (string_of_atom_type l.datatype) ^ "_, " ^ string_of_expr l.degree ^ ")"
 
-let c_of_var_decl (v:scope_var_decl) =
-	let (n,t,s) = v in 
-	 c_of_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
+let c_of_var_decl (v:ir_var_decl) =
+	let (n,t,s,u) = v in 
+  let pointer_galaga = if u = 1 then "**" else "" in
+	 c_of_var_type t ^ pointer_galaga ^ " " ^ n ^ "_" ^ string_of_int s 
 
- let rec c_of_var_umbilical_decl (v:scope_var_decl) = 
-	let (n,t,s) = v in 
+let c_of_ir_var_decl (v:scope_var_decl) =
+  let (n,t,s) = v in 
+   c_of_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
+   
+
+ let rec c_of_var_umbilical_decl (v:ir_var_decl) = 
+	let (n,t,s,u) = v in 
 	 c_of_var_type t ^ " **" ^ n ^ "_" ^ string_of_int s
 
-let c_of_ptr_decl (v:scope_var_decl) =
-	let (n,t,s) = v in 
+let c_of_ptr_decl (v:ir_var_decl) =
+	let (n,t,s,u) = v in 
 	 c_of_var_type t ^ " *" ^ n ^ "_" ^ string_of_int s
+
+let c_of_ir_var_decl_list = function 
+  [] -> "" 
+  | vars -> (String.concat (";\n") (List.map c_of_ir_var_decl vars)) ^ ";\n\n"
 
 let c_of_var_decl_list = function
 	  [] -> "" 
 	| vars -> (String.concat (";\n") (List.map c_of_var_decl vars)) ^ ";\n\n"
 	
-let c_of_func_actual (v:scope_var_decl) =
-	let(n,t,s) = v in 
+let c_of_func_actual (v:ir_var_decl) =
+	let(n,t,s,u) = v in 
 	n ^ "_" ^ string_of_int s	
 
 let c_of_func_decl_args = function
 	  [] -> ""
 	| args -> String.concat (", ") (List.map c_of_func_actual args)
 
+let c_of_ir_var_decl (v:scope_var_decl) =
+  let (n,t,s) = v in 
+   c_of_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
+
 let c_of_func_def_formals = function
 	  [] -> ""
-	| args -> String.concat (", ") (List.map c_of_var_decl args)
+	| args -> String.concat (", ") (List.map c_of_ir_var_decl args)
 
-let c_of_var_name (v:scope_var_decl) = 
-	let (n,_,s) = v in 
-	 n ^ "_" ^ string_of_int s
+let c_of_var_arg (v:ir_var_decl) = 
+	let (n,t,s, u) = v in 
+  let prefix =
+  (match t with 
+    Lrx_Tree(_)-> if u = 1 then "*" else "&" 
+    | Lrx_Atom(_) -> if u = 1 then "*" else "") in 
+	prefix ^ n ^ "_" ^ string_of_int s
 
-let c_of_print_var (arg :scope_var_decl) =
-	let (n ,t, s) = arg in 
-	let name = n ^ "_" ^ string_of_int s in
+let c_of_var_name (v:ir_var_decl) = 
+  let (n,_,s, _) = v in 
+  n ^ "_" ^ string_of_int s
+
+let c_of_print_var (arg :ir_var_decl) =
+	let (n ,t, s, u) = arg in 
 	(match t with
-		Lrx_Atom(Lrx_Int) -> "fprintf(stdout, \"%d\", " ^ name ^ ")"  
-	  | Lrx_Atom(Lrx_Float) -> "fprintf(stdout, \"%f\", " ^ name ^ ")"
-	  | Lrx_Atom(Lrx_Char) -> "fprintf(stdout, \"%c\", " ^ name ^ ")"
-	  | Lrx_Atom(Lrx_Bool) -> "lrx_print_bool(" ^ name ^ ")"
-	  | Lrx_Tree(l) -> "lrx_print_tree(" ^ name ^ ")")
+		Lrx_Atom(Lrx_Int) -> "fprintf(stdout, \"%d\", " ^ c_of_var_arg arg ^ ")"  
+	  | Lrx_Atom(Lrx_Float) -> "fprintf(stdout, \"%f\", " ^ c_of_var_arg arg ^ ")"
+	  | Lrx_Atom(Lrx_Char) -> "fprintf(stdout, \"%c\", " ^ c_of_var_arg arg ^ ")"
+	  | Lrx_Atom(Lrx_Bool) -> "lrx_print_bool(" ^ c_of_var_arg arg ^ ")"
+	  | Lrx_Tree(l) -> 
+      let prefix = if u = 1 then "**" else "" in
+      let name = n ^ "_" ^ string_of_int s in
+      "lrx_print_tree(" ^ prefix ^ name ^ ")")
 
 let c_of_print_call = function
 	  [] -> ""
@@ -96,17 +122,17 @@ let rec c_of_expr = function
   	| Ir_Unop(v1, op, v2) -> 
   	  (match op with
   	  	 (Neg | Not) -> c_of_var_name v1 ^ " = " ^ string_of_unop op ^ c_of_var_name v2
-  	   | At -> let (_,t,_) = v1 in
+  	   | At -> let (_,t,_, u) = v1 in
   	     (match t with
-  	         Lrx_Atom(Lrx_Int) -> c_of_var_name v1 ^ " = lrx_access_data_at_int(" ^ c_of_var_name v2 ^ ")"
-  	       | Lrx_Atom(Lrx_Float) -> c_of_var_name v1 ^ " = lrx_access_data_at_float(" ^ c_of_var_name v2 ^ ")"
-  	       | Lrx_Atom(Lrx_Char) -> c_of_var_name v1 ^ " = lrx_access_data_at_char(" ^ c_of_var_name v2 ^ ")"
-  	       | Lrx_Atom(Lrx_Bool) -> c_of_var_name v1 ^ " = lrx_access_data_at_bool(" ^ c_of_var_name v2 ^ ")"
+  	         Lrx_Atom(Lrx_Int) -> c_of_var_name v1 ^ " = lrx_access_data_at_int(" ^ c_of_var_arg v2 ^ ")"
+  	       | Lrx_Atom(Lrx_Float) -> c_of_var_name v1 ^ " = lrx_access_data_at_float(" ^ c_of_var_arg v2 ^ ")"
+  	       | Lrx_Atom(Lrx_Char) -> c_of_var_name v1 ^ " = lrx_access_data_at_char(" ^ c_of_var_arg v2 ^ ")"
+  	       | Lrx_Atom(Lrx_Bool) -> c_of_var_name v1 ^ " = lrx_access_data_at_bool(" ^ c_of_var_arg v2 ^ ")"
   	       | _ -> raise (Failure "Return type of access data member cannot be tree."))
   	   | Pop -> raise (Failure "TEMP unop not implemented for tree pop. see intermediate first"))
   	| Ir_Binop(v1, op, v2, v3) -> 
-  	  let (_,t1,_) = v2 in
-      let (_,t2,_) = v3 in
+  	  let (_,t1,_, u1) = v2 in
+      let (_,t2,_, u2) = v3 in
       (match (t1, t2) with
        	  (Lrx_Tree(_), Lrx_Tree(_)) ->
       	  (match op with
@@ -115,11 +141,11 @@ let rec c_of_expr = function
        	   | Add -> c_of_var_name v1 ^ " = " ^ "lrx_add_trees(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
       	   | _ -> raise (Failure "Operation not available between two tree types."))
       	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
-      	| (Lrx_Tree(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = lrx_access_child( &" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ")"
+      	| (Lrx_Tree(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = lrx_access_child(" ^ c_of_var_arg v2 ^ ", " ^ c_of_var_name v3 ^ ")"
       	| _ -> raise (Failure "TEMP need to think what case this is: tree == NULL"))
-    | Ir_Access_Umbilical(v1, op, v2, v3) -> 
-  	  let (_,t1,_) = v2 in
-      let (_,t2,_) = v3 in
+   (* | Ir_Access_Umbilical(v1, op, v2, v3) -> 
+  	  let (_,t1,_,u1) = v2 in
+      let (_,t2,_,u2) = v3 in
       (match (t1, t2) with
        	  (Lrx_Tree(_), Lrx_Tree(_)) ->
       	  (match op with
@@ -129,30 +155,30 @@ let rec c_of_expr = function
       	    | _ -> raise (Failure "Operation not available between two tree types."))
       	| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2 ^ " " ^ string_of_binop op ^ " " ^ c_of_var_name v3
       	| (Lrx_Tree(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = lrx_access_child( *" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ") /* Ir_Access_Umbilical */" 
-      	| _ -> raise (Failure "TEMP need to think what case this is: tree == NULL"))
+      	| _ -> raise (Failure "TEMP need to think what case this is: tree == NULL"))*)
   	| Ir_Id(v1, v2) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
   	| Ir_Assign(v1, v2) -> 
-  	  let (_,t1,_) = v1 in 
-      let (_,t2,_) = v2 in 
+  	  let (_,t1,_,u1) = v1 in 
+      let (_,t2,_,u2) = v2 in 
   	  (match (t1, t2) with 
-  		  (Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(&" ^ c_of_var_name v1 ^ ", &" ^ c_of_var_name v2 ^ ")"
-  		| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
+  		  (Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(" ^ c_of_var_arg v1 ^ ", " ^ c_of_var_arg v2 ^ ")"
+  		| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_arg v1 ^ " = " ^ c_of_var_arg v2
   		| _ -> raise (Failure "Tree cannot be assigned to atom type."))
-  	| Ir_Assign_Umbilical(v1, v2) -> 
-  	  let (_,t1,_) = v1 in 
-      let (_,t2,_) = v2 in 
+  	(*| Ir_Assign_Umbilical(v1, v2) -> 
+  	  let (_,t1,_,u1) = v1 in 
+      let (_,t2,_,u2) = v2 in 
   	  (match (t1, t2) with 
-  		  (Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(*" ^ c_of_var_name v1 ^ ", &" ^ c_of_var_name v2 ^ ") /* Ir_Assign_Umbilical */"
+  		  (Lrx_Tree(_), Lrx_Tree(_)) -> "lrx_assign_tree_direct(" ^ c_of_var_arg v1 ^ ", " ^ c_of_var_arg v2 ^ ") /* Ir_Assign_Umbilical */"
   		| (Lrx_Atom(_), Lrx_Atom(_)) -> c_of_var_name v1 ^ " = " ^ c_of_var_name v2
-  		| _ -> raise (Failure "Tree cannot be assigned to atom type."))
+  		| _ -> raise (Failure "Tree cannot be assigned to atom type."))*)
   	| Ir_Tree_Literal(v, root, children) -> "lrx_define_tree(" ^ c_of_var_name v ^ ", " ^
   	 	c_of_var_name root ^ ", " ^ c_of_var_name children ^ ")"
 	| Ir_Call(v1, v2, vl) ->
 		if (fst_of_four v2) = "print" then (c_of_print_call vl)
 		else c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )"
 
-let c_of_ref (r:scope_var_decl) =
-	let (n ,t, s) = r in 
+let c_of_ref (r:ir_var_decl) =
+	let (n ,t, s,u) = r in 
 	"&" ^ n ^ "_" ^ string_of_int s
 
 let rec c_of_leaf (n:string) (d:int) = 
@@ -169,6 +195,7 @@ let c_of_stmt (v:ir_stmt) =
        "/* Filling with NULL preemptively */\n" ^ c_of_leaf (c_of_var_name d) (s - 1)
 	 | Ir_Internal(a, c, t) -> c_of_var_name a ^ "[" ^ string_of_int c ^ "] = " ^ c_of_var_name t ^ "; /* Ir_Internal */"
 	 | Ir_Ptr(p, r) -> c_of_ptr_decl p ^ " = " ^ c_of_ref r ^ "; /* Ir_Ptr */"
+   | Ir_At_Ptr(p) -> c_of_ptr_decl p ^ " = NULL; /* Ir_At_Ptr */" 
   	 | Ir_Ret(v) -> "return " ^ c_of_var_name v ^ ";"
    	 | Ir_Expr(e) -> c_of_expr e ^ ";\n"
    	 | Ir_If(v, s) -> "if(" ^ c_of_var_name v ^ ") goto " ^ s ^ "" ^ ";"
@@ -203,6 +230,6 @@ let c_of_func_decl_list = function
 
 let c_of_inter_pgrm (p:ir_program) =
 	"#include \"lrxlib.h\"\n" ^ 
-	c_of_var_decl_list p.ir_globals ^
+	c_of_ir_var_decl_list p.ir_globals ^
     c_of_func_decl_list p.ir_headers ^
     c_of_func_list p.ir_bodies
