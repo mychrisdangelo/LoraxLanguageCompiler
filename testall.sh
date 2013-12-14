@@ -49,9 +49,11 @@ Compare() {
 # Report the command, run it, and report any errors
 Run() {
     echo $* 1>&2
-    eval $* || {
-	SignalError "$1 failed on $*"
-	return 1
+    eval $* || { 
+        if [[ $5 != fail* ]]; then
+	       SignalError "$1 failed on $*"
+	       return 1
+        fi
     }
 }
 
@@ -136,6 +138,45 @@ Check() {
 
     generatedfiles="$generatedfiles ${basename}.c.out" &&
     Run "$lorax" "-c" $1 ">" ${basename}.c.out &&
+    Compare ${basename}.c.out ${reffile}.out ${basename}.c.diff
+
+    # Report the status and clean up the generated files
+
+    if [ $error -eq 0 ] ; then
+    if [ $keep -eq 0 ] ; then
+        rm -f $generatedfiles
+    fi
+    echo "OK"
+    echo "###### SUCCESS" 1>&2
+    else
+    echo "###### FAILED" 1>&2
+    globalerror=$error
+    fi
+}
+CheckFail() {
+    error=0
+    basename=`echo $1 | sed 's/.*\\///
+                             s/.lrx//'`
+    reffile=`echo $1 | sed 's/.lrx$//'`
+    basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
+
+    echo -n "$basename..."
+
+    echo 1>&2
+    echo "###### Testing $basename" 1>&2
+
+    generatedfiles=""
+
+    # old from microc - interpreter
+    # generatedfiles="$generatedfiles ${basename}.i.out" &&
+    # Run "$lorax" "-i" "<" $1 ">" ${basename}.i.out &&
+    # Compare ${basename}.i.out ${reffile}.out ${basename}.i.diff
+
+    generatedfiles="$generatedfiles ${basename}.c.out" &&
+    { 
+        Run "$lorax" "-b" $1 "2>" ${basename}.c.out || 
+        Run "$binaryoutput" ">" ${basename}.b.out 
+    } &&
     Compare ${basename}.c.out ${reffile}.out ${basename}.c.diff
 
     # Report the status and clean up the generated files
