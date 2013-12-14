@@ -1,0 +1,4 @@
+int main()
+{
+	print("should print 2 = ", 7 mod 5, "\n");
+}
