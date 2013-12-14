@@ -152,9 +152,11 @@ void lrx_destroy_tree(struct tree *t)
         for(i = 0; i < t->degree; ++i){
             lrx_destroy_tree(t->children[i]);
         }
+        /*
         free(t->children);
         free(t->count);
         free(t);
+        */
     }
     else{
         *(t->count) -= 1;
