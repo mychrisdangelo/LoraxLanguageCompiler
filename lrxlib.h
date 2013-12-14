@@ -234,60 +234,62 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
 }
 
 /* data = t@; */
-bool lrx_access_data_at_bool (struct tree *t)
+bool *lrx_access_data_at_bool (struct tree **t)
 {
-    assert(t != NULL);
-    return t->root.bool_root;
+    assert(*t != NULL);
+    return &(*t)->root.bool_root;
 }
 
 
-int16_t lrx_access_data_at_int (struct tree *t)
+int16_t *lrx_access_data_at_int (struct tree **t)
 {
-    assert(t != NULL);
-    return t->root.int_root;
+    assert(*t != NULL);
+    return &((*t)->root.int_root);
 }
 
-float lrx_access_data_at_float (struct tree *t)
+float *lrx_access_data_at_float (struct tree **t)
 {
-    assert(t != NULL);
-    return t->root.float_root;
+    assert(*t != NULL);
+    return &(*t)->root.float_root;
 }
-char lrx_access_data_at_char (struct tree *t)
+char *lrx_access_data_at_char (struct tree **t)
 {
-    assert(t != NULL);
-    return  t->root.char_root;
+    assert(*t != NULL);
+    return &(*t)->root.char_root;
 }
 
 /* t@ = data */
-bool lrx_assign_data_at_bool (struct tree *t, const bool data)
+bool lrx_assign_data_at_bool (struct tree **t, const bool data)
 {
-    assert(t != NULL);
-    return t->root.bool_root = data;
+    assert(*t != NULL);
+    return (*t)->root.bool_root = data;
 }
-int lrx_assign_data_at_int (struct tree *t, const int16_t data)
+int lrx_assign_data_at_int (struct tree **t, const int16_t data)
 {
-    assert(t != NULL);
-    return t->root.int_root = data;
+    assert(*t != NULL);
+    return (*t)->root.int_root = data;
 }
-float lrx_assign_data_at_float (struct tree *t, const float data)
+float lrx_assign_data_at_float (struct tree **t, const float data)
 {
     assert(t != NULL);
-    return t->root.float_root = data;
+    return (*t)->root.float_root = data;
 }
-char lrx_assign_data_at_char (struct tree *t, const char data)
+char lrx_assign_data_at_char (struct tree **t, const char data)
 {
     assert(t != NULL);
-    return t->root.char_root = data;
+    return (*t)->root.char_root = data;
 }
 
 /* t1 = t2%0 */
 struct tree ***lrx_access_child (struct tree **t, const int child)
 {
+   
     assert(*t);
     assert(child < (*t)->degree);
     /* ptr to the parent's ptr to it's children */
     struct tree **children_ptr = ((*t)->children + child);
     struct tree ***p = &children_ptr;
+
     return p;
 }
 
@@ -296,15 +298,17 @@ struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs)
 {
 // 	if(*rhs == NULL)
 
+
     assert((*lhs)->degree == (*rhs)->degree);
-    if(*lhs == *rhs)
+
+    if(lhs == rhs){
         return lhs;
+    }
 
     //lrx_destroy_tree(*lhs);
-    *lhs = *rhs;
     
+    *lhs = *rhs;
 /*
-
 
     lhs->root = rhs->root;
     lhs->leaf = rhs->leaf;
