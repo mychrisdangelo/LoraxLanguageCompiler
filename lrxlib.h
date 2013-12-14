@@ -450,12 +450,12 @@ struct tree *lrx_pop_tree(struct tree *t)
 }
 
 
-struct tree *lrx_get_root(struct tree *t)
+struct tree **lrx_get_root(struct tree **t)
 {
-	if( t->parent == NULL ) {
+	if( (*t)->parent == NULL ) {
 		return t;
 	}
-	return lrx_get_root( t->parent );
+	return lrx_get_root( &(*t)->parent );
 }
 
 struct tree **lrx_get_parent( struct tree **t ) {
