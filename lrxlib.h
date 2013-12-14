@@ -292,14 +292,15 @@ struct tree **lrx_access_child (struct tree **t, const int child)
 /* t1 = t2. Lhs is the tree pointer we need without dereference */
 struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs)
 {
-// 	if(*rhs == NULL)
 
-
-    assert((*lhs)->degree == (*rhs)->degree);
-
-    if(lhs == rhs){
+    if(lhs == rhs)
         return lhs;
-    }
+    if(lhs && rhs && *rhs && *lhs)
+        assert((*lhs)->degree == (*rhs)->degree);
+    // if(!rhs || !*rhs)
+    //     fprintf(stderr, "rhs is null\n");
+    // if(!lhs || !*lhs)
+    //     fprintf(stderr, "lhs is null\n");
 
     //lrx_destroy_tree(*lhs);
     
