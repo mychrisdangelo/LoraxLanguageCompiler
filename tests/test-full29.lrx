@@ -1,4 +1,3 @@
-
 int main()
 {
 	tree <int>t(2);
