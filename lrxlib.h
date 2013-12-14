@@ -42,7 +42,7 @@ typedef int bool;
 
 typedef union Root {
     char char_root;
-    int16_t int_root;
+    int int_root;
     bool bool_root;
     float float_root;
 } Root;
@@ -217,7 +217,7 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
             break;
 
         case _INT_:
-            t->root.int_root = *((int16_t *)root_data);
+            t->root.int_root = *((int *)root_data);
             break;
 
         case _FLOAT_:
@@ -259,7 +259,7 @@ bool *lrx_access_data_at_bool (struct tree **t)
 }
 
 
-int16_t *lrx_access_data_at_int (struct tree **t)
+int *lrx_access_data_at_int (struct tree **t)
 {
     assert(*t != NULL);
     return &((*t)->root.int_root);
@@ -282,7 +282,7 @@ bool lrx_assign_data_at_bool (struct tree **t, const bool data)
     assert(*t != NULL);
     return (*t)->root.bool_root = data;
 }
-int lrx_assign_data_at_int (struct tree **t, const int16_t data)
+int lrx_assign_data_at_int (struct tree **t, const int data)
 {
     assert(*t != NULL);
     return (*t)->root.int_root = data;
