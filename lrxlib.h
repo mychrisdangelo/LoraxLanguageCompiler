@@ -152,9 +152,11 @@ void lrx_destroy_tree(struct tree *t)
         for(i = 0; i < t->degree; ++i){
             lrx_destroy_tree(t->children[i]);
         }
+        /*
         free(t->children);
         free(t->count);
         free(t);
+        */
     }
     else{
         *(t->count) -= 1;
@@ -456,8 +458,9 @@ struct tree *lrx_get_root(struct tree *t)
 	return lrx_get_root( t->parent );
 }
 
-struct tree *lrx_get_parent( struct tree *t ) {
-	return t->parent;
+struct tree **lrx_get_parent( struct tree **t ) {
+    assert(t && *t);
+	return &((*t)->parent);
 }
 
 int _lrx_count_nodes( struct tree *t ) {
