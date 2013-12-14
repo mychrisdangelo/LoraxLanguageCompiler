@@ -1,4 +1,3 @@
-
 int main()
 {
 	tree <int> t(2);
@@ -35,5 +34,4 @@ int main()
 		t%0%i@ = i;
 	}
 	print(t, '\n', s);
-
 }
