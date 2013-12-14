@@ -1,0 +1,8 @@
+/* 
+Tests order of operations
+Modified from Stephen Edward's MicroC
+*/
+int main()
+{
+  print(1 + 2 * 3 + 4);
+}
