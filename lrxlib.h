@@ -456,8 +456,8 @@ struct tree *lrx_get_root(struct tree *t)
 	return lrx_get_root( t->parent );
 }
 
-struct tree *lrx_get_parent( struct tree *t ) {
-	return t->parent;
+struct tree **lrx_get_parent( struct tree **t ) {
+	return &((*t)->parent);
 }
 
 int _lrx_count_nodes( struct tree *t ) {

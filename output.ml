@@ -178,6 +178,8 @@ let rec c_of_expr = function
     (match func_name with
         "print" -> (c_of_print_call vl)
       | "degree" -> c_of_var_name v1 ^ " = " ^ "lrx_get_degree(" ^ c_of_func_decl_args vl ^ ")"
+      | "parent" -> c_of_var_name v1 ^ " = lrx_get_parent(" ^ c_of_var_arg (List.hd vl) ^ ")"
+      | "root" -> raise (Failure "TEMP parent function not implemented")
       | _ -> c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )")
 (* 		if (fst_of_four v2) = "print" then (c_of_print_call vl)
 		else c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )" *)

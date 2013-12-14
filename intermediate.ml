@@ -244,8 +244,12 @@ let rec gen_ir_expr (e:c_expr) =
      ([Ir_Decl(tmp); Ir_Tree_Destroy(tmp)] @ sl @ s @ tmp_tree, tmp)
    | C_Call(fd, el) ->
      let (n, rt, args, s) = fd in 
-     let tmp = gen_tmp_var rt 0 in
      let ir_el = List.map gen_ir_expr el in 
+     let tmp = 
+     (match n with 
+         ("parent" | "root") -> gen_tmp_var rt 1
+       | _ -> gen_tmp_var rt 0) 
+     in
      let (sl, rl) = (List.fold_left (fun (sl_ir, rl_ir) (s_ir, r_ir) -> (sl_ir @ s_ir, rl_ir@[r_ir])) ([],[]) ir_el) in 
      (Ir_Decl(tmp) :: sl @ [Ir_Expr(Ir_Call(tmp, fd, rl))], tmp)
    | C_String_Literal(s) -> let result = (char_list_to_c_tree (string_to_char_list s)) in
