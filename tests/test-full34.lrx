@@ -1,0 +1,17 @@
+/* Tests variable assignment */
+int main()
+{
+  int a;
+  bool b;
+  float c;
+  char d;
+  a = 33;
+  b = true;
+  c = 2.483;
+  d = 'z';
+  print(a);
+  print(b);
+  print(c);
+  print(d);
+
+}

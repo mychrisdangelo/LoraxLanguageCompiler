@@ -1,0 +1,14 @@
+/* Tests functions 
+Modified from Stephen Edward's MicroC
+*/
+int add(int a, int b)
+{
+  return a + b;
+}
+
+int main()
+{
+  int a;
+  a = add(39, 3);
+  print(a);
+}

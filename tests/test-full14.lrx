@@ -1,0 +1,8 @@
+/* 
+Tests arithmetic
+Modified from Stephen Edward's MicroC
+*/
+int main()
+{
+  print(39 + 3);
+}

@@ -1,0 +1,31 @@
+/* Tests float operations
+    Modified from Stephen Edwards' MicroC
+*/
+int main()
+{
+  print(1.0 + 2.0);
+  print(1.0 - 2.0);
+  print(1.0 * 2.0);
+  print(135.0 / 2.0);
+  print(99.0);
+  print(1.0 == 2.0);
+  print(1.0 == 2.0);
+  print(1.0 == 1.0);
+  print(99.0);
+  print(1.0 != 2.0);
+  print(1.0 != 1.0);
+  print(99.0);
+  print(1.0 < 2.0);
+  print(2.0 < 1.0);
+  print(99.0);
+  print(1.0 <= 2.0);
+  print(1.0 <= 1.0);
+  print(2.0 <= 1.0);
+  print(99.0);
+  print(1.0 > 2.0);
+  print(2.0 > 1.0);
+  print(99.0);
+  print(1.0 >= 2.0);
+  print(1.0 >= 1.0);
+  print(2.0 >= 1.0);
+}

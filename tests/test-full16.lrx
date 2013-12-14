@@ -1,0 +1,13 @@
+/* 
+Test left-to-right evaluation of expressions 
+Modified from Stephen Edward's MicroC
+*/
+
+int a; /* Global variable */
+
+int inca() { a = a + 1; return a; }  /* Increment a; return its new value */
+
+int main() {
+  a = 42;    /* Initialize a */
+  print(inca() + a);
+}
