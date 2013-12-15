@@ -193,7 +193,7 @@ let rec gen_ir_expr (e:c_expr) =
    | C_Unop(v, e, o) ->
      let (s, r) = gen_ir_expr e in
      (match o with
-         Pop -> raise (Failure ("TEMP unop not implemented for tree pop. Work will need to be done to alloc a new kind of tmp"))
+         Pop -> raise (Failure "TEMPORARY: Pop not implemented.")
        | At -> let tmp = gen_tmp_var v 1 in ([Ir_At_Ptr(tmp)] @ s @ [Ir_Expr(Ir_Unop(tmp, o, r))], tmp)
        | _ -> let tmp = gen_tmp_var v 0 in ([Ir_Decl(tmp)] @ s @ [Ir_Expr(Ir_Unop(tmp, o, r))], tmp))
    | C_Binop(v, e1, o, e2) -> 
@@ -283,7 +283,8 @@ and gen_ir_stmt (s: c_stmt) =
       let startlabel = gen_tmp_label () in
       let endlabel = gen_tmp_label () in
       [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb @ [Ir_Label(endlabel)] @ s @ [Ir_If(r, startlabel)]
-    | _ ->raise (Failure ("TEMP gen_ir_stmt"))
+    | C_Continue -> raise (Failure "TEMPORARY: Continue not implemented.")
+    | C_Break -> raise (Failure "TEMPORARY: Break not implemented.")
 
 and gen_ir_stmtlist (slist: c_stmt list) = 
   match slist with
