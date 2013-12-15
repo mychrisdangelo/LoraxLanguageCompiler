@@ -146,123 +146,122 @@ let unop_error (t:var_type) (op:Ast.uop) =
   raise(Failure("operator " ^ (string_of_unop op) ^ " not compatible with expression of type " ^ (string_of_var_type t)))
                  
 let check_unop (c:c_expr) (op:Ast.uop) = 
-        let te = type_of_expr c in
-        match te with
-                Lrx_Atom(Lrx_Int) ->
-                        (match op with
-                              Neg -> C_Unop(Lrx_Atom(Lrx_Int), c, op)
-                              | _ -> unop_error te op)
-                | Lrx_Atom(Lrx_Float) ->
-                         (match op with
-                              Neg -> C_Unop(Lrx_Atom(Lrx_Float), c, op)
-                              | _ -> unop_error te op)
-                | Lrx_Atom(Lrx_Bool) ->
-                         (match op with
-                              Not -> C_Unop(Lrx_Atom(Lrx_Bool), c, op)
-                              | _ -> unop_error te op)
-                | Lrx_Tree(t) ->
-                         (match op with
-                              Pop -> C_Unop(Lrx_Tree(t), c, op)
-                              | At -> C_Unop(Lrx_Atom(t.datatype), c, op)
-                              | _ -> unop_error te op)
-               | _ -> unop_error te op
-        
+  let te = type_of_expr c in
+  match te with
+     Lrx_Atom(Lrx_Int) ->
+     (match op with
+         Neg -> C_Unop(Lrx_Atom(Lrx_Int), c, op)
+       | _ -> unop_error te op)
+   | Lrx_Atom(Lrx_Float) ->
+     (match op with
+         Neg -> C_Unop(Lrx_Atom(Lrx_Float), c, op)
+       | _ -> unop_error te op)
+   | Lrx_Atom(Lrx_Bool) ->
+     (match op with
+         Not -> C_Unop(Lrx_Atom(Lrx_Bool), c, op)
+       | _ -> unop_error te op)
+   | Lrx_Tree(t) ->
+     (match op with
+         Pop -> C_Unop(Lrx_Tree(t), c, op)
+       | At -> C_Unop(Lrx_Atom(t.datatype), c, op)
+       | _ -> unop_error te op)
+   | _ -> unop_error te op  
                       
 (*compares argument list*)
 let rec compare_arglists formals actuals =
 	match (formals,actuals) with
-	([],[]) -> true
-	| (head1::tail1, head2::tail2) -> 
-    (match (head1, head2) with
-    | (Lrx_Tree(t1), Lrx_Tree(t2)) -> (t1.datatype = t2.datatype) && compare_arglists tail1 tail2
-    | _ -> (head1 = head2) && compare_arglists tail1 tail2)
-	| _ -> false
+	   ([],[]) -> true
+	 | (head1::tail1, head2::tail2) -> 
+     (match (head1, head2) with
+         (Lrx_Tree(t1), Lrx_Tree(t2)) -> (t1.datatype = t2.datatype) && compare_arglists tail1 tail2
+       | _ -> (head1 = head2) && compare_arglists tail1 tail2)
+	 | _ -> false
 
 (*checks that a function declaration and calling is proper, such that a function is called with the proper number and type of arguments*)
 and check_fun_call (name:string) (cl:c_expr list) env =
   (*if name == print, match type with symtab print_type*)
 	let decl = Symtab.symtab_find name env in
 	let fdecl = 
-    (match decl with 
+  (match decl with 
       SymTab_FuncDecl(f) -> f
 		| _ -> raise(Failure("symbol " ^ name ^ " is not a function"))) in
-    let (fname,ret_type,formals,id) = fdecl in
-    let actuals = List.map type_of_expr cl in
+      let (fname,ret_type,formals,id) = fdecl in
+      let actuals = List.map type_of_expr cl in
       match name with
-      | "print" -> C_Call((fname, ret_type, actuals, id), cl)
-      | ("degree" | "root" | "parent") -> 
-          if ((List.length actuals) = 1) then
-          let tree_arg = List.hd actuals in 
-          match tree_arg with
-            Lrx_Tree(t) -> 
-            if name = "degree" then C_Call((fname, ret_type, actuals, id), cl)
-            else C_Call((fname, tree_arg, actuals, id), cl)
-          | _ -> raise(Failure("function degree expects tree"))
+         "print" -> C_Call((fname, ret_type, actuals, id), cl)
+       | ("degree" | "root" | "parent") -> 
+         if ((List.length actuals) = 1) then
+           let tree_arg = List.hd actuals in 
+           match tree_arg with
+              Lrx_Tree(t) -> 
+              if name = "degree" then C_Call((fname, ret_type, actuals, id), cl)
+              else C_Call((fname, tree_arg, actuals, id), cl)
+            | _ -> raise(Failure("function degree expects tree"))
         else raise(Failure("function " ^ name ^ " expects a single tree as an argument"))
       | _ ->
-	   if (List.length formals) = (List.length actuals) then
-		    if compare_arglists formals actuals then C_Call(fdecl, cl)
-		    else raise(Failure("function " ^ name ^ "'s argument types don't match its formals"))
-	   else raise(Failure("function " ^ name ^ " expected " ^ (string_of_int (List.length actuals)) ^
-		  " arguments but called with " ^ (string_of_int (List.length formals)))) 
+  	    if (List.length formals) = (List.length actuals) then
+		      if compare_arglists formals actuals then C_Call(fdecl, cl)
+		      else raise(Failure("function " ^ name ^ "'s argument types don't match its formals"))
+	      else raise(Failure("function " ^ name ^ " expected " ^ (string_of_int (List.length actuals)) ^
+		    " arguments but called with " ^ (string_of_int (List.length formals)))) 
 
 let rec check_id_is_valid (id_name:string) env = 
      let decl = Symtab.symtab_find id_name env in
      let id = Symtab.symtab_get_id id_name env in
      (match decl with 
-          SymTab_VarDecl(v) -> (snd_of_three v, fst_of_three v, id)
-        | _ -> raise (Failure("symbol " ^ id_name ^ " is not a variable")))
+         SymTab_VarDecl(v) -> (snd_of_three v, fst_of_three v, id)
+       | _ -> raise (Failure("symbol " ^ id_name ^ " is not a variable")))
 
 and extract_l_value (l:c_expr) env =
     match l with
-    | C_Id(t,s,_) -> s
-    | C_Binop(t,l,o,r) -> extract_l_value l env 
-    | C_Unop(t,l,o) -> extract_l_value l env
-    | _ -> raise (Failure ("Cannot dereference expression without id"))
+       C_Id(t,s,_) -> s
+     | C_Binop(t,l,o,r) -> extract_l_value l env 
+     | C_Unop(t,l,o) -> extract_l_value l env
+     | _ -> raise (Failure ("Cannot dereference expression without id"))
 
 and check_l_value (l:expr) env =
     match l with
-     | Id(s) -> let (t, e, id) = check_id_is_valid s env in
-          C_Id(t,e, id)
+       Id(s) -> let (t, e, id) = check_id_is_valid s env in C_Id(t,e, id)
      | _ -> let ce = (check_expr l env) in
-            match ce with 
-            | C_Binop(_,_,op,_) -> 
-              (if op = Child then
-              (let s = (extract_l_value ce env) in 
-              let (t, e, _) = check_id_is_valid s env in
-              ignore t; ignore e; ce)
-              else raise (Failure ("Left hand side of assignment operator is improper type")))
-            | C_Unop(_,_,op) -> 
-              (if op = At then
+       match ce with 
+          C_Binop(_,_,op,_) -> 
+          (if op = Child then
+            (let s = (extract_l_value ce env) in 
+            let (t, e, _) = check_id_is_valid s env in
+            ignore t; ignore e; ce)
+           else raise (Failure ("Left hand side of assignment operator is improper type")))
+         | C_Unop(_,_,op) -> 
+           (if op = At then
               (let s = (extract_l_value ce env) in 
               ignore (check_id_is_valid s env); ce)
-              else raise (Failure ("Left hand side of assignment operator is improper type")))
-            | _ -> raise (Failure ("Left hand side of assignment operator is improper type"))
+           else raise (Failure ("Left hand side of assignment operator is improper type")))
+         | _ -> raise (Failure ("Left hand side of assignment operator is improper type"))
 
  and check_tree_literal_is_valid (d:int) (t:var_type) (el:expr list) env =
      match el with
-       [] -> []
-       | head :: tail -> 
+        [] -> []
+      | head :: tail -> 
         let checked_expr = check_expr head env in
         match checked_expr with
-              C_Tree(tree_type, tree_degree, child_e, child_el) -> if (tree_degree = d || tree_degree = 0) && tree_type = t then
-                  C_Tree(tree_type, d, child_e, child_el) :: check_tree_literal_is_valid d t tail env
-                else raise (Failure ("Tree type is not consistent: expected <" ^ string_of_var_type t ^ ">(" ^ string_of_int d ^ ") but received <" ^ string_of_var_type tree_type ^ ">(" ^ string_of_int tree_degree ^ ")"))  
-              | _ ->
-              let child_type = (type_of_expr checked_expr) in
-                if child_type = t then
-                checked_expr :: check_tree_literal_is_valid d t tail env
-              else raise (Failure ("Tree literal type is not consistent: expected <" ^ string_of_var_type t ^ "> but received <" ^ string_of_var_type child_type ^">"))
+           C_Tree(tree_type, tree_degree, child_e, child_el) -> 
+           if (tree_degree = d || tree_degree = 0) && tree_type = t then
+             C_Tree(tree_type, d, child_e, child_el) :: check_tree_literal_is_valid d t tail env
+           else raise (Failure ("Tree type is not consistent: expected <" ^ string_of_var_type t ^ ">(" ^ string_of_int d ^ ") but received <" ^ string_of_var_type tree_type ^ ">(" ^ string_of_int tree_degree ^ ")"))  
+         | _ ->
+           let child_type = (type_of_expr checked_expr) in
+           if child_type = t then
+             checked_expr :: check_tree_literal_is_valid d t tail env
+           else raise (Failure ("Tree literal type is not consistent: expected <" ^ string_of_var_type t ^ "> but received <" ^ string_of_var_type child_type ^">"))
 
 and check_tree_literal_root_is_valid (e:expr) (el: expr list) env =
   let checked_root = check_expr e env in
   let type_root = type_of_expr checked_root in
   match type_root with
-      (Lrx_Atom(Lrx_Int) | Lrx_Atom(Lrx_Float) | Lrx_Atom(Lrx_Char) | Lrx_Atom(Lrx_Bool)) ->
-          let degree_root = List.length el in
-              let checked_tree = check_tree_literal_is_valid degree_root type_root el env in
-              (type_root, degree_root, checked_root, checked_tree)
-    | _ -> raise (Failure ("Tree root cannot be of non-atom type: " ^ string_of_var_type type_root))
+     (Lrx_Atom(Lrx_Int) | Lrx_Atom(Lrx_Float) | Lrx_Atom(Lrx_Char) | Lrx_Atom(Lrx_Bool)) ->
+     let degree_root = List.length el in
+     let checked_tree = check_tree_literal_is_valid degree_root type_root el env in
+     (type_root, degree_root, checked_root, checked_tree)
+   | _ -> raise (Failure ("Tree root cannot be of non-atom type: " ^ string_of_var_type type_root))
 
 and check_expr (e:expr) env =
 	  match e with
@@ -378,22 +377,22 @@ and check_main_exists (f:c_func list) =
 (* returns list of verified global variable declarations *)
 and check_is_vardecls (vars: var list) env =
     match vars with
-        [] -> []
-      | head :: tail -> 
-      let decl = Symtab.symtab_find (fst head) env in
-      let id = Symtab.symtab_get_id (fst head) env in 
-        match decl with 
-        	 SymTab_FuncDecl(f) -> raise(Failure("symbol is not a variable"))
-	       | SymTab_VarDecl(v) -> 
-            let var = snd_of_three v in
-            match var with
-                Lrx_Tree(t) -> 
-                let checked_degree = check_expr t.degree env in
-                let type_of_degree = type_of_expr checked_degree in
-                (match type_of_degree with
-                    Lrx_Atom(Lrx_Int) -> (fst_of_three v, snd_of_three v, id) :: check_is_vardecls tail env
-                  | _ -> raise (Failure ("Tree degree must be of type int")))
-             | Lrx_Atom(a) -> (fst_of_three v, snd_of_three v, id) :: check_is_vardecls tail env
+       [] -> []
+     | head :: tail -> 
+       let decl = Symtab.symtab_find (fst head) env in
+       let id = Symtab.symtab_get_id (fst head) env in 
+       match decl with 
+        	SymTab_FuncDecl(f) -> raise(Failure("symbol is not a variable"))
+	      | SymTab_VarDecl(v) -> 
+          let var = snd_of_three v in
+          match var with
+             Lrx_Tree(t) -> 
+             let checked_degree = check_expr t.degree env in
+             let type_of_degree = type_of_expr checked_degree in
+             (match type_of_degree with
+                 Lrx_Atom(Lrx_Int) -> (fst_of_three v, snd_of_three v, id) :: check_is_vardecls tail env
+               | _ -> raise (Failure ("Tree degree must be of type int")))
+        | Lrx_Atom(a) -> (fst_of_three v, snd_of_three v, id) :: check_is_vardecls tail env
 
 
 (* 

@@ -9,7 +9,6 @@
 open Ast
 open Check
 
-
 let tmp_reg_id = ref 0
 let label_id = ref 0
 
@@ -38,10 +37,8 @@ type ir_expr =
   | Ir_Bool_Literal of ir_var_decl * bool
   | Ir_Unop of ir_var_decl * uop * ir_var_decl
   | Ir_Binop of ir_var_decl * op * ir_var_decl * ir_var_decl
-  (*| Ir_Access_Umbilical of ir_var_decl * op * ir_var_decl * ir_var_decl *)
   | Ir_Id of ir_var_decl * ir_var_decl
   | Ir_Assign of ir_var_decl * ir_var_decl
- (* | Ir_Assign_Umbilical of ir_var_decl * ir_var_decl*)
   | Ir_Tree_Literal of ir_var_decl * ir_var_decl * ir_var_decl (* 4[3, 2[]]*)
   | Ir_Call of ir_var_decl * scope_func_decl * ir_var_decl list
   | Ir_Null_Literal of ir_var_decl
@@ -179,16 +176,6 @@ let string_to_char_list s =
   let rec exp i l = if i < 0 then l else exp (i - 1) (s.[i] :: l) in
   exp (String.length s - 1) []
 
-(*
-let rec contains_umbilical sl = 
-  match sl with
-  [] -> false
-  | h :: t -> 
-      (match h with 
-      Ir_Decl_Umbilical(_) -> true
-      | _ -> contains_umbilical t)
-*)
-
 let rec gen_ir_expr (e:c_expr) =
   match e with
      C_Int_Literal(i) ->
@@ -220,16 +207,10 @@ let rec gen_ir_expr (e:c_expr) =
      in ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
      (* check if binop contains tree on lhs *)
    | C_Id(t, s, i) -> ([], (s, t, i, 0))
-     (* (match t with 
-      Lrx_Tree(_)-> ([Ir_Tree_Destroy(s, t, i, 0)], (s, t, i, 0))
-      | _ -> ([], (s, t, i, 0))) *)
-     (* let tmp = gen_tmp_var t in 
-     ([Ir_Decl(tmp); Ir_Expr(Ir_Id(tmp, (s, t, i)))], tmp) *)
    | C_Assign(t, l, r) ->
      let (s1, r1) = gen_ir_expr l in
      let (s2, r2) = gen_ir_expr r in
-     (*if (contains_umbilical s1) then (s1 @ s2 @ [Ir_Expr(Ir_Assign_Umbilical(r1, r2))], r2)
-     else*) (s1 @ s2 @ [Ir_Expr(Ir_Assign(r1, r2))], r2)
+     (s1 @ s2 @ [Ir_Expr(Ir_Assign(r1, r2))], r2)
    | C_Tree(t, d, e, el) -> 
      let (s, r) = gen_ir_expr e in
      let ir_el = List.map gen_ir_expr el in
@@ -256,66 +237,58 @@ let rec gen_ir_expr (e:c_expr) =
    | C_Null_Literal -> let tmp = (gen_tmp_var (Lrx_Tree({datatype = Lrx_Int; degree = Int_Literal(1)})) 2) in 
      ([Ir_Null_Decl(tmp); Ir_Expr(Ir_Null_Literal(tmp))], tmp)
    | C_Noexpr -> ([Ir_Expr(Ir_Noexpr)], ("void_tmp_unused", Lrx_Atom(Lrx_Int), -1, -1))
- (*
-     | C_Null_Literal ->
-     | C_Noexpr -> 
- *)
 
 let decl_and_destroy_local (v:scope_var_decl) =
   let (n, t, s) = v in 
   (match t with
-  Lrx_Tree(_) -> [Ir_Tree_Destroy(n, t, s, 0); Ir_Decl(n, t, s, 0)]
-  | _ -> [Ir_Decl(n, t, s, 0)])
+      Lrx_Tree(_) -> [Ir_Tree_Destroy(n, t, s, 0); Ir_Decl(n, t, s, 0)]
+    | _ -> [Ir_Decl(n, t, s, 0)])
 
 let rec decl_and_destroy_locals (vl:scope_var_decl list) =
   match vl with
-  [] -> []
-  | head :: tail -> decl_and_destroy_local head @ decl_and_destroy_locals tail 
+     [] -> []
+   | head :: tail -> decl_and_destroy_local head @ decl_and_destroy_locals tail 
 
 let rec gen_ir_block (b: c_block) =
   let decls = decl_and_destroy_locals b.c_locals in
   decls @ (gen_ir_stmtlist b.c_statements)
 
 and gen_ir_stmt (s: c_stmt) =
-     match s with
-        C_CodeBlock(b) -> gen_ir_block b
-      | C_Return(e) -> 
+    match s with
+      C_CodeBlock(b) -> gen_ir_block b
+    | C_Return(e) -> 
       let (s, r) = gen_ir_expr e in 
       let start_cleanup = gen_tmp_label () in 
       let end_cleanup = gen_tmp_label () in 
-      s @ [Ir_Ret(r, start_cleanup, end_cleanup)]
-      | C_Expr(e) -> fst (gen_ir_expr e)
-      | C_If(e, b1, b2) -> 
-        let (s, r) = gen_ir_expr e in 
-        let irb1 = gen_ir_block b1 in
-        let irb2 = gen_ir_block b2 in
-        let startlabel = gen_tmp_label () in
-        let endlabel = gen_tmp_label () in
-        s @ [Ir_If(r, startlabel)] @ irb2 @ [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb1 @ [Ir_Label(endlabel)]
-      | C_For(e1, e2, e3, b) -> 
-        let (s1, r1) = gen_ir_expr e1 in 
-        let (s2, r2) = gen_ir_expr e2 in 
-        let (s3, r3) = gen_ir_expr e3 in 
-        let irb = gen_ir_block b in
-        let startlabel = gen_tmp_label () in
-        let endlabel = gen_tmp_label () in
-        s1 @ [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb @ s3 @ [Ir_Label(endlabel)] @ s2 @ [Ir_If(r2, startlabel)]
-      | C_While(e, b) -> 
-        let (s, r) = gen_ir_expr e in 
-        let irb = gen_ir_block b in
-        let startlabel = gen_tmp_label () in
-        let endlabel = gen_tmp_label () in
-        [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb @ [Ir_Label(endlabel)] @ s @ [Ir_If(r, startlabel)]
-      | _ ->raise (Failure ("TEMP gen_ir_stmt"))
-(*      
-     
-     | C_Continue ->
-     | C_Break ->  *)
+    s @ [Ir_Ret(r, start_cleanup, end_cleanup)]
+    | C_Expr(e) -> fst (gen_ir_expr e)
+    | C_If(e, b1, b2) -> 
+      let (s, r) = gen_ir_expr e in 
+      let irb1 = gen_ir_block b1 in
+      let irb2 = gen_ir_block b2 in
+      let startlabel = gen_tmp_label () in
+      let endlabel = gen_tmp_label () in
+      s @ [Ir_If(r, startlabel)] @ irb2 @ [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb1 @ [Ir_Label(endlabel)]
+    | C_For(e1, e2, e3, b) -> 
+      let (s1, r1) = gen_ir_expr e1 in 
+      let (s2, r2) = gen_ir_expr e2 in 
+      let (s3, r3) = gen_ir_expr e3 in 
+      let irb = gen_ir_block b in
+      let startlabel = gen_tmp_label () in
+      let endlabel = gen_tmp_label () in
+      s1 @ [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb @ s3 @ [Ir_Label(endlabel)] @ s2 @ [Ir_If(r2, startlabel)]
+    | C_While(e, b) -> 
+      let (s, r) = gen_ir_expr e in 
+      let irb = gen_ir_block b in
+      let startlabel = gen_tmp_label () in
+      let endlabel = gen_tmp_label () in
+      [Ir_Jmp(endlabel); Ir_Label(startlabel)] @ irb @ [Ir_Label(endlabel)] @ s @ [Ir_If(r, startlabel)]
+    | _ ->raise (Failure ("TEMP gen_ir_stmt"))
 
 and gen_ir_stmtlist (slist: c_stmt list) = 
   match slist with
-  [] -> []
-  | head :: tail -> gen_ir_stmt head @ gen_ir_stmtlist tail
+     [] -> []
+   | head :: tail -> gen_ir_stmt head @ gen_ir_stmtlist tail
 
 and gen_ir_body (f: c_func) =
   let header = (f.c_ret_type, f.c_fname, f.c_formals) in
@@ -329,13 +302,13 @@ and gen_ir_body (f: c_func) =
 
 and gen_ir_fbodys (flist:c_func list) =
   match flist with
-  [] -> []
-  | head :: tail -> gen_ir_body head :: gen_ir_fbodys tail
+     [] -> []
+   | head :: tail -> gen_ir_body head :: gen_ir_fbodys tail
 
 and gen_ir_fdecls (flist:c_func list) = 
   match flist with
-  [] -> []
-  | head :: tail -> 
+     [] -> []
+   | head :: tail -> 
   {ir_name = head.c_fname; ir_ret_type = head.c_ret_type; ir_formals = List.map snd_of_three head.c_formals} :: gen_ir_fdecls tail
 
 let rec intermediate_rep_program (p:c_program) =

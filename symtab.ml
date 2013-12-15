@@ -98,9 +98,6 @@ and symtab_add_funcs (funcs:func list) env =
 	 | head :: tail -> let env = symtab_add_func head env in 
 	   symtab_add_funcs tail env
 
-(* add builtin functions to the symbol table *)
-(* these are 'dummy' function declarations with potentially incorrect return/argument types,
-   they will be 'filled in' in semantic checking *)
 let add_builtins env =
     let env = symtab_add_decl "print" (SymTab_FuncDecl("print", Lrx_Atom(Lrx_Int), [], 0)) env in
     let env = symtab_add_decl "root" (SymTab_FuncDecl("root", Lrx_Atom(Lrx_Int), [], 0)) env in
