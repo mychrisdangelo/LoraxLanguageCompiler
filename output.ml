@@ -204,7 +204,7 @@ let c_of_stmt (v:ir_stmt) (cleanup:string) =
 	 | Ir_Internal(a, c, t) -> c_of_var_name a ^ "[" ^ string_of_int c ^ "] = " ^ c_of_var_name t ^ "; /* Ir_Internal */"
 	 | Ir_Ptr(p, r) -> c_of_var_name p ^ " = " ^ c_of_ref r ^ "; /* Ir_Ptr */"
    | Ir_At_Ptr(p) -> c_of_ptr_decl p ^ " = NULL; /* Ir_At_Ptr */" 
-   | Ir_Ret(v, s, e) -> "goto " ^ s ^ ";\n" ^ e ^ ":\nreturn " ^ c_of_var_name v ^ ";\n" ^ 
+   | Ir_Ret(v, s, e) -> "goto " ^ s ^ ";\n" ^ e ^ ":\nreturn " ^ c_of_var_arg v ^ ";\n" ^ 
       s ^ ":\n" ^ cleanup ^ "goto " ^ e ^ ";\n"
 	 | Ir_Expr(e) -> c_of_expr e ^ ";\n"
    	 | Ir_If(v, s) -> "if(" ^ c_of_var_name v ^ ") goto " ^ s ^ "" ^ ";"
