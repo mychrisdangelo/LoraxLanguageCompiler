@@ -1,7 +1,12 @@
-/* Huffman Tree for encoding groupmembers' names */
+/*
+ * Lorax Huffman Example
+ * Prints groupmembers' names according to a predetermined huffman encoding
+ * Author: Zhaarn Maheswaran
+ */
+ 
 int main () {
 	tree <char> codingtree (2);
-	codingtree = '$'['$'['$'['$'['$'['t','m'],'c'],'r'], 
+	codingtree = '$'['$'['$'['$'['c', '$'['t','m']],'r'], 
 		'$'['$'['$'['o','u'],'$'['k','n']],'a']],
 		'$'['$'['$'['z','s'],'i'],'$'['$'['g','d'], 'h']]];
 	decode("1000", codingtree);
@@ -10,26 +15,27 @@ int main () {
 	decode("011", codingtree);
 	decode("001", codingtree);
 	decode("01011", codingtree);
-	print("------");
+	print("\n------\n");
 	decode("0000", codingtree);
 	decode("111", codingtree);
 	decode("001", codingtree);
 	decode("101", codingtree);
 	decode("1001", codingtree);
-	print("------");
+	print("\n------\n");
 	decode("00010", codingtree);
 	decode("101", codingtree);
 	decode("00011", codingtree);
-	print("------");
+	print("\n------\n");
 	decode("01010", codingtree);
 	decode("101", codingtree);
 	decode("001", codingtree);
 	decode("011", codingtree);
-	print("------");
+	print("\n------\n");
 	decode("1101", codingtree);
 	decode("01000", codingtree);
 	decode("01001", codingtree);
 	decode("1100", codingtree);
+	print("\n------\n");
 
 
 
@@ -39,17 +45,23 @@ int main () {
 
 int decode(tree <char> letter (1), tree <char> codingtree (2)){
 	tree <char> a (1);
+	tree <char> b (2);
 	a = letter;
-	while(a != null ) {
-		if(a%0 == null){
-			print(a@);
+	b = codingtree;
+	while(true) {
+		if(b%0 == null){
+			print(b@);
 			return 0;
 		}
 		if(a@ == '0') {
+		/*	print(a@); */
+			b = b%0;
 			a = a%0;
 		}
 		else {
-			a = a%1;
+		/*	print(a@); */
+			b = b%1;
+			a = a%0;
 		}
 	}
 
