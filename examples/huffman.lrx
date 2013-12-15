@@ -1,0 +1,56 @@
+/* Huffman Tree for encoding groupmembers' names */
+int main () {
+	tree <char> codingtree (2);
+	codingtree = '$'['$'['$'['$'['$'['t','m'],'c'],'r'], 
+		'$'['$'['$'['o','u'],'$'['k','n']],'a']],
+		'$'['$'['$'['z','s'],'i'],'$'['$'['g','d'], 'h']]];
+	decode("1000", codingtree);
+	decode("111", codingtree);
+	decode("011", codingtree);
+	decode("011", codingtree);
+	decode("001", codingtree);
+	decode("01011", codingtree);
+	print("------");
+	decode("0000", codingtree);
+	decode("111", codingtree);
+	decode("001", codingtree);
+	decode("101", codingtree);
+	decode("1001", codingtree);
+	print("------");
+	decode("00010", codingtree);
+	decode("101", codingtree);
+	decode("00011", codingtree);
+	print("------");
+	decode("01010", codingtree);
+	decode("101", codingtree);
+	decode("001", codingtree);
+	decode("011", codingtree);
+	print("------");
+	decode("1101", codingtree);
+	decode("01000", codingtree);
+	decode("01001", codingtree);
+	decode("1100", codingtree);
+
+
+
+
+
+}
+
+int decode(tree <char> letter (1), tree <char> codingtree (2)){
+	tree <char> a (1);
+	a = letter;
+	while(a != null ) {
+		if(a%0 == null){
+			print(a@);
+			return 0;
+		}
+		if(a@ == '0') {
+			a = a%0;
+		}
+		else {
+			a = a%1;
+		}
+	}
+
+}

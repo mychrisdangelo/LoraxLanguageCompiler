@@ -45,9 +45,7 @@ type ir_expr =
   | Ir_Tree_Literal of ir_var_decl * ir_var_decl * ir_var_decl (* 4[3, 2[]]*)
   | Ir_Call of ir_var_decl * scope_func_decl * ir_var_decl list
   | Ir_Null_Literal of ir_var_decl
-  (*| Ir_Noexpr *)
-
-
+  | Ir_Noexpr 
 
 type ir_stmt =
   | Ir_If of ir_var_decl * string
@@ -257,6 +255,7 @@ let rec gen_ir_expr (e:c_expr) =
      gen_ir_expr result
    | C_Null_Literal -> let tmp = (gen_tmp_var (Lrx_Tree({datatype = Lrx_Int; degree = Int_Literal(1)})) 2) in 
      ([Ir_Null_Decl(tmp); Ir_Expr(Ir_Null_Literal(tmp))], tmp)
+   | C_Noexpr -> ([Ir_Expr(Ir_Noexpr)], ("void_tmp_unused", Lrx_Atom(Lrx_Int), -1, -1))
  (*
      | C_Null_Literal ->
      | C_Noexpr -> 
