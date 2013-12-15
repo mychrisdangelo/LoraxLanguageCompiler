@@ -103,11 +103,13 @@ int lrx_print_tree(struct tree *t) {
             break;
     }
 
-    int i;
-    if( t->datatype != _STRING_ )  {
+    if(t->children){
+        int i;
+        if( t->datatype != _STRING_ )  {
             fprintf(stdout, "[");
         }
         for(i = 0; i < t->degree; ++i){
+
             if (t->children[i] == NULL && t->degree == 1 && (t->datatype == _CHAR_ || t->datatype == _STRING_)) {
                 break;
             }
@@ -119,6 +121,7 @@ int lrx_print_tree(struct tree *t) {
         }
         if( t->datatype != _STRING_ ) {
            fprintf(stdout, "]");
+        }
     }
     return 0;
 }
@@ -309,6 +312,7 @@ struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs) {
         return lhs;
     if(lhs && rhs && *rhs && *lhs){
         if((*rhs)->degree == 0) {
+
             int lhs_degree = (*lhs)->degree;
            (*rhs)->degree = lhs_degree;
 
@@ -331,12 +335,13 @@ struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs) {
         }
     }
 
+       
     lrx_destroy_tree(*lhs);
     *lhs = *rhs;
     if(*rhs){
-        *((*rhs)->count) += 1;
+        if((*rhs)->count)
+            *((*rhs)->count) += 1;
     }
-
     return lhs;
 }
 
