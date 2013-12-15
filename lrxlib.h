@@ -74,56 +74,52 @@ int lrx_print_bool(bool b) {
 }
 
 int lrx_print_tree(struct tree *t) {
-    LrxLog("I am in print tree.\n");
 
     //Occurs when tree is imbalanced (one child is instantiated and not the others)
     if(t == NULL){
-        fprintf(stderr, "null");
+        fprintf(stdout, "null");
         return 0;
     }
 
     // if(t->leaf){
-    //     fprintf(stdout, "leaf!");
+    //      fprintf(stdout, "leaf!");
     // }
 
     LrxLog("datatype: %d\n", t->datatype);
     switch (t->datatype){
         case _INT_:
-            fprintf(stderr, "%d", t->root.int_root);
+            fprintf(stdout, "%d", t->root.int_root);
             LrxLog("%d\n", t->root.int_root);
             break;
         case _FLOAT_:
-            fprintf(stderr, "%f", t->root.float_root); 
+            fprintf(stdout, "%f", t->root.float_root); 
             break;
         case _CHAR_: 
         case _STRING_:
-            fprintf(stderr, "%c", t->root.char_root); 
+            fprintf(stdout, "%c", t->root.char_root); 
             break;
         case _BOOL_:
             lrx_print_bool(t->root.bool_root);
             break;
     }
 
-    // if(!t->leaf){
-        int i;
-        if( t->datatype != _STRING_ )  {
-            fprintf(stderr, "[");
+    int i;
+    if( t->datatype != _STRING_ )  {
+            fprintf(stdout, "[");
         }
         for(i = 0; i < t->degree; ++i){
-            LrxLog("print iter: %d\n", i);
             if (t->children[i] == NULL && t->degree == 1 && (t->datatype == _CHAR_ || t->datatype == _STRING_)) {
                 break;
             }
 	        lrx_print_tree(t->children[i]);
 	        
             if (t->datatype != _STRING_ && i != t->degree - 1){
-                fprintf(stderr, ",");
+                fprintf(stdout, ",");
             }
         }
         if( t->datatype != _STRING_ ) {
-           fprintf(stderr, "]");
-    	}
-    // }
+           fprintf(stdout, "]");
+    }
     return 0;
 }
 
@@ -294,6 +290,7 @@ char lrx_assign_data_at_char (struct tree **t, const char data) {
 struct tree **lrx_access_child (struct tree **t, const int child) {
     assert(*t);
     assert(child < (*t)->degree);
+    
     if(!(*t)->children[child]){
         (*t)->children[child] = malloc(sizeof(struct tree));
         (*t)->children[child]->parent = *t;
@@ -311,7 +308,7 @@ struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs) {
     if(lhs == rhs)
         return lhs;
     if(lhs && rhs && *rhs && *lhs){
-        if((*rhs)->degree == 0){
+        if((*rhs)->degree == 0) {
             int lhs_degree = (*lhs)->degree;
            (*rhs)->degree = lhs_degree;
 
@@ -326,6 +323,8 @@ struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs) {
         }
         assert((*lhs)->degree == (*rhs)->degree);
     }
+
+
     if(*lhs){
         if((*lhs)->parent){
             ((*lhs)->parent)->leaf = false;
@@ -357,8 +356,7 @@ int _lrx_count_nodes( struct tree *t ) {
     return count;
 }
 
-void lrx_copy_construct_tree(struct tree **target, struct tree **source, int depth, int *insert, struct tree **position){
-    fprintf(stderr, "root of source: %d\n", (*source)->root.int_root);
+void lrx_copy_construct_tree(struct tree **target, struct tree **source, int depth, int *insert, struct tree ***position){
 
     void *root;
     switch((*source)->datatype){
@@ -392,10 +390,7 @@ void lrx_copy_construct_tree(struct tree **target, struct tree **source, int dep
         }
         else if (depth < *insert){
             *insert = depth;
-            position = &((*target)->children[degree]);
-
-            fprintf(stderr, "mem in construct: %p\n", position);
-            fprintf(stderr, "parent in construct: %d\n", (*source)->root.int_root);
+            *position = &((*target)->children[i]);
         }
     }
 
@@ -408,7 +403,7 @@ void lrx_copy_construct_tree(struct tree **target, struct tree **source, int dep
 */
 void lrx_add_trees(struct tree **target, struct tree **lhs, struct tree **rhs)
 {
-    if(lhs && rhs && *rhs && *lhs){
+    if(lhs && rhs && *rhs && *lhs) {
         assert((*lhs)->datatype == (*rhs)->datatype);
 
         int rhs_degree = (*rhs)->degree;
@@ -417,24 +412,24 @@ void lrx_add_trees(struct tree **target, struct tree **lhs, struct tree **rhs)
             (*rhs)->degree = 1;
             (*lhs)->degree = 1;
         }
-        if(rhs_degree == 0){
+        if(rhs_degree == 0) {
            (*rhs)->degree = lhs_degree;
 
             struct tree * children[lhs_degree];
             int i;
-            for(i = 0; i < lhs_degree; ++i){
+            for(i = 0; i < lhs_degree; ++i) {
                 children[i] = NULL;
             }
             (*rhs)->children = (struct tree **)malloc(sizeof(struct tree *) * lhs_degree);
             assert((*rhs)->children);
             memset(((*rhs)->children), 0, sizeof(struct tree *) * lhs_degree);
         }
-        if(lhs_degree == 0){
+        if(lhs_degree == 0) {
             (*lhs)->degree = rhs_degree;
 
-            struct tree * children[rhs_degree];
+            struct tree *children[rhs_degree];
             int i;
-            for(i = 0; i < rhs_degree; ++i){
+            for(i = 0; i < rhs_degree; ++i) {
                 children[i] = NULL;
             }
             (*lhs)->children = (struct tree **)malloc(sizeof(struct tree *) * rhs_degree);
@@ -445,29 +440,17 @@ void lrx_add_trees(struct tree **target, struct tree **lhs, struct tree **rhs)
     }
 
     /* copy construct lhs */
-    int max_nodes_lhs = _lrx_count_nodes(*lhs) + 1;
-    fprintf(stdout, "max nodes:%d\n", max_nodes_lhs);
+    int max_nodes_lhs = _lrx_count_nodes(*lhs);
     struct tree **pos;
-    lrx_copy_construct_tree(target, lhs, 1, &max_nodes_lhs, pos);
-    fprintf(stderr, "insert at: %d\n", max_nodes_lhs);    
-    //lrx_print_tree(*pos);
-    lrx_print_tree(*target);
+    lrx_copy_construct_tree(target, lhs, 0, &max_nodes_lhs, &pos);
     
     /* copy construct rhs */
-    int max_nodes_rhs = _lrx_count_nodes(*rhs) + 1;
+    struct tree **trash;
+    int max_nodes_rhs = _lrx_count_nodes(*rhs);
     struct tree *rhs_copy = lrx_declare_tree((*rhs)->datatype, (*rhs)->degree); /* Ir_Decl */
-    lrx_copy_construct_tree(&rhs_copy, rhs, 1, &max_nodes_rhs, NULL);
-    lrx_print_tree(rhs_copy);
+    lrx_copy_construct_tree(&rhs_copy, rhs, 0, &max_nodes_rhs, &trash);
 
-    fprintf(stderr, "%p\n", pos);
-    fprintf(stderr, "%p\n", *pos);
-
-    *pos = rhs_copy;
-    //access_child;
-    //lrx_assign_tree_direct(access_child, &rhs_copy);
-    //*pos = rhs_copy;
-    //lrx_print_tree(*target);
-    //assert(0);     
+    *pos = rhs_copy;   
 }
   
 // /*
