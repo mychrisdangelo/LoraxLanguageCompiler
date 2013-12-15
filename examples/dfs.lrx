@@ -6,6 +6,8 @@
 bool dfs(tree <int>t(2), int val) {
 	int child;
 	bool match;
+	match = false;
+
 	if (t == null) { 
 		return false; 
 	}
@@ -16,9 +18,12 @@ bool dfs(tree <int>t(2), int val) {
 
 	for (child = 0; child < degree(t); child = child + 1) {
 		if (t%child != null) {
-			match = match || (t%child@ == val) || dfs(t%child, val);
-			if (match) { 
-				break; 
+
+			if(t%child@ == val){
+				return true;
+			}
+			else{
+				match = dfs(t%child, val);
 			}
 		}
 	}
@@ -32,6 +37,6 @@ int main() {
 	if (dfs(t, 3)) {
 	 	print("found it\n");
 	} else {
-		print("it\'s not there\n");
+		print("its not there\n");
 	}
 }

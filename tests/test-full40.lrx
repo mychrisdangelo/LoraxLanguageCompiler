@@ -1,0 +1,16 @@
+int main()
+{
+	tree <int>t(2);
+	tree <int>s(2);
+	string v;
+	v = "Hello Kira";
+	t = 1[2, 3[4, 5]];
+	s = t;
+
+
+	print("should print 1[2, 3[4, 5]] = ", parent(parent(t%1%1)), "\n");
+	print("should print 1[2, 3[4, 5]] = ", root(t%1%1), "\n");
+	print("should print 1[2, 3[4, 5]] = ", root(s%1%1), "\n");
+	print("should print Hello Kira = ", root(v%0%0%0), "\n");
+	print("should print 1[2, 3, 4] = ", root(1[2, 3, 4]));
+}
