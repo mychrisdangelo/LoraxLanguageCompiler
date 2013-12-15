@@ -1,0 +1,11 @@
+/* Tests failure of conditional statements */
+
+int main () {
+	
+	int i;
+	i = 1;
+	while(i) {
+		print(3);
+	}
+	
+}
