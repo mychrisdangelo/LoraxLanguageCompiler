@@ -201,6 +201,7 @@ let rec c_of_expr = function
       | "parent" -> c_of_var_name v1 ^ " = lrx_get_parent(" ^ c_of_var_arg (List.hd vl) ^ ")"
       | "root" -> c_of_var_name v1 ^ " = lrx_get_root(" ^ c_of_var_arg (List.hd vl) ^ ")"
       | _ -> c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )")
+  | Ir_Noexpr -> ""
 (* 		if (fst_of_four v2) = "print" then (c_of_print_call vl)
 		else c_of_var_name v1 ^ " = " ^ fst_of_four v2 ^ "( " ^ c_of_func_decl_args vl ^ " )" *)
 
