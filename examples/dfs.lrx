@@ -18,7 +18,6 @@ bool dfs(tree <int>t(2), int val) {
 
 	for (child = 0; child < degree(t); child = child + 1) {
 		if (t%child != null) {
-
 			if(t%child@ == val){
 				return true;
 			}

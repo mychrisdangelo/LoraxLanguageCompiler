@@ -4,8 +4,5 @@
  */
 
 int main() {
-	string s;
-	tree <char>t(1);
-	t = ','[' '['w'['o'['r'['l'['d']]]]]];
-	print(s + t + "\n");
+	print("hello, world\n");
 }
