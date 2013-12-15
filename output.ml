@@ -155,7 +155,7 @@ let rec c_of_expr = function
             (match op with
                 (Less | Leq | Greater | Geq | Equal | Neq ) -> 
                 c_of_var_name v1 ^ " = lrx_compare_tree(" ^ c_of_var_name v2 ^ ", " ^ c_of_var_name v3 ^ ", " ^ c_of_tree_comparator op ^ ")"
-              | Add -> raise (Failure "TEMPORARY: Add not implemented")
+              | Add -> "lrx_add_trees(" ^ c_of_var_arg v1 ^ ", " ^ c_of_var_arg v2 ^ ", " ^ c_of_var_arg v3 ^ ")"
               | _ -> raise (Failure "Operation not available between two tree types."))
         | (Lrx_Atom(_), Lrx_Atom(_)) -> 
           (match op with
