@@ -110,7 +110,6 @@ let unescape_char c =
 	match c with 
 	   '\n' -> "\\n"
 	 | '\t' -> "\\t"
-	 | '\"' -> "\\\""
 	 | '\\' -> "\\\\"
 	 | _ -> String.make 1 c
 

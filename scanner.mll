@@ -13,7 +13,6 @@
 		match s with
 		   "\\n" -> '\n'
 		 | "\\t" -> '\t'
-		 | "\\\"" -> '\"'
 		 | "\\\\" -> '\\'
 		 | c -> raise (Failure("unsupported character " ^ c))
 }

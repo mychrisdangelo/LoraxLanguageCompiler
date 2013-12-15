@@ -163,7 +163,6 @@ let rec char_list_to_c_tree cl =
           match h2 with
              'n' -> '\n'
            | 't' -> '\t'
-           | '\"' -> '\"'
            | '\\' -> '\\'
            | _ -> raise (Failure "Invalid escape sequence used in string literal") in
           if (List.length (List.tl t)) = 0 then C_Tree(Lrx_Atom(Lrx_Char), 1, C_Char_Literal(escape_char), [])

@@ -16,10 +16,9 @@ int main()
 	b = 'b';
 	c = '\n';
 	d = 'd';
-	e = '\"';
 	f = '\\';
 
-	print(a, b, c, d, e, f, '\n');
+	print(a, b, c, d, f, '\n');
 	print(s);
 	print(s2);
 }
