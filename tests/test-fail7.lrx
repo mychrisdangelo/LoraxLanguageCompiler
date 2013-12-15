@@ -1,0 +1,10 @@
+/* Tests type mismatch of actual parameters */
+int function(int a, int b)
+{
+	print(a + b);
+}
+int main () {
+	
+	function(9, 7.0);
+	
+}
