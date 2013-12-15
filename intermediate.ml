@@ -22,6 +22,7 @@ let gen_tmp_var t u =
   let prefix = "__tmp_" ^ string_of_tmp_var_type t in 
   tmp_reg_id := x + 1; (prefix, t, x, u)
 
+
 let gen_tmp_label (s:unit) =
   let x = label_id.contents in
   label_id := x + 1; "__LABEL_" ^ (string_of_int x)
@@ -43,9 +44,8 @@ type ir_expr =
  (* | Ir_Assign_Umbilical of ir_var_decl * ir_var_decl*)
   | Ir_Tree_Literal of ir_var_decl * ir_var_decl * ir_var_decl (* 4[3, 2[]]*)
   | Ir_Call of ir_var_decl * scope_func_decl * ir_var_decl list
-(*
-  | Ir_Null_Literal
-  | Ir_Noexpr *)
+  | Ir_Null_Literal of ir_var_decl
+  (*| Ir_Noexpr *)
 
 
 
@@ -54,6 +54,7 @@ type ir_stmt =
   | Ir_Jmp of string
   | Ir_Label of string
   | Ir_Decl of ir_var_decl
+  | Ir_Null_Decl of ir_var_decl
   | Ir_Tree_Destroy of ir_var_decl
   | Ir_Ret of ir_var_decl * string * string
   | Ir_Expr of ir_expr
@@ -93,8 +94,7 @@ let is_not_destroy (s:ir_stmt) =
 
 let is_decl (s: ir_stmt) =
   match s with
-     Ir_Decl(_) -> true
-   | Ir_At_Ptr(_) -> true
+    ( Ir_Decl(_) | Ir_At_Ptr(_) | Ir_Null_Decl(_)) -> true
    | _ -> false
 
 let is_not_decl (s:ir_stmt) =
@@ -255,8 +255,8 @@ let rec gen_ir_expr (e:c_expr) =
      (Ir_Decl(tmp) :: sl @ [Ir_Expr(Ir_Call(tmp, fd, rl))], tmp)
    | C_String_Literal(s) -> let result = (char_list_to_c_tree (string_to_char_list s)) in
      gen_ir_expr result
-   | _ -> raise (Failure ("TEMP gen_ir_expr"))
-
+   | C_Null_Literal -> let tmp = (gen_tmp_var (Lrx_Tree({datatype = Lrx_Int; degree = Int_Literal(1)})) 2) in 
+     ([Ir_Null_Decl(tmp); Ir_Expr(Ir_Null_Literal(tmp))], tmp)
  (*
      | C_Null_Literal ->
      | C_Noexpr -> 

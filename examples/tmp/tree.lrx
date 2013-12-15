@@ -1,0 +1,13 @@
+int main()
+{
+
+	tree <int> t(1);
+
+	if(t%0 == null){
+	 	print("yes t child 0 is null");
+	}
+
+	if(t == null){
+	 	print("yes t is null");
+	}
+}
