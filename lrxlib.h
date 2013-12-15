@@ -85,8 +85,8 @@ int lrx_print_tree(struct tree *t) {
     LrxLog("datatype: %d\n", t->datatype);
     switch (t->datatype){
         case _INT_:
-            fprintf(stdout, "%hd", t->root.int_root);
-            LrxLog("%hd\n", t->root.int_root);
+            fprintf(stdout, "%d", t->root.int_root);
+            LrxLog("%d\n", t->root.int_root);
             break;
         case _FLOAT_:
             fprintf(stdout, "%f", t->root.float_root); 
