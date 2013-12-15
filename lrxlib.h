@@ -294,12 +294,13 @@ struct tree **lrx_access_child (struct tree **t, const int child) {
     assert(*t);
     assert(child < (*t)->degree);
     
+    /*
     if(!(*t)->children[child]){
         (*t)->children[child] = malloc(sizeof(struct tree));
         (*t)->children[child]->parent = *t;
         (*t)->children[child]->degree = (*t)->degree;
         (*t)->children[child]->leaf = true;
-    }
+    }*/
 
     /* ptr to the parent's ptr to it's children */
     return &((*t)->children[child]);
