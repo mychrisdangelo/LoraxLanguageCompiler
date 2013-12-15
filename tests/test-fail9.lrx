@@ -1,0 +1,8 @@
+/* Tests tree type mismatch*/
+
+int main () {
+	
+	tree <int> t (3);
+	t = 1[2, 5[3, 5, 4.0], 5];
+	
+}
