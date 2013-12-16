@@ -51,6 +51,7 @@ type ir_stmt =
   | Ir_Decl of ir_var_decl
   | Ir_Null_Decl of ir_var_decl
   | Ir_Tree_Destroy of ir_var_decl
+  | Ir_Tree_Add_Destroy of ir_var_decl
   | Ir_Ret of ir_var_decl * string * string
   | Ir_Expr of ir_expr
   | Ir_Ptr of ir_var_decl * ir_var_decl
@@ -81,7 +82,7 @@ type ir_program = {
 
 let is_destroy (s: ir_stmt) =
   match s with
-     Ir_Tree_Destroy(_) -> true
+     (Ir_Tree_Destroy(_) | Ir_Tree_Add_Destroy(_))-> true
    | _ -> false
 
 let is_not_destroy (s:ir_stmt) =
@@ -203,7 +204,9 @@ let rec gen_ir_expr (e:c_expr) =
        (match o with 
            Child -> gen_tmp_var v 1 
             | _ -> gen_tmp_var v 0 ) 
-     in ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
+     in (match (v, o) with 
+     | (Lrx_Tree(t), Add) -> ([Ir_Decl(tmp); Ir_Tree_Add_Destroy(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
+     | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
      (* check if binop contains tree on lhs *)
    | C_Id(t, s, i) -> ([], (s, t, i, 0))
    | C_Assign(t, l, r) ->
@@ -298,7 +301,7 @@ and gen_ir_body (f: c_func) =
   let stmts = List.filter is_not_decl body in
   let destroys = List.filter is_destroy stmts in
   let stmts = List.filter is_not_destroy stmts in 
-  {ir_header = header; ir_vdecls = decls; ir_stmts = stmts; ir_destroys = List.rev destroys}
+  {ir_header = header; ir_vdecls = decls; ir_stmts = stmts; ir_destroys = destroys}
 
 and gen_ir_fbodys (flist:c_func list) =
   match flist with

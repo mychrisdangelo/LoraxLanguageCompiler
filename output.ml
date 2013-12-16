@@ -215,6 +215,7 @@ let c_of_stmt (v:ir_stmt) (cleanup:string) =
 let c_of_destroy (v:ir_stmt) =
   match v with 
   Ir_Tree_Destroy(d) -> "lrx_destroy_tree(" ^ c_of_var_name d ^ ");"
+  | Ir_Tree_Add_Destroy(d) -> "lrx_destroy_add_tree(" ^ c_of_var_name d ^ ");"
   | _ -> raise (Failure ("only Ir_Tree_Destroy should be possible here"))
 
 let c_of_destroys destroys =
