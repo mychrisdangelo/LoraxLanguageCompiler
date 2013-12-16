@@ -132,11 +132,12 @@ void lrx_destroy_add_tree(struct tree *t) {
     }
     if(t->children){
         int i;
-            for(i = 0; i < t->degree; ++i){
-                lrx_destroy_add_tree(t->children[i]);
-            }
+        for(i = 0; i < t->degree; ++i){
+            lrx_destroy_add_tree(t->children[i]);
+        }
+        free(t->children);
     }
-    free(t->children);
+    
     free(t->count);
     free(t);
 }
@@ -149,7 +150,7 @@ void lrx_destroy_tree(struct tree *t) {
     }
 
     *(t->count) -= 1;
-    if(*(t->count) <= 0){
+    if(*(t->count) == 0){
         
         // if(t->leaf){
         //     free(t->count);
@@ -162,10 +163,9 @@ void lrx_destroy_tree(struct tree *t) {
             for(i = 0; i < t->degree; ++i){
                 lrx_destroy_tree(t->children[i]);
             }
+            free(t->children);
          }
-        
-         // if(t->degree > 0)
-          free(t->children);
+                  
           free(t->count);
           free(t);
         
@@ -213,6 +213,7 @@ struct tree *lrx_declare_tree(Atom type, int deg) {
     t->children = (struct tree **)malloc(sizeof(struct tree *) * t->degree);
     assert(t->children);
     memset((t->children), 0, sizeof(struct tree*) * t->degree);
+    
     t->parent = NULL;
     return t;
 }
@@ -416,7 +417,6 @@ void lrx_copy_construct_tree(struct tree **target, struct tree **source, int dep
             *position = &((*target)->children[i]);
         }
     }
-
     *target = lrx_define_tree(*target, root, children);
 }
 
