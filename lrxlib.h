@@ -414,6 +414,7 @@ void lrx_copy_construct_tree(struct tree **target, struct tree **source, int dep
         }
         else if (depth < *insert){
             *insert = depth;
+            (*target)->leaf = false;
             *position = &((*target)->children[i]);
         }
     }
@@ -471,7 +472,7 @@ void lrx_add_trees(struct tree **target, struct tree **lhs, struct tree **rhs)
     struct tree **trash;
     int max_nodes_rhs = _lrx_count_nodes(*rhs);
     struct tree *rhs_copy = lrx_declare_tree((*rhs)->datatype, (*rhs)->degree); /* Ir_Decl */
-    lrx_copy_construct_tree(&rhs_copy, rhs, 0, &max_nodes_rhs, &trash);
+    lrx_copy_construct_tree(&rhs_copy, rhs, max_nodes_rhs, &max_nodes_rhs, &trash);
 
     *pos = rhs_copy;   
 }
