@@ -126,6 +126,23 @@ int lrx_print_tree(struct tree *t) {
     return 0;
 }
 
+void lrx_destroy_add_tree(struct tree *t) {
+    if(t == NULL){
+        return;
+    }
+
+    if(t->children){
+        int i;
+            for(i = 0; i < t->degree; ++i){
+                lrx_destroy_add_tree(t->children[i]);
+            }
+    }
+    free(t->children);
+    free(t->count);
+    free(t);
+}
+
+
 void lrx_destroy_tree(struct tree *t) {
     
     if(t == NULL){
@@ -361,6 +378,7 @@ int _lrx_count_nodes( struct tree *t ) {
     }
     return count;
 }
+
 
 void lrx_copy_construct_tree(struct tree **target, struct tree **source, int depth, int *insert, struct tree ***position){
 

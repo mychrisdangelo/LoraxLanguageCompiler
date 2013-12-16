@@ -1,23 +1,19 @@
-int main()
-{
+/*
+ * Lorax Hello World
+ * Author: Chris D'Angelo
+ */
 
-	tree <int> t(2);
-	tree <int> s(2);
+int main() {
+	string s;
+	tree <char>t(1);
+	string p;
+	p = "hi";
+	s = "hello ";
+	t = ','[' '['w'['o'['r'['l'['d']]]]]];
+	s = t = p;
 
-	t = 6[] + 4[2, 3];
-	print(t, "\n");
-	t = 4[2, 3] +  6[]; //works
-	print(t, "\n");
-	t = 4[2, 3] +  6[7, 8]; //works
-	print(t, "\n");
-	t = 4[] +  6[];
-	print(t, "\n");
-
-	s = 5[10, 9];
-	t = t + s;
-	print(t, "\n");
-
-	t%0 = s;
-	print(t, "\n");
-	
+	//print(s);
+	//print(t);
+	print(s + t);
+	print(t + s%0);
 }
