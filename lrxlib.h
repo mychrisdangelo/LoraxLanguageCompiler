@@ -317,14 +317,14 @@ struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs) {
             int lhs_degree = (*lhs)->degree;
            (*rhs)->degree = lhs_degree;
 
-            struct tree * children[lhs_degree];
-            int i;
-            for(i = 0; i < lhs_degree; ++i){
-                children[i] = NULL;
-            }
-            (*rhs)->children = (struct tree **)malloc(sizeof(struct tree *) * lhs_degree);
-            assert((*rhs)->children);
-            memset(((*rhs)->children), 0, sizeof(struct tree*) * lhs_degree);
+            // struct tree * children[lhs_degree];
+            // int i;
+            // for(i = 0; i < lhs_degree; ++i){
+            //     children[i] = NULL;
+            // }
+            // (*rhs)->children = (struct tree **)malloc(sizeof(struct tree *) * lhs_degree);
+            // assert((*rhs)->children);
+            // memset(((*rhs)->children), 0, sizeof(struct tree*) * lhs_degree);
         }
         assert((*lhs)->degree == (*rhs)->degree);
     }
