@@ -210,9 +210,11 @@ struct tree *lrx_declare_tree(Atom type, int deg) {
 
     t->is_null = true;
     t->leaf = true;
-    t->children = (struct tree **)malloc(sizeof(struct tree *) * t->degree);
-    assert(t->children);
-    memset((t->children), 0, sizeof(struct tree*) * t->degree);
+    if(t->degree > 0){
+        t->children = (struct tree **)malloc(sizeof(struct tree *) * t->degree);
+        assert(t->children);
+        memset((t->children), 0, sizeof(struct tree*) * t->degree);
+   }
     
     t->parent = NULL;
     return t;
@@ -339,9 +341,9 @@ struct tree **lrx_assign_tree_direct(struct tree **lhs, struct tree **rhs) {
             // for(i = 0; i < lhs_degree; ++i){
             //     children[i] = NULL;
             // }
-            // (*rhs)->children = (struct tree **)malloc(sizeof(struct tree *) * lhs_degree);
-            // assert((*rhs)->children);
-            // memset(((*rhs)->children), 0, sizeof(struct tree*) * lhs_degree);
+             (*rhs)->children = (struct tree **)malloc(sizeof(struct tree *) * lhs_degree);
+             assert((*rhs)->children);
+             memset(((*rhs)->children), 0, sizeof(struct tree*) * lhs_degree);
         }
         assert((*lhs)->degree == (*rhs)->degree);
     }
@@ -407,7 +409,8 @@ void lrx_copy_construct_tree(struct tree **target, struct tree **source, int dep
     int i;
     for(i = 0; i < degree; ++i) {
         children[i] = NULL;
-        if((*source)->children[i] != NULL){
+
+        if(!(*source)->leaf && (*source)->children && (*source)->children[i] != NULL){
             struct tree *child = lrx_declare_tree((*source)->datatype, degree);
             lrx_copy_construct_tree(&child, &(*source)->children[i], depth + 1, insert, position);
             children[i] = child;
@@ -439,26 +442,20 @@ void lrx_add_trees(struct tree **target, struct tree **lhs, struct tree **rhs)
         if(rhs_degree == 0) {
            (*rhs)->degree = (*lhs)->degree;
 
-            // struct tree * children[lhs_degree];
-            // int i;
-            // for(i = 0; i < lhs_degree; ++i) {
-            //     children[i] = NULL;
-            // }
-            // (*rhs)->children = (struct tree **)malloc(sizeof(struct tree *) * lhs_degree);
-            // assert((*rhs)->children);
-            // memset(((*rhs)->children), 0, sizeof(struct tree *) * lhs_degree);
+             (*rhs)->children = (struct tree **)malloc(sizeof(struct tree *) * (*rhs)->degree);
+             assert((*rhs)->children);
+             memset(((*rhs)->children), 0, sizeof(struct tree *) * (*rhs)->degree);
         }
         if(lhs_degree == 0) {
             (*lhs)->degree = (*rhs)->degree;
+            (*lhs)->children = (struct tree **)malloc(sizeof(struct tree *) * (*lhs)->degree);
+            assert((*lhs)->children);
+            memset(((*lhs)->children), 0, sizeof(struct tree *) * (*lhs)->degree);
 
-            // struct tree *children[rhs_degree];
-            // int i;
-            // for(i = 0; i < rhs_degree; ++i) {
-            //     children[i] = NULL;
-            // }
-            // (*lhs)->children = (struct tree **)malloc(sizeof(struct tree *) * rhs_degree);
-            // assert((*lhs)->children);
-            // memset(((*lhs)->children), 0, sizeof(struct tree *) * rhs_degree);
+            (*target)->degree = (*rhs)->degree;
+            (*target)->children = (struct tree **)malloc(sizeof(struct tree *) * (*lhs)->degree);
+            assert((*target)->children);
+            memset(((*target)->children), 0, sizeof(struct tree *) * (*lhs)->degree);
         }
         assert((*lhs)->degree == (*rhs)->degree);
     }
@@ -474,7 +471,7 @@ void lrx_add_trees(struct tree **target, struct tree **lhs, struct tree **rhs)
     struct tree *rhs_copy = lrx_declare_tree((*rhs)->datatype, (*rhs)->degree); /* Ir_Decl */
     lrx_copy_construct_tree(&rhs_copy, rhs, max_nodes_rhs, &max_nodes_rhs, &trash);
 
-    *pos = rhs_copy;   
+    *pos = rhs_copy;
 }
   
 // /*
