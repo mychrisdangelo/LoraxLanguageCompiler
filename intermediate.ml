@@ -301,7 +301,7 @@ and gen_ir_body (f: c_func) =
   let stmts = List.filter is_not_decl body in
   let destroys = List.filter is_destroy stmts in
   let stmts = List.filter is_not_destroy stmts in 
-  {ir_header = header; ir_vdecls = decls; ir_stmts = stmts; ir_destroys = List.rev destroys}
+  {ir_header = header; ir_vdecls = decls; ir_stmts = stmts; ir_destroys = destroys}
 
 and gen_ir_fbodys (flist:c_func list) =
   match flist with

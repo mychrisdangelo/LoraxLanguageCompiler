@@ -130,7 +130,6 @@ void lrx_destroy_add_tree(struct tree *t) {
     if(t == NULL){
         return;
     }
-
     if(t->children){
         int i;
             for(i = 0; i < t->degree; ++i){
