@@ -81,9 +81,9 @@ int lrx_print_tree(struct tree *t) {
         return 0;
     }
 
-    // if(t->leaf){
-    //      fprintf(stdout, "leaf!");
-    // }
+     // if(t->leaf){
+     //      fprintf(stdout, "leaf!");
+     // }
 
     LrxLog("datatype: %d\n", t->datatype);
     switch (t->datatype){
@@ -127,33 +127,33 @@ int lrx_print_tree(struct tree *t) {
 }
 
 void lrx_destroy_tree(struct tree *t) {
-    /*
+    
     if(t == NULL){
         return;
     }
 
-    if(*(t->count) <= 1){
+    *(t->count) -= 1;
+    if(*(t->count) <= 0){
         
-        if(t->leaf){
-            free(t->children);
-            free(t->count);
-            free(t);
-            return;
-        }
+        // if(t->leaf){
+        //     free(t->count);
+        //     free(t);
+        //     return;
+        // }
 
-        int i;
-        for(i = 0; i < t->degree; ++i){
-            lrx_destroy_tree(t->children[i]);
-        }
+         if(t->children){
+            int i;
+            for(i = 0; i < t->degree; ++i){
+                lrx_destroy_tree(t->children[i]);
+            }
+         }
         
-        free(t->children);
-        free(t->count);
-        free(t);
+         // if(t->degree > 0)
+          free(t->children);
+          free(t->count);
+          free(t);
         
     }
-    else{
-        *(t->count) -= 1;
-    }*/
 }
 
 struct tree *lrx_declare_tree(Atom type, int deg) {
@@ -162,13 +162,12 @@ struct tree *lrx_declare_tree(Atom type, int deg) {
 
     struct tree *t = (struct tree *)malloc(sizeof(struct tree));
     assert(t);
-    int *cnt = (int *)malloc(sizeof(int));
-    assert(cnt);
 
-    *cnt = 1;
     t->degree = deg;
     t->datatype = type;
-    t->count = cnt;
+    t->count = (int *)malloc(sizeof(int));
+    assert(t->count);
+    *(t->count) = 1;
 
     switch(type){
         case _BOOL_:
@@ -235,6 +234,7 @@ struct tree *lrx_define_tree(struct tree *t, void *root_data, struct tree **chil
     for(i = 0; i < num_children; ++i) {
         if(children[i] != NULL){
             children[i]->parent = t;
+            *(children[i]->count) += 1;
             t->children[i] = children[i];
         }
         else
