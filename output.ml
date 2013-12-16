@@ -183,8 +183,9 @@ let rec c_of_expr = function
   | Ir_Noexpr -> ""
 
 let c_of_ref (r:ir_var_decl) =
-	let (n ,t, s,u) = r in 
-	"&" ^ n ^ "_" ^ string_of_int s
+  let (n2,_, s2, u2) = r in 
+  let prefix = if u2 = 1 then "" else "&" in 
+	prefix ^ n2 ^ "_" ^ string_of_int s2
 
 let rec c_of_leaf (n:string) (d:int) = 
 	if d < 0 then "" else
