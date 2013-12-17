@@ -79,7 +79,7 @@ let c_of_ir_var_decl (v:scope_var_decl) =
   let (n,t,s) = v in 
   match t with 
       Lrx_Tree(_)->  c_of_func_decl_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
-      | _ -> c_of_func_decl_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
+    | _ -> c_of_func_decl_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
   
 
 let c_of_func_def_formals = function
@@ -90,7 +90,7 @@ let c_of_var_arg (v:ir_var_decl) =
 	let (n,t,s, u) = v in 
   let prefix =
   (match t with 
-    Lrx_Tree(_)-> if u = 1 then "" else if u = 3 then "" else "&" 
+      Lrx_Tree(_)-> if u = 1 then "" else if u = 3 then "" else "&" 
     | Lrx_Atom(_) -> if u = 1 then "*" else "") in 
 	prefix ^ n ^ "_" ^ string_of_int s
 
@@ -106,7 +106,7 @@ let c_of_var_name (v:ir_var_decl) =
 let c_of_print_var (arg :ir_var_decl) =
 	let (n ,t, s, u) = arg in 
 	(match t with
-		Lrx_Atom(Lrx_Int) -> "fprintf(stdout, \"%d\", " ^ c_of_var_arg arg ^ ")"  
+		  Lrx_Atom(Lrx_Int) -> "fprintf(stdout, \"%d\", " ^ c_of_var_arg arg ^ ")"  
 	  | Lrx_Atom(Lrx_Float) -> "fprintf(stdout, \"%f\", " ^ c_of_var_arg arg ^ ")"
 	  | Lrx_Atom(Lrx_Char) -> "fprintf(stdout, \"%c\", " ^ c_of_var_arg arg ^ ")"
 	  | Lrx_Atom(Lrx_Bool) -> "lrx_print_bool(" ^ c_of_var_arg arg ^ ")"
@@ -127,7 +127,7 @@ let unescape_char c =
 	 | _ -> String.make 1 c
 
 let c_of_tree_comparator = function
-	 Greater -> "_GT_"
+	   Greater -> "_GT_"
    | Less -> "_LT_"
    | Leq -> "_LTE_"
    | Geq -> "_GTE_"
@@ -227,17 +227,17 @@ let c_of_stmt (v:ir_stmt) (cleanup:string) =
    
 let c_of_destroy (v:ir_stmt) =
   match v with 
-  Ir_Tree_Destroy(d) -> "lrx_destroy_tree(" ^ c_of_var_name d ^ ");"
-  | Ir_Tree_Add_Destroy(d) -> "lrx_destroy_add_tree(" ^ c_of_var_name d ^ ");"
-  | _ -> raise (Failure ("only Ir_Tree_Destroy should be possible here"))
+     Ir_Tree_Destroy(d) -> "lrx_destroy_tree(" ^ c_of_var_name d ^ ");"
+   | Ir_Tree_Add_Destroy(d) -> "lrx_destroy_add_tree(" ^ c_of_var_name d ^ ");"
+   | _ -> raise (Failure ("only Ir_Tree_Destroy should be possible here"))
 
 let c_of_destroys destroys =
   String.concat ("\n") (List.map c_of_destroy destroys) ^ "\n\n"
 
 let rec c_of_stmt_list stmts cleanup = 
   match stmts with 
-	  [] -> []
-	| head :: tail ->  c_of_stmt head cleanup :: c_of_stmt_list tail cleanup
+	   [] -> []
+	 | head :: tail ->  c_of_stmt head cleanup :: c_of_stmt_list tail cleanup
 
 let c_of_func (f: ir_func) =
 	let (t, n, sl) = f.ir_header in 
@@ -250,7 +250,7 @@ let c_of_func_list = function
 	| funcs -> String.concat ("\n") (List.map c_of_func funcs)
 
 let c_of_func_decl_formals = function
-      [] -> ""
+    [] -> ""
 	| formals -> String.concat (", ") (List.map c_of_func_decl_var_type formals)
 
 let c_of_func_decl (f:ir_fheader) =
@@ -265,5 +265,5 @@ let c_of_func_decl_list = function
 let c_of_inter_pgrm (p:ir_program) =
 	"#include \"lrxlib.h\"\n" ^ 
 	c_of_ir_var_decl_list p.ir_globals ^
-    c_of_func_decl_list p.ir_headers ^
-    c_of_func_list p.ir_bodies
+  c_of_func_decl_list p.ir_headers ^
+  c_of_func_list p.ir_bodies

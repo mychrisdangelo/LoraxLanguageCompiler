@@ -204,15 +204,13 @@ and gen_ir_expr (e:c_expr) (args:scope_var_decl list) =
    | C_Binop(v, e1, o, e2) -> 
      let (s1, r1) = gen_ir_expr e1 args in
      let (s2, r2) = gen_ir_expr e2 args in
-    (* if (contains_umbilical s1) then *)
     let tmp = 
        (match o with 
            Child -> gen_tmp_var v 1 
-            | _ -> gen_tmp_var v 0 ) 
+         | _ -> gen_tmp_var v 0 ) 
      in (match (v, o) with 
-     | (Lrx_Tree(t), Add) -> ([Ir_Decl(tmp); Ir_Tree_Add_Destroy(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
-     | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
-     (* check if binop contains tree on lhs *)
+            (Lrx_Tree(t), Add) -> ([Ir_Decl(tmp); Ir_Tree_Add_Destroy(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp)
+          | _ -> ([Ir_Decl(tmp)] @ s1 @ s2 @ [Ir_Expr(Ir_Binop(tmp, o, r1, r2))], tmp))
    | C_Id(t, s, i) -> 
       (match t with
       Lrx_Tree(_) -> if (List.exists (fun (s1, t1, i1) -> (s1 = s && t1 = t && i1 = i)) args) then ([], (s, t, i, 3)) else ([], (s, t, i, 0))
@@ -267,7 +265,7 @@ let rec gen_ir_block (b: c_block) (args:scope_var_decl list) =
   decls @ (gen_ir_stmtlist b.c_statements args)
 
 and gen_ir_stmt (s: c_stmt) (args:scope_var_decl list) =
-    match s with
+   match s with
       C_CodeBlock(b) -> gen_ir_block b args
     | C_Return(e) -> 
       let (s, r) = gen_ir_expr e args in 
