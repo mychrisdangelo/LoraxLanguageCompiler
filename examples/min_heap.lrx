@@ -1,0 +1,21 @@
+int insert( tree<int> t(2), int value ) {
+	tree<int> tmp(2);
+	tree<int> right(2);
+	
+	while( right%1 != null ) {
+		right = right%1;
+	}
+	
+	tmp = parent( t );
+	while( tmp != root( t ) && value < tmp@ ) {
+		right@ = tmp@;
+		tmp = parent( tmp );
+	}
+	tmp@ = value;
+}
+
+int main() {
+	tree<int> min_heap(2);
+	
+	insert(min_heap, 5);
+}	
