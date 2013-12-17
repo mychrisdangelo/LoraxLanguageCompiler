@@ -17,6 +17,13 @@ let c_of_var_type = function
 	| Lrx_Atom(Lrx_Char) -> "char"
  	| Lrx_Tree(t) -> "tree *"
 
+let c_of_func_decl_var_type = function
+    Lrx_Atom(Lrx_Int) -> "int"
+  | Lrx_Atom(Lrx_Float) -> "float"
+  | Lrx_Atom(Lrx_Bool) -> "bool"
+  | Lrx_Atom(Lrx_Char) -> "char"
+  | Lrx_Tree(t) -> "tree **"
+
 let c_of_var_def (v:ir_var_decl) = 
 	let (_ ,t, _,u) = v in match t with
 	  Lrx_Atom(Lrx_Int) -> "0"
@@ -58,7 +65,10 @@ let c_of_var_decl_list = function
 	
 let c_of_func_actual (v:ir_var_decl) =
 	let(n,t,s,u) = v in 
-  let prefix = if u = 1 then "*" else "" in 
+  let prefix = 
+  (match t with
+    Lrx_Tree(_) -> if (u = 3 || u = 1) then "" else "&"
+    | _ -> if u = 1 then "*" else "") in
 	prefix ^ n ^ "_" ^ string_of_int s	
 
 let c_of_func_decl_args = function
@@ -67,7 +77,10 @@ let c_of_func_decl_args = function
 
 let c_of_ir_var_decl (v:scope_var_decl) =
   let (n,t,s) = v in 
-   c_of_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
+  match t with 
+      Lrx_Tree(_)->  c_of_func_decl_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
+      | _ -> c_of_func_decl_var_type t ^ " " ^ n ^ "_" ^ string_of_int s
+  
 
 let c_of_func_def_formals = function
 	  [] -> ""
@@ -77,7 +90,7 @@ let c_of_var_arg (v:ir_var_decl) =
 	let (n,t,s, u) = v in 
   let prefix =
   (match t with 
-    Lrx_Tree(_)-> if u = 1 then "" else "&" 
+    Lrx_Tree(_)-> if u = 1 then "" else if u = 3 then "" else "&" 
     | Lrx_Atom(_) -> if u = 1 then "*" else "") in 
 	prefix ^ n ^ "_" ^ string_of_int s
 
@@ -98,7 +111,7 @@ let c_of_print_var (arg :ir_var_decl) =
 	  | Lrx_Atom(Lrx_Char) -> "fprintf(stdout, \"%c\", " ^ c_of_var_arg arg ^ ")"
 	  | Lrx_Atom(Lrx_Bool) -> "lrx_print_bool(" ^ c_of_var_arg arg ^ ")"
 	  | Lrx_Tree(l) -> 
-      let prefix = if u = 1 then "*" else "" in
+      let prefix = if u = 1 then "*" else if u = 3 then "*" else "" in
       let name = n ^ "_" ^ string_of_int s in
       "lrx_print_tree(" ^ prefix ^ name ^ ")")
 
@@ -239,7 +252,7 @@ let c_of_func_list = function
 
 let c_of_func_decl_formals = function
       [] -> ""
-	| formals -> String.concat (", ") (List.map c_of_var_type formals)
+	| formals -> String.concat (", ") (List.map c_of_func_decl_var_type formals)
 
 let c_of_func_decl (f:ir_fheader) =
 	(c_of_var_type f.ir_ret_type) ^ " " ^ f.ir_name ^

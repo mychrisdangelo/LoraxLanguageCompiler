@@ -610,9 +610,9 @@ bool lrx_compare_tree( struct tree *lhs, struct tree *rhs, Comparator comparison
 	return value;	
 }
 
-int lrx_get_degree(struct tree *t)
+int lrx_get_degree(struct tree **t)
 {
-    return t->degree;
+    return (*t)->degree;
 }
 
 
