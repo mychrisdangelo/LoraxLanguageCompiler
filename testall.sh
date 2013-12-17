@@ -216,8 +216,8 @@ TestRunningProgram() {
     generatedfiles="$generatedfiles ${basename}.b.out" &&
     tmpfiles="$tmpfiles tests/${basename}.lrx_lrxtmp.c a.out" &&
     Run "$lorax" "-b" $1 &&
-    Run "$binaryoutput" ">" ${basename}.b.out &&
-    Compare ${basename}.b.out ${reffile}.out ${basename}.b.diff
+    Run "$binaryoutput" ">" ${basename}.f.out &&
+    Compare ${basename}.f.out ${reffile}.out ${basename}.f.diff
     
     rm -f $tmpfiles
 
