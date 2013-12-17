@@ -1,3 +1,7 @@
+/*
+ * Doug Beinstock
+ */
+
 int insert( tree<int> t(2), int value ) {
 	tree<int> tmp(2);
 	tree<int> right(2);
