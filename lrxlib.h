@@ -3,6 +3,7 @@
  * Kira Whitehouse
  * Chris D'Angelo
  * Doug Bienstock
+ * Tim Paine
  */
 
 #include <stdio.h>
