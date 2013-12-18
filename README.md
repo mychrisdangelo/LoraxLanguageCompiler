@@ -36,6 +36,6 @@ Examples
 If you're interested in some real world examples of the lorax language check out the `examples`
 directory.
 
-Full Guide
-==========
+User Guides
+===========
 [Language Reference Manual](http://bit.ly/theloraxmanual), [Lorax Language Presentation](http://bit.ly/theloraxpresentation)
