@@ -9,6 +9,5 @@ int main () {
 	i = 1;
 	while(i) {
 		print(3);
-	}
-	
+	}	
 }

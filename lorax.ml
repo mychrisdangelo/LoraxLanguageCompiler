@@ -69,6 +69,5 @@ let _ =
                      let out = open_out tmp_c_file in
                      output_string out compiled_program; close_out out;
                     execvp c_compiler [|c_compiler; c_warnings; c_debug; c_includes ^ (get_compiler_path Sys.argv.(0)); tmp_c_file; "-o"; exec_file_name|] 
-        | Help -> print_endline (usage Sys.argv.(0)) (* impossible case *)
-      )
+        | Help -> print_endline (usage Sys.argv.(0))) (* impossible case *)
  

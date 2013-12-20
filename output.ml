@@ -261,7 +261,6 @@ let c_of_func_decl_list = function
 	  [] -> ""
 	| fdecls -> String.concat ("\n") (List.map c_of_func_decl fdecls) ^ "\n\n"
 
-
 let c_of_inter_pgrm (p:ir_program) =
 	"#include \"lrxlib.h\"\n" ^ 
 	c_of_ir_var_decl_list p.ir_globals ^

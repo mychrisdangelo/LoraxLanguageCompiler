@@ -28,4 +28,3 @@ int gcd(int x, int y){
 int main() {
     print(gcd(25, 15));
 }
-

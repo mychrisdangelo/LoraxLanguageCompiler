@@ -40,7 +40,6 @@ int access_array(tree<int>t(1), int index) {
 	return a@;  
 }
 
-
 /* Gets the size of the array */
 int size_array(tree <int> t(1)) {
 	int i;

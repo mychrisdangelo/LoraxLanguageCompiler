@@ -246,9 +246,6 @@ and gen_ir_expr (e:c_expr) (args:scope_var_decl list) =
      ([Ir_Null_Decl(tmp); Ir_Expr(Ir_Null_Literal(tmp))], tmp)
    | C_Noexpr -> ([Ir_Expr(Ir_Noexpr)], ("void_tmp_unused", Lrx_Atom(Lrx_Int), -1, -1))
 
-
-
-
 let decl_and_destroy_local (v:scope_var_decl) =
   let (n, t, s) = v in 
   (match t with
@@ -327,8 +324,3 @@ let rec intermediate_rep_program (p:c_program) =
   let ir_fdecls = gen_ir_fdecls (snd p) in 
   let ir_fbodys = gen_ir_fbodys (snd p) in 
   {ir_globals = fst p; ir_headers = ir_fdecls; ir_bodies = ir_fbodys}
-
-
-
-
-

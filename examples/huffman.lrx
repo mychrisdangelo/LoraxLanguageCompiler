@@ -36,11 +36,6 @@ int main () {
 	decode("01001", codingtree);
 	decode("1100", codingtree);
 	print("\n------\n");
-
-
-
-
-
 }
 
 int decode(tree <char> letter (1), tree <char> codingtree (2)){
@@ -64,5 +59,4 @@ int decode(tree <char> letter (1), tree <char> codingtree (2)){
 			a = a%0;
 		}
 	}
-
 }
