@@ -1,4 +1,8 @@
-/* Tests type mismatch of function arguments */
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests type mismatch of function arguments 
+ */
+
 int function(int a, float b)
 {
 	print(a + b);

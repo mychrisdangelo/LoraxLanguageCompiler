@@ -1,3 +1,9 @@
+/* 
+ * Authors:
+ * Chris D'Angelo
+ * Kira Whitehouse
+ * Tests multiple child operator on lhs and rhs.
+ */
 
 int main()
 {
@@ -11,7 +17,5 @@ int main()
 	print(t, '\n');
 	t = s%0%0;
 	print(t, '\n');
-
-	//t%0 = s%0; THIS STILL DOES NOT WORK.
 }
 

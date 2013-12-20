@@ -1,6 +1,8 @@
-/* Tests integer operations
-    Modified from Stephen Edwards' MicroC
-*/
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests integer operations. Adapted from Stephen Edwards microc.
+ */
+
 int main()
 {
   print(1 + 2);

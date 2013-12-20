@@ -1,4 +1,7 @@
-/* Tests for scanner error */
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests for scanner error 
+ */
 
 int main () {
 	

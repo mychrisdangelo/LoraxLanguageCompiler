@@ -1,5 +1,6 @@
-/* Test for variable assingment with global variables
-   Modified from Stephen Edwards' MicroC
+/* 
+ * Author: Zhaarn Maheswaran
+ * Test for variable assingment with global variables. Adapted from Stephen Edwards microc.
  */
 
 int a;

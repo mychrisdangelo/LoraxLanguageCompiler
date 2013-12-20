@@ -1,3 +1,8 @@
+/* 
+ * Author: Chris D'Angelo
+ * End to end test of vanilla assignment and tree literals
+ */
+
 int main()
 {
 	tree <char>t(2);

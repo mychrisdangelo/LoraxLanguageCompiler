@@ -1,28 +1,9 @@
-// declaretree(t)
-// declaretree(s)
-
-// definetree(t)
-// defineTree(s)
-
-// t = final_tree;
-// s = final_tree;
-
-// t->children
-
-// a = access_tree(t, offset);
-// //t->children + offset TYPE struct tree **
-// assign_tree(a, s);
-// *a = s;
-
-
-// //rhs is null
-// //lhs is null
-// //something exists on both sides
-
-// struct child_accessed
-// --> child
-// --> offset
-// --> tree
+/* 
+ * Authors: 
+ * Kira Whitehouse
+ * Chris D'Angelo
+ * End to end test of child operator (%) and assignment to tree node lhs
+ */
 
 int main()
 {

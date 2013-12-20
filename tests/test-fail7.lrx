@@ -1,4 +1,8 @@
-/* Tests type mismatch of actual parameters */
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests type mismatch of actual parameters 
+ */
+
 int function(int a, int b)
 {
 	print(a + b);

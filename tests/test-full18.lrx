@@ -1,7 +1,8 @@
-/*
-Test for recursion
-Modified from Stephen Edward's MicroC
-*/
+/* 
+ * Author: Zhaarn Maheswaran
+ * Test for recursion. Modified from Stephen Edwards microc.
+ */
+
 int fib(int x)
 {
   if (x < 2) { return 1; }

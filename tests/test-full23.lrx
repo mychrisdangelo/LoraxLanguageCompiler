@@ -1,7 +1,7 @@
-/* Test left-to-right evaluation of arguments 
-	Modified from Stephen Edwards' MicroC
-
-*/
+/* 
+ * Author: Zhaarn Maheswaran
+ * Test left-to-right evaluation of arguments. Modified from Stephen Edwards microc.
+ */
 
 int a; /* Global variable */
 

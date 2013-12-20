@@ -1,7 +1,8 @@
-/*
-Tests for loop
-Modified from Stephen Edward's MicroC
-*/
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests for loop. Modified from Stephen Edwards microc.
+ */
+
 int main()
 {
   int i;

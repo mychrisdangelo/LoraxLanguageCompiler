@@ -1,3 +1,8 @@
+/* 
+ * Author: Chris D'Angelo
+ * Test for parent function
+ */
+
 int main()
 {
 	tree <int>t(2);

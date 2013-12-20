@@ -1,3 +1,8 @@
+/* 
+ * Author: Kira Whitehouse
+ * Stress testing empty brace edge case tree definition
+ */
+
 int main()
 {
 	print("hello world\n\n");

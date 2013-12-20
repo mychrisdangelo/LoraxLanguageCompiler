@@ -1,10 +1,7 @@
 /*
- * Lorax Parser Kitchen Sink
- *
- * NOT GUARANTEED TO BE SEMANTICALLY ACCURATE
- * For testing parsing abilities. In other words it may parse but it won't compile.
- *
  * Author: Chris D'Angelo
+ * Lorax Parser Kitchen Sink
+ * Testing valid parseable file
  */
 
 // parsing requires global variables must be declared first
@@ -118,15 +115,4 @@ int main() {
 	t%0%1@ = 5; // this is assigning t's first child's, second child node value to 5
 	t3 = t%0%1--; // this is popping t's first child's second child node from the tree t and returns t to assign to t3
 	t%toyfunc()%3-- = t2;
-
 }
-
-
-
-
-
-
-
-
-
-

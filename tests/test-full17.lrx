@@ -1,6 +1,6 @@
 /* 
-Test side-effect sequence in a series of statements
-Modified from Stephen Edward's MicroC
+ * Author: Zhaarn Maheswaran
+ * Test side-effect sequence in a series of statements. Modified from Stephen Edwards microc.
  */
 
 int g;

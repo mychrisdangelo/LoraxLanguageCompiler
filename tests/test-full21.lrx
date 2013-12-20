@@ -1,6 +1,7 @@
-/* Tests functions calls with expressions
-	Modified from Stephen Edwards' MicroC
-*/
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests functions calls with expressions. Modified from Stephen Edwards microc.
+ */
 
 int fun(int x, int y)
 {
@@ -17,4 +18,3 @@ int main()
   print(i);
 
 }
-

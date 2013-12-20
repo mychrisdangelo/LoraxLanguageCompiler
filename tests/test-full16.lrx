@@ -1,7 +1,7 @@
 /* 
-Test left-to-right evaluation of expressions 
-Modified from Stephen Edward's MicroC
-*/
+ * Author: Zhaarn Maheswaran
+ * Test left-to-right evaluation of expressions. Modified from Stephen Edwards microc.
+ */
 
 int a; /* Global variable */
 

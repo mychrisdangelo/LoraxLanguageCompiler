@@ -1,3 +1,10 @@
+/* 
+ * Authors: 
+ * Kira Whitehouse
+ * Chris D'Angelo
+ * End to end test of @ operator without child operator
+ */
+
 int main()
 {
 	tree <int>t(2);

@@ -1,4 +1,7 @@
-/* Tests tree type mismatch*/
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests tree type mismatch
+ */
 
 int main () {
 	

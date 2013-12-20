@@ -1,6 +1,8 @@
-/* Tests global variables
-    Modified from Stephen Edward's MicroC
-*/
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests global variables. Adapted from Stephen Edwards microc.
+ */
+
 int a;
 int b;
 

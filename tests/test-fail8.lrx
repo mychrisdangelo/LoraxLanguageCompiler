@@ -1,4 +1,7 @@
-/* Tests incorrect tree decl*/
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests incorrect tree decl
+ */
 
 int main () {
 	

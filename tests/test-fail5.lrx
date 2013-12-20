@@ -1,4 +1,7 @@
-/* Tests failure of conditional statements */
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests failure of conditional statements 
+ */
 
 int main () {
 	

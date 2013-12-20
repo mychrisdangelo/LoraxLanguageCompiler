@@ -1,6 +1,8 @@
-/* Tests the GCD algorithm
-   Modified from Stephen Edwards' MicroC
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests the GCD algorithm. Modified from Stephen Edwards microc.
  */
+
 int gcd(int a, int b) {
   while (a != b) {
     if (a > b) { a = a - b; }

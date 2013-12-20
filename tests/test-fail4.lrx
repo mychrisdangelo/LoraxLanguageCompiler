@@ -1,4 +1,8 @@
-/* Test fucntion return types */
+/* 
+ * Author: Zhaarn Maheswaran
+ * Test fucntion return types 
+ */
+ 
 int function()
 {
 	return true;

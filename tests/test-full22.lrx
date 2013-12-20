@@ -1,6 +1,8 @@
-/* Tests void function call
-	Modified from Stephen Edwards' MicroC
-*/
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests void function call. Modified from Stephen Edwards microc.
+ */
+
 int printem(int a, int b, int c, int d)
 {
   print(a);

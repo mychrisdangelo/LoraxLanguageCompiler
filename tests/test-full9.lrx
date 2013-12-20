@@ -1,3 +1,8 @@
+/* 
+ * Author: Zhaarn Maheswaran
+ * End to end test of while loop
+ */
+
 int main()
 {
 	int i;

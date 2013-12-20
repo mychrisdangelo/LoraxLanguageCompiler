@@ -1,8 +1,9 @@
 #!/bin/sh
 
 #
-# Author:
+# Authors:
 # Chris D'Angelo
+# Zhaarn Maheswaran
 # Special thanks Stephen Edward's MicroC which provided background knowledge.
 #
 

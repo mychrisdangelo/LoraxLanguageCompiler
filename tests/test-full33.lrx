@@ -1,6 +1,7 @@
-/* Test all statement forms 
-	Modified from Stephen Edwards' MicroC
-*/
+/* 
+ * Author: Zhaarn Maheswaran
+ * Test all statement forms. Adapted from Stephen Edwards microc.
+ */
 
 int foo(bool a, int b) {
   int i;

@@ -1,6 +1,8 @@
-/* Tests variable assignment
- 	Modified from Stephen Edwards' MicroC
+/* 
+ * Author: Zhaarn Maheswaran
+ * Tests variable assignment. Adapted from Stephen Edwards microc.
  */
+
 int main()
 {
   int a;

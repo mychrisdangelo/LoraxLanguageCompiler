@@ -1,16 +1,7 @@
-// Resulting Abstract Syntax Tree
-//
-// program: Ast.program =
-//   ([],
-//    [{Ast.fname = "main"; ret_type = Ast.Lrx_Atom Ast.Lrx_Int; formals = [];
-//      locals =
-//       [("a",
-//         Ast.Lrx_Tree
-//          {Ast.datatype = Ast.Lrx_Char; degree = Ast.Int_Literal 1})];
-//      body =
-//       [Ast.Expr (Ast.Assign (Ast.Id "a", Ast.String_Literal "hello, world"));
-//        Ast.Expr (Ast.Call ("print", [Ast.Id "a"]));
-//        Ast.Return (Ast.Int_Literal 0)]}])
+/* 
+ * Author: Chris D'Angelo
+ * Testing valid parseable file
+ */
 
 int main() {
 	string a;

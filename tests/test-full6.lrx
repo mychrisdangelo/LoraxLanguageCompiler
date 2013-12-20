@@ -1,3 +1,8 @@
+/* 
+ * Author: Chris D'Angelo
+ * End to end test of escape chars
+ */
+
 int main()
 {
 	char a;

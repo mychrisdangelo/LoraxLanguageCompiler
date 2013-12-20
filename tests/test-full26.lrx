@@ -1,3 +1,8 @@
+/* 
+ * Authors:
+ * Kira Whitehouse
+ * Kitchen sink test of rhs, lhs % and @ operators.
+ */
 
 int main()
 {

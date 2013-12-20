@@ -1,4 +1,7 @@
-/* Checks that semantic analysis catches type mismatch */
+/* 
+ * Author: Zhaarn Maheswaran
+ * Checks that semantic analysis catches type mismatch 
+ */
 
 int main () {
 	print(1 + 1.0);
