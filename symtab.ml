@@ -22,8 +22,8 @@ let string_of_decl = function
 	  SymTab_VarDecl(n, t, id)     -> string_of_vdecl (n, t)
 	| SymTab_FuncDecl(n, t, f, id) -> 
 	  (string_of_var_type t) ^ " " ^ 
-      n ^ "(" ^ 
-      String.concat ", " (List.map string_of_var_type f) ^ ")"
+	  n ^ "(" ^ 
+	  String.concat ", " (List.map string_of_var_type f) ^ ")"
 
 let string_of_symtab env =
 	let symlist = SymMap.fold

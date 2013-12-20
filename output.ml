@@ -56,7 +56,7 @@ let c_of_ptr_decl (v:ir_var_decl) =
 	 c_of_var_type t ^ " *" ^ n ^ "_" ^ string_of_int s
 
 let c_of_ir_var_decl_list = function 
-  [] -> "" 
+    [] -> "" 
   | vars -> (String.concat (";\n") (List.map c_of_ir_var_decl vars)) ^ ";\n\n"
 
 let c_of_var_decl_list = function
