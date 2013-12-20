@@ -24,6 +24,3 @@ int main()
 	int b;
 	chris(b, 4, add());
 }
-
-
-

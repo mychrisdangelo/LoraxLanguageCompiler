@@ -12,5 +12,4 @@ int main()
 	print('a'['b'['c'[]]], "\n\n\n");
 
 	print(true[true[false, true], false[]], "\n");
-
 }

@@ -16,5 +16,4 @@ int main()
 	t3 = true[true, false];
 	t4 = 'a'['b', 'c'];
 	print(t@, '\n', t2@, '\n', t3@, '\n', t4@);
-
 }

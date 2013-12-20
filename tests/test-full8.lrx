@@ -31,6 +31,4 @@ int main()
 	print('\n', 2[3[]] == 2[3[]]);
 	print('\n', 1[2[],3[]] != t);
 	print('\n', "hello\n" == "hello\n");
-
-
 }

@@ -18,4 +18,3 @@ int main()
 	t = s%0%0;
 	print(t, '\n');
 }
-

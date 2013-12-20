@@ -10,5 +10,4 @@ int main()
 	t = 'E'['F', 'G'];
 
 	print(t%0@ + ('B'-'A'));
-
 }

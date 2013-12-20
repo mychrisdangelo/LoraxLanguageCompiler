@@ -12,5 +12,4 @@ int main()
 	b = !false;
 
 	print(a, '\n', b);
-
 }

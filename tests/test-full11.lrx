@@ -17,5 +17,4 @@ int main()
 	print(t, '\n');
 	t = s;
 	print(t, '\n');
-
 }
