@@ -38,4 +38,4 @@ directory.
 
 User Guides
 ===========
-[Language Reference Manual](http://bit.ly/theloraxmanual), [Lorax Language Presentation](http://bit.ly/theloraxpresentation)
+[Language Reference Manual](http://bit.ly/theloraxmanual), [Lorax Language Presentation](http://bit.ly/theloraxpresentation), [Lorax Automatic Reference Counting Presentation](http://bit.ly/loraxarc)
