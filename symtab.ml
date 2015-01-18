@@ -14,7 +14,7 @@ open Ast
  *)
 module SymMap = Map.Make(String)
 
-let scope_parents = Array.create 1000 0
+let scope_parents = Array.make 1000 0
 
 
 (* string_of_vdecl from ast.ml *)
