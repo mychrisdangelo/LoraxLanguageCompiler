@@ -4,7 +4,10 @@ Compiler for Lorax, a language focused on making tree operations simple. Authors
 
 Requirements
 ===========
-[OCaml](http://ocaml.org/), [Unix](http://www.ubuntu.com/), [gcc](http://gcc.gnu.org/)
+* [OCaml](http://ocaml.org/)
+* [Unix](http://www.ubuntu.com/)
+* [gcc](http://gcc.gnu.org/)
+
 Quick Start
 ===============
 ```
@@ -38,4 +41,6 @@ directory.
 
 User Guides
 ===========
-[Language Reference Manual](http://bit.ly/theloraxmanual), [Lorax Language Presentation](http://bit.ly/theloraxpresentation), [Lorax Automatic Reference Counting Presentation](http://bit.ly/loraxarc)
+* [Language Reference Manual](http://bit.ly/theloraxmanual)
+* [Lorax Language Presentation](http://bit.ly/theloraxpresentation)
+* [Lorax Automatic Reference Counting Presentation](http://bit.ly/loraxarc)
