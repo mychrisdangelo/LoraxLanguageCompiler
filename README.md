@@ -43,6 +43,6 @@ directory.
 
 User Guides
 ===========
-* [Language Reference Manual](http://bit.ly/theloraxmanual)
-* [Lorax Language Presentation](http://bit.ly/theloraxpresentation)
-* [Lorax Automatic Reference Counting Presentation](http://bit.ly/loraxarc)
+* [Language Reference Manual](assets/LoraxLanguageReferenceManual.pdf)
+* [Lorax Language Presentation](assets/LoraxLanguagePresentation.pdf)
+* [Lorax Automatic Reference Counting Presentation](assets/LoraxAutomaticReferenceCountingPresentation.pdf)
